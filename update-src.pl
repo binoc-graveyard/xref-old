@@ -93,7 +93,7 @@ for ($TREE) {
         last;
     };
     /^bugzilla([23].*|)$/ && do {
-        print LOG `$TIME $CVSCOMMAND $CVSCO -d bugzilla -P mozilla/webtools/bugzilla $STDERRTOSTDOUT`;
+        print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/webtools/bugzilla $STDERRTOSTDOUT`;
         last;
     };
     /^update1.0$/ && do {
@@ -109,7 +109,7 @@ for ($TREE) {
         last;
     };
     /^(l10n|l10n-mozilla1\.8|aviarybranch|mozilla1\.8\.0)$/ && do {
-        print LOG `$TIME $CVS $CVSQUIETFLAGS -d ':pserver:anonymous\@cvs-mirror.mozilla.org:/l10n' $CVSUP -dP $STDERRTOSTDOUT`;
+        print LOG `$TIME $CVSCOMMAND -d ':pserver:anonymous\@cvs-mirror.mozilla.org:/l10n' $CVSUP $STDERRTOSTDOUT`;
         last;
     };
     /^(?:bugzilla|mozilla(?:foundation|))-org|devmo(?:wiki)|spreadfirefox|mozilla-com$/ && do {
@@ -130,20 +130,12 @@ for ($TREE) {
         print LOG `cd mozilla; $TIME $CVSCOMMAND $CVSUP-d tools` if /^seamonkey$/;
         last;
     };
-    /^firefox.*$/ && do {
-        print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=browser $STDERRTOSTDOUT`;
-        last;
-    };
     /^(?:netbeans|openoffice|gnome|eclipse|mozilla.*-.*|devmo.*|)$/ && do {
         print LOG `cd $src_dir; $TIME $CVSCOMMAND $CVSUP-d * $STDERRTOSTDOUT`;
         last;
     };
     /^fuel$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P -d fuel -rFUEL_DEVEL_BRANCH mozilla/browser/fuel $STDERRTOSTDOUT`;
-        last;
-    };
-    /^mozillasvn$/ && do {
-        print LOG `cd svn.mozilla.org; $TIME svn up $STDERRTOSTDOUT`;
         last;
     };
     warn "unrecognized tree '$TREE'. fixme!";

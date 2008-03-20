@@ -2,7 +2,6 @@
 <html>
 <head>
 <META NAME="GENERATOR" CONTENT="lxr-1998-06-10: http://lxr.linux.no">
-<link rel="icon" href="/mxr.png" type="image/png">
 <title>$title</title>
 $stylesheets</head>
 
@@ -10,9 +9,9 @@ $stylesheets</head>
 	LINK="#0000EE" VLINK="#551A8B" ALINK="#FF0000">
 
 <TABLE class=banner BGCOLOR="#000000" WIDTH="100%" BORDER=0 CELLPADDING=0 CELLSPACING=0>
-<TR><TD><A HREF="http://www.mozilla.org/"><IMG
- SRC="http://www.mozilla.org/images/mozilla-banner.gif" ALT=""
- BORDER=0 WIDTH=600 HEIGHT=58></A></TD></TR></TABLE>
+<tr><td><a class="logo" href="http://www.mozilla.org/"><img
+ src="http://www.mozilla.org/images/mozilla-banner.gif" alt=""
+ border=0 width=600 height=58></a></td></tr></table>
 
 <TABLE class=header BORDER=0 CELLPADDING=12 CELLSPACING=0 WIDTH="100%">
  <TR>
@@ -33,9 +32,18 @@ $beginbonsai
       <A HREF="$bonsaihost/cvsgraph.cgi?file=$pathname&amp;rev=$cvsversion">CVS Graph</A><BR>
 $endbonsai
 $begintrac
-      <A HREF="$trachost$virttree/log/$virtfold/$filename">SVN Log</A><BR>
-      <A HREF="$trachost$virttree/browser/$virtfold/$filename">SVN View</A><BR>
+      <A HREF="$trachost$virttree/log$virtfold/$filename">Trac Log</A><BR>
+      <A HREF="$trachost$virttree/browser$virtfold/$filename">Trac View</A><BR>
 $endtrac
+$beginviewvc
+<A HREF="$viewvchost$virtfold/$filename$viewvctail">VC Log</A><BR>
+<A HREF="$viewvchost$virtfold/$filename$viewvctail&view=annotate">VC Blame</A><BR>
+$endviewvc
+$beginwebsvn
+<A HREF="$websvnhost/log.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Log</A><BR>
+<A HREF="$websvnhost/blame.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Blame</A><BR>
+$endwebsvn
+      <A HREF="$baseurl/diff?file=$urlpath">Diff file</A><BR>
       <A HREF="$thisurl?raw=1">Raw file</A><BR>
      </TD>
     </TR>

@@ -18,3 +18,13 @@ ul {
  font-style: normal;
  font-weight: normal;
 }
+img.icon {
+ max-width: 128px;
+ margin: 2px;
+}
+img.icon:hover {
+ float: right;
+ max-width: inherit;
+ border: 1px solid black;
+ margin: 1px;
+}

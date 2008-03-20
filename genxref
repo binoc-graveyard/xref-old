@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 # $Id: genxref,v 1.7 2006/12/07 04:59:38 reed%reedloden.com Exp $
 
-# genxref.pl --        Finds identifiers in a set of C files using an
-#                extremely fuzzy algorithm.  It sort of works.
+# genxref.pl --	Finds identifiers in a set of C files using an
+#		extremely fuzzy algorithm.  It sort of works.
 #
-#        Arne Georg Gleditsch <argggh@ifi.uio.no>
-#        Per Kristian Gjermshus <pergj@ifi.uio.no>
+#	Arne Georg Gleditsch <argggh@ifi.uio.no>
+#	Per Kristian Gjermshus <pergj@ifi.uio.no>
 #
 #
 # This program is free software; you can redistribute it and/or modify
@@ -43,7 +43,7 @@ my %itype = (('macro',	'M'),
 	  ('class',	'C'),	# (C++)
 	  ('classforw',	'c'),	# (C++)
 	  ('var',	'V'),
-	  ('interface', 'I'),
+          ('interface', 'I'),
 	  ('reference', 'R'),
 	 );
 
@@ -93,7 +93,7 @@ sub wash {
 sub stripodd {
     my $tostrip = $_[0];
     while ($tostrip =~ s/\{([^\{\}]*)\}/
-           "\05".&wash($1)/ges) {}
+	   "\05".&wash($1)/ges) {}
     $tostrip =~ s/\05/\{\}/gs;
     $tostrip =~ s/[\{\}]//gs;
     return($tostrip);
@@ -102,9 +102,9 @@ sub stripodd {
 sub classes {
     my @c = (shift =~ /($ident)\s*(?:$|,)/gm);
     if (@c) {
-        return(join(":", @c)."::");
+	return(join(":", @c)."::");
     } else {
-        return('');
+	return('');
     }
 }
 
@@ -235,9 +235,9 @@ sub findidentPL {
     $totaldefs = $totaldefs + $defs;
 
     print(STDERR 
-          "Completed pass 1 Perl (",(time-$start),"s):",
-          " $defs definitions found (total found so far: $totaldefs).\n\n");
-}        
+	  "Completed pass 1 Perl (",(time-$start),"s):",
+	  " $defs definitions found (total found so far: $totaldefs).\n\n");
+}	
 
 sub findidentJS {
     print(STDERR "Starting pass 1 for Javascript: Collect identifier definitions.\n");
@@ -266,8 +266,9 @@ sub findidentJS {
               "), file $curfnum of ",$#jsfiles+1,"...\n");
 
         # Remove comments.
-        $contents =~ s/\/\*(.*?)\*\//&wash($1)/ges;
-        $contents =~ s/\/\/[^\n]*//g; # C++
+        $contents =~ s{/\*(.*?)\*/}{&wash($1)}ges;
+        $contents =~ s{//[^\n]*}{}g; # C++
+        # $contents =~ s{^# [^\n]*|^#($)}{$1}gm; # evil preprocessor
 
         # Unwrap continuation lines.
         $contents =~ s/\\\s*\n/$1\05/gs;
@@ -293,7 +294,7 @@ sub findidentJS {
         $contents =~ s/operator[\<\>\=\!\+\-\*\%\/]{1,2}/operator/g;
 
         # Ranges are uninteresting (and confusing).
-        $contents =~ s/\[.*?\]//gs;
+        $contents =~ s/\[(.*?)\]/&wash($1)/gs;
 
         # From here on, \01 and \02 are used to encapsulate found
         # identifiers,
@@ -305,6 +306,7 @@ sub findidentJS {
                 &classes($4).$3."\02 ".$6.&wash($1)/goes;
 =cut
 
+        my $pre;
         my $ct = $contents;
         my $ct2 = ($ct =~ s/\n//g) || 0;
         my ($ids, $junk);
@@ -315,8 +317,9 @@ sub findidentJS {
             my $line = $ct = $_;
             $ct2 = ($ct =~ s/\n//g) || 0;
             my $bl = $l;
-            if ($line =~ /^(\s*(?:var|const)\s+)($ident(?:\s*,\s*$ident)*)(.*?)$/m) {
-                ($ct, $ids, $junk) = ($1, $2, $3);
+            if ($line =~ /^(.*\n|)(\s*(?:var|const)\s+)($ident(?:\s*(?:=[^,;]*|),\s*$ident)*)(.*?)(\n|$)/s) {
+                ($pre, $ct, $ids, $junk) = ($1, $2, $3, $4);
+                $l += ($pre =~ s/\n//g) || 0;
                 $l += ($ct =~ s/\n//g) || 0;
                 my @idds = split /\b/, $ids;
                 while (@idds) {
@@ -331,8 +334,9 @@ sub findidentJS {
                 }
             }
             $l = $bl;
-            if ($line =~ /^(.*?\s*)((?:$ident\s*[:=]*\s*)*)function(\s+)($ident|)(\s*.*)$/sm) {
-                my ($decl, $impl, $ws1, $ws2, $ws3) = ($2, $4, $1, $3, $5);
+            if ($line =~ /^(.*\n|)(.*?\s*)((?:$ident\s*[:=]*\s*)*)function(\s+)($ident|)(\s*.*)(\n|$)/s) {
+                my ($decl, $impl, $ws1, $ws2, $ws3, $ws0) = ($3, $5, $2, $4, $6, $1);
+                $l += $ws0 =~ s/\n//g;
                 $l += $ws1 =~ s/\n//g;
                 if ($decl) {
                     my @idds = split /\b/, $decl;
@@ -369,9 +373,9 @@ sub findidentJS {
     $totaldefs = $totaldefs + $defs;
 
     print(STDERR 
-          "Completed pass 1 Javascript (",(time-$start),"s):",
-          " $defs definitions found (total found so far: $totaldefs).\n\n");
-}        
+	  "Completed pass 1 Javascript (",(time-$start),"s):",
+	  " $defs definitions found (total found so far: $totaldefs).\n\n");
+}	
 
 sub c_clean {
     my $contents = $_[0];
@@ -379,11 +383,11 @@ sub c_clean {
     my $l = 0;
     my $defs;
     foreach ($contents =~ /^(.*)/gm) {
-        $l++;
-        if (/^[ \t]*\#\s*(define|undef)\s+($ident)/o) {
-            $xref{$2} .= "$itype{'macro'}$fnum:$l\t";
-            $defs++;
-        }
+	$l++;
+	if (/^[ \t]*\#\s*(define|undef)\s+($ident)/o) {
+	    $xref{$2} .= "$itype{'macro'}$fnum:$l\t";
+	    $defs++;
+	}
     }
 
     # We want to do some funky heuristics with preprocessor blocks
@@ -399,26 +403,26 @@ sub c_clean {
     # #else..#endif blocks.  (And pray they matched one in the
     # preceding #if..#else block.)
     while ($contents =~ s/\02([^\01\02\03]*\03)/&stripodd($1)/ges ||
-           $contents =~ s/\01([^\01\02\03]*)\03/$1/gs) {}
+	   $contents =~ s/\01([^\01\02\03]*)\03/$1/gs) {}
     
     while ($contents =~ /([\01\02\03\04\05])/gs) {
-        print(STDERR "\t ** stray ".($1 eq "\01"  
-                                     ? "#if"
-                                     : ($1 eq "\02"
-                                        ? "#else"
-                                        : ($1 eq "\03"
-                                           ? "#endif"
-                                           : "control sequence"
-                                           )
-                                        )
-                                     )." found.\n");
+	print(STDERR "\t ** stray ".($1 eq "\01"  
+				     ? "#if"
+				     : ($1 eq "\02"
+					? "#else"
+					: ($1 eq "\03"
+					   ? "#endif"
+					   : "control sequence"
+					   )
+					)
+				     )." found.\n");
     }
     $contents =~ s/[\01\02\03\04\05]//gs;
 
 =pod
     # Remove all but outermost blocks.  (No local variables.)
     while ($contents =~ s/\{([^\{\}]*)\}/
-           "\05".&wash($1)/ges) {}
+	   "\05".&wash($1)/ges) {}
     $contents =~ s/\05/\{\}/gs;
 =cut
 
@@ -437,7 +441,7 @@ sub c_clean {
 sub java_clean {
     my $contents = $_[0];
     while ($contents =~ s/(\{[^\{]*)\{([^\{\}]*)\}/
-           $1."\05".&wash($2)/ges) {}
+	   $1."\05".&wash($2)/ges) {}
     $contents =~ s/\05/\{\}/gs;
 
     # Remove imports
@@ -454,12 +458,12 @@ sub c_classes {
 
     # Find struct, enum and union definitions.
     $contents =~ s/((struct|enum|union)\s+($ident|)\s*({}|(;)))/
-        "$2 ".($3 ? "\01".$itype{$2}.$3."\02 " : "").$5.&wash($1)/goes;
+	"$2 ".($3 ? "\01".$itype{$2}.$3."\02 " : "").$5.&wash($1)/goes;
 
     # Find class definitions. (C++)
     $contents =~ s/((class)\s+($ident)\s*(:[^;\{]*|)({}|(;)))/
-        "$2 "."\01".$itype{$2.($6 ? 'forw' : '')}.
-            &classes($4).$3."\02 ".$6.&wash($1)/goes;
+	"$2 "."\01".$itype{$2.($6 ? 'forw' : '')}.
+	    &classes($4).$3."\02 ".$6.&wash($1)/goes;
 
     return $contents;
 }
@@ -469,12 +473,12 @@ sub java_classes {
 
     # Find Java classes
     $contents =~ s/((class)\s+($ident)\s*(extends\s+([\.\w]+)\s*|)(implements\s+([\.\w]+)|))/
-        "$2 "."\01".$itype{$2}.&classes($5.", ".$7).$3."\02 ".
-            &wash($1)/goes;
+	"$2 "."\01".$itype{$2}.&classes($5.", ".$7).$3."\02 ".
+	    &wash($1)/goes;
 
     # Find Java interfaces
     $contents =~ s/((interface)\s+($ident)\s*(extends\s+([\.\w]+)|))/
-        "$2 "."\01".$itype{$2}.&classes($5).$3."\02 ".&wash($1)/goes;
+	"$2 "."\01".$itype{$2}.&classes($5).$3."\02 ".&wash($1)/goes;
     return $contents;
 }
 
@@ -483,8 +487,8 @@ sub idl_interfaces {
     # Find IDL interfaces
 
     $contents =~ s/((interface)\s+($ident)\s*(:[^;\{]*|)({}|(;)))/
-        "$2 "."\01".$itype{$2.($6 ? 'forw' : '')}.
-            &classes($4).$3."\02 ".$6.&wash($1)/goes;
+	"$2 "."\01".$itype{$2.($6 ? 'forw' : '')}.
+	    &classes($4).$3."\02 ".$6.&wash($1)/goes;
 
     return $contents;
 }
@@ -550,28 +554,42 @@ sub findidentIDL {
 # const
 
 #                s/^(\s*)(struct|enum|union|inline)/$1/;
+# we don't care about [noscript] and similar friends
+# they're too complicated
+                s/\[([^]]*)\]/&wash($1)/g;
 
                 if (/$ident[^a-zA-Z0-9_]+$ident/) { # It takes two, baby.
 
                     my $t = /^\s*typedef/s;     # Is this a type definition?
 
-                    s/((readonly\s+|)attribute\s+|) # ($1) readonly
-                                                    # ($2) attribute
-                      \s*$ident\s*   # return or attribute type
-                      ($ident)       # ($3) Match the identifier
-                        ([\s\)]*                # ($4) Tokens allowed after identifier
-                         (\([^\)]*\)    # ($5) Function parameters?
+                    s/((readonly\s+|)attribute\s+|)
+                       # ($1) readonly
+                                     # ($2) attribute
+                      (\s*$ident\s*)
+                       # ($3) return or attribute type
+                      ($ident)
+                       # ($4) Match the identifier
+                        ([\s\)]*
+                         # ($5) Tokens allowed after identifier
+                         (\([^\)]*\)
+                          # ($6) Function parameters?
                           |)            # No function parameters
-                         \s*($|,|\{))/  # ($6) Allowed termination chars.
-                             "\01".             # identifier marker
-                                 ($t                    # if type definition...
-                                  ? $itype{'typedef'} # ..mark as such
-                                  : ($5         # $5 is empty unless function definition.
-                                     ? ($6 eq '{'               # Terminating token indicates
-                                        ? $itype{'function'}    # function or
-                                        : $itype{'funcprot'}) # function prototype.
-                                     : $itype{'var'})   # Variable.
-                                  )."$3\02 ".&wash($4)/goesx;
+                         (\s*(?:$|,)))/
+                          # ($7) Allowed termination chars.
+                             &wash($3)."\01".
+                             # identifier marker
+                                 ($t
+                                  # if type definition...
+                                  ? $itype{'typedef'}
+                                    # ..mark as such
+                                  : ($6
+                                     # $6 is empty unless function definition.
+                                     ? $itype{'funcprot'}
+                                       # function prototype.
+                                     : $itype{'var'}
+                                       # Variable.
+                                    )
+                                  )."$4\02 ".&wash($5).&wash($7)/goesx;
                 }
 
             $contents .= $_;
@@ -610,118 +628,118 @@ sub findident {
     my $curfnum = 0;
 
     foreach $f (@f) {
-        $f =~ s/^$realpath//o;
-        my ($java, $idl) = ($ft[$fnum] == 1, $ft[$fnum] == 2);
-        $fileidx{++$fnum} = $f;
+	$f =~ s/^$realpath//o;
+	my ($java, $idl) = ($ft[$fnum] == 1, $ft[$fnum] == 2);
+	$fileidx{++$fnum} = $f;
         ++$curfnum;
 
-        open(SRCFILE, $realpath.$f);
-        $_ = $/; undef($/); $contents = <SRCFILE>; $/ = $_;
-        close(SRCFILE);
+	open(SRCFILE, $realpath.$f);
+	$_ = $/; undef($/); $contents = <SRCFILE>; $/ = $_;
+	close(SRCFILE);
 
-        print(STDERR 
-              "(Pass 1 C/C++) $f (",length($contents),
+	print(STDERR 
+	      "(Pass 1 C/C++) $f (",length($contents),
               "), file $curfnum of ",$#f+1,"...\n");
 
-        # Remove comments.
-        $contents =~ s/\/\*(.*?)\*\//&wash($1)/ges;
-        $contents =~ s/\/\/[^\n]*//g; # C++
+	# Remove comments.
+	$contents =~ s/\/\*(.*?)\*\//&wash($1)/ges;
+	$contents =~ s/\/\/[^\n]*//g; # C++
 
-        # Unwrap continuation lines.
-        $contents =~ s/\\\s*\n/$1\05/gs;
-        while ($contents =~ s/\05([^\n\05]+)\05/$1\05\05/gs) {}
-        $contents =~ s/(\05+)([^\n]*)/"$2"."\n" x length($1)/gse;
+	# Unwrap continuation lines.
+	$contents =~ s/\\\s*\n/$1\05/gs;
+	while ($contents =~ s/\05([^\n\05]+)\05/$1\05\05/gs) {}
+	$contents =~ s/(\05+)([^\n]*)/"$2"."\n" x length($1)/gse;
 
-        if ($java) {
-            $contents = java_clean($contents);
-        } else {
-            $contents = c_clean($contents);
-        }
+	if ($java) {
+	    $contents = java_clean($contents);
+	} else {
+	    $contents = c_clean($contents);
+	}
 
-        # Remove nested parentheses.
-        while ($contents =~ s/\(([^\)]*)\(/\($1\05/g ||
-               $contents =~ s/\05([^\(\)]*)\)/ $1 /g) {}
-        
-        # Some heuristics here: Try to recognize "code" and delete
-        # everything up to the next block delimiter.
-        # $contents =~ s/([\;\}\{])(\s*$ident\s*\([^\)]*\)[^\{\}]*)/
-        #         "$1".&wash($2)/goes;
-        # $contents =~ s/([\;\{])(\s*\**$ident\s*\=[^\{\}]*)/
-        #         "$1".&wash($2)/goes;
+	# Remove nested parentheses.
+	while ($contents =~ s/\(([^\)]*)\(/\($1\05/g ||
+	       $contents =~ s/\05([^\(\)]*)\)/ $1 /g) {}
+	
+	# Some heuristics here: Try to recognize "code" and delete
+	# everything up to the next block delimiter.
+	# $contents =~ s/([\;\}\{])(\s*$ident\s*\([^\)]*\)[^\{\}]*)/
+	# 	"$1".&wash($2)/goes;
+	# $contents =~ s/([\;\{])(\s*\**$ident\s*\=[^\{\}]*)/
+	# 	"$1".&wash($2)/goes;
 
-        # Parentheses containing commas are probably not interesting.
-        $contents =~ s/\(([^\)]*\,[^\)]*)\)/
-            "()".&wash($1)/ges;
+	# Parentheses containing commas are probably not interesting.
+	$contents =~ s/\(([^\)]*\,[^\)]*)\)/
+	    "()".&wash($1)/ges;
 
-        # From here on, \01 and \02 are used to encapsulate found
-        # identifiers,
+	# From here on, \01 and \02 are used to encapsulate found
+	# identifiers,
 
-        if ($java) {
-            $contents = java_classes($contents);
-        } elsif ($idl) {
-            $contents = idl_interfaces($contents);
-        } else {
-            $contents = c_classes($contents);
-        }
+	if ($java) {
+	    $contents = java_classes($contents);
+	} elsif ($idl) {
+	    $contents = idl_interfaces($contents);
+	} else {
+	    $contents = c_classes($contents);
+	}
 
-        @contents = split(/[;\}]/, $contents);
-        $contents = '';
+	@contents = split(/[;\}]/, $contents);
+	$contents = '';
 
-        foreach (@contents) {
-            if (!$java) {
-                s/^(\s*)(struct|enum|union|inline)/$1/;
-                
-                if (/$ident[^a-zA-Z0-9_]+$ident/) { # It takes two, baby.
-                    
-                    my $t = /^\s*typedef/s;        # Is this a type definition?
-                    
-                    s/($ident(?:\s*::\s*$ident|))        # ($1) Match the identifier
-                        ([\s\)]*                # ($2) Tokens allowed after identifier
-                         (\([^\)]*\)        # ($3) Function parameters?
-                          (?:\s*:[^\{]*|)        # inheritage specification (C++)
-                          |)                # No function parameters
-                         \s*($|,|\{))/        # ($4) Allowed termination chars.
-                             "\01".                # identifier marker
-                                 ($t                        # if type definition...
-                                  ? $itype{'typedef'} # ..mark as such
-                                  : ($3                # $3 is empty unless function definition.
-                                     ? ($4 eq '{'                 # Terminating token indicates 
-                                        ? $itype{'function'}         # function or
-                                        : $itype{'funcprot'}) # function prototype.
-                                     : $itype{'var'})         # Variable.
-                                  )."$1\02 ".&wash($2)/goesx;
-                }
-            } else {
-                s/($ident)\s*\([^\)]*\)[^\{]*($|\{)/
-                    "\01".($2 eq '{' ? $itype{'function'} : $itype{'funcprot'})."$1\02 ".
-                        &wash($2)/goesx;
-                s/($ident)\s*(=.*)$/
-                    "\01".$itype{'var'}."$1\02 ".&wash($2)/goesx;
-            }
-            
-            $contents .= $_;
-        }
+	foreach (@contents) {
+	    if (!$java) {
+		s/^(\s*)(struct|enum|union|inline)/$1/;
+		
+		if (/$ident[^a-zA-Z0-9_]+$ident/) { # It takes two, baby.
+		    
+		    my $t = /^\s*typedef/s;	# Is this a type definition?
+		    
+		    s/($ident(?:\s*::\s*$ident|))	# ($1) Match the identifier
+			([\s\)]*		# ($2) Tokens allowed after identifier
+			 (\([^\)]*\)	# ($3) Function parameters?
+			  (?:\s*:[^\{]*|)	# inheritage specification (C++)
+			  |)		# No function parameters
+			 \s*($|,|\{))/	# ($4) Allowed termination chars.
+			     "\01".		# identifier marker
+				 ($t			# if type definition...
+				  ? $itype{'typedef'} # ..mark as such
+				  : ($3		# $3 is empty unless function definition.
+				     ? ($4 eq '{' 		# Terminating token indicates 
+					? $itype{'function'} 	# function or
+					: $itype{'funcprot'}) # function prototype.
+					  : $itype{'var'}) 	# Variable.
+				  )."$1\02 ".&wash($2)/goesx;
+		}
+	    } else {
+		s/($ident)\s*\([^\)]*\)[^\{]*($|\{)/
+		    "\01".($2 eq '{' ? $itype{'function'} : $itype{'funcprot'})."$1\02 ".
+			&wash($2)/goesx;
+		s/($ident)\s*(=.*)$/
+		    "\01".$itype{'var'}."$1\02 ".&wash($2)/goesx;
+	    }
+	    
+	    $contents .= $_;
+	}
 
-        my $l = 0; 
-        foreach ($contents =~ /^(.*)/gm) {
-            $l++;
-            while (/\01(.)(?:(.+?)\s*::\s*|)($ident)\02/go) {
+	my $l = 0; 
+	foreach ($contents =~ /^(.*)/gm) {
+	    $l++;
+	    while (/\01(.)(?:(.+?)\s*::\s*|)($ident)\02/go) {
                 $xref{$3} .= "$1$fnum:$l".($2 ? ":$2" : "")."\t";
-                $defs++;
-            }
-        }
+		$defs++;
+	    }
+	}
     }
 
     # Remove reserved from xref
     foreach (@reserved) {
-        delete($xref{$_});
+	delete($xref{$_});
     }
 
     $totaldefs = $totaldefs + $defs;
     print(STDERR 
-          "Completed pass 1 C/C++ (",(time-$start),"s):",
-          " $defs definitions found (total found so far: $totaldefs).\n\n");
-}        
+	  "Completed pass 1 C/C++ (",(time-$start),"s):",
+	  " $defs definitions found (total found so far: $totaldefs).\n\n");
+}	
 
 
 sub findusagePL {
@@ -733,47 +751,47 @@ sub findusagePL {
     my $curfnum = 0;
 
     foreach $f (@plfiles) {
-        $f =~ s/^$realpath//o;
+	$f =~ s/^$realpath//o;
         ++$fnum;
         ++$curfnum;
 
-        my $lcount = 0;
-        my %tref = ();
+	my $lcount = 0;
+	my %tref = ();
 
-        open(SRCFILE, $realpath.$f);
-        $_ = $/; undef($/); my $contents = <SRCFILE>; $/ = $_;
-        close(SRCFILE);
+	open(SRCFILE, $realpath.$f);
+	$_ = $/; undef($/); my $contents = <SRCFILE>; $/ = $_;
+	close(SRCFILE);
 
-        print(STDERR 
-              "(Pass 2 Perl) $f (",length($contents),
+	print(STDERR 
+	      "(Pass 2 Perl) $f (",length($contents),
               "), file $curfnum of ",$#plfiles+1,"...\n");
 
         # Remove comments.
         $contents =~ s/^\s=(?:\w+)\n(.*?)=cut/&wash($1)/ges; # Perl Pod
         $contents =~ s/\#[^\n]*//g; # Perl Comment
 
-        # FIXME: "var"
+	# FIXME: "var"
 
-        my @lines = split(/\n/, $contents);
-        my $line;
+	my @lines = split(/\n/, $contents);
+	my $line;
 
-        foreach $line (@lines) {
-            $lcount++;
-            foreach ($line =~ /(?:^|[^a-zA-Z_\#]|$plidentp)($ident)\b/og) {
-                $tref{$_} .= "$lcount," if $xref{$_};
-            }
-        }
+	foreach $line (@lines) {
+	    $lcount++;
+	    foreach ($line =~ /(?:^|[^a-zA-Z_\#]|$plidentp)($ident)\b/og) {
+		$tref{$_} .= "$lcount," if $xref{$_};
+	    }
+	}
 
-        while (($a, $b) = each(%tref)) {
-            chop($b);
-            $xref{$a} .= "R$fnum:$b\t";
-            $refs++;
-        }
+	while (($a, $b) = each(%tref)) {
+	    chop($b);
+	    $xref{$a} .= "R$fnum:$b\t";
+	    $refs++;
+	}
     }
     $totalrefs = $totalrefs + $refs;
     print(STDERR 
-          "Completed pass 2 (",(time-$start),"s):",
-          "$refs references to known identifiers found (total: $totalrefs).\n\n");
+	  "Completed pass 2 (",(time-$start),"s):",
+	  "$refs references to known identifiers found (total: $totalrefs).\n\n");
 }
 
 sub findusageJS {
@@ -784,46 +802,46 @@ sub findusageJS {
     my $f;
 
     foreach $f (@jsfiles) {
-        $f =~ s/^$realpath//o;
-        $fnum++;
-        my $lcount = 0;
-        my %tref = ();
+	$f =~ s/^$realpath//o;
+	$fnum++;
+	my $lcount = 0;
+	my %tref = ();
 
-        open(SRCFILE, $realpath.$f);
-        $_ = $/; undef($/); my $contents = <SRCFILE>; $/ = $_;
-        close(SRCFILE);
+	open(SRCFILE, $realpath.$f);
+	$_ = $/; undef($/); my $contents = <SRCFILE>; $/ = $_;
+	close(SRCFILE);
 
-        print(STDERR 
-              "(Pass 2 JS) $f (",length($contents),
+	print(STDERR 
+	      "(Pass 2 JS) $f (",length($contents),
               "), file $fnum of ",$#jsfiles+1,"...\n");
 
-        # Remove comments
-        $contents =~ s/\/\*(.*?)\*\//&wash($1)/ges; 
-        $contents =~ s/\/\/[^\n]*//g;
+	# Remove comments
+	$contents =~ s/\/\*(.*?)\*\//&wash($1)/ges; 
+	$contents =~ s/\/\/[^\n]*//g;
 
 
-        # FIXME: "var"
+	# FIXME: "var"
 
-        my @lines = split(/\n/, $contents);
-        my $line;
+	my @lines = split(/\n/, $contents);
+	my $line;
 
-        foreach $line (@lines) {
-            $lcount++;
-            foreach ($line =~ /(?:^|[^a-zA-Z_\#])($ident)\b/og) {
-                $tref{$_} .= "$lcount," if $xref{$_};
-            }
-        }
+	foreach $line (@lines) {
+	    $lcount++;
+	    foreach ($line =~ /(?:^|[^a-zA-Z_\#])($ident)\b/og) {
+		$tref{$_} .= "$lcount," if $xref{$_};
+	    }
+	}
 
-        while (($a, $b) = each(%tref)) {
-            chop($b);
-            $xref{$a} .= "R$fnum:$b\t";
-            $refs++;
-        }
+	while (($a, $b) = each(%tref)) {
+	    chop($b);
+	    $xref{$a} .= "R$fnum:$b\t";
+	    $refs++;
+	}
     }
     $totalrefs = $totalrefs + $refs;
     print(STDERR 
-          "Completed pass 2 (",(time-$start),"s):",
-          "$refs references to known identifiers found (total: $totalrefs).\n\n");
+	  "Completed pass 2 (",(time-$start),"s):",
+	  "$refs references to known identifiers found (total: $totalrefs).\n\n");
 }
 
 sub findusageIDL {
@@ -890,49 +908,49 @@ sub findusage {
     my $curfnum = 0;
 
     foreach $f (@f) {
-        $f =~ s/^$realpath//o;
+	$f =~ s/^$realpath//o;
         ++$fnum;
         ++$curfnum;
-        my $lcount = 0;
-        my %tref = ();
+	my $lcount = 0;
+	my %tref = ();
 
-        open(SRCFILE, $realpath.$f);
-        $_ = $/; undef($/); my $contents = <SRCFILE>; $/ = $_;
-        close(SRCFILE);
+	open(SRCFILE, $realpath.$f);
+	$_ = $/; undef($/); my $contents = <SRCFILE>; $/ = $_;
+	close(SRCFILE);
 
-        print(STDERR 
-              "(Pass 2 C/C++) $f (",length($contents),
+	print(STDERR 
+	      "(Pass 2 C/C++) $f (",length($contents),
               "), file $curfnum of ",$#f+1,"...\n");
 
-        # Remove comments
-        $contents =~ s/\/\*(.*?)\*\//&wash($1)/ges; 
-        $contents =~ s/\/\/[^\n]*//g;
+	# Remove comments
+	$contents =~ s/\/\*(.*?)\*\//&wash($1)/ges; 
+	$contents =~ s/\/\/[^\n]*//g;
 
-        # Remove include statements
-        $contents =~ s/^[ \t]*\#include[ \t]+[^\n]*//gm;
+	# Remove include statements
+	$contents =~ s/^[ \t]*\#include[ \t]+[^\n]*//gm;
 
-        # FIXME: "var"
+	# FIXME: "var"
 
-        my @lines = split(/\n/, $contents);
-        my $line;
+	my @lines = split(/\n/, $contents);
+	my $line;
 
-        foreach $line (@lines) {
-            $lcount++;
-            foreach ($line =~ /(?:^|[^a-zA-Z_\#])($ident)\b/og) {
-                $tref{$_} .= "$lcount," if $xref{$_};
-            }
-        }
+	foreach $line (@lines) {
+	    $lcount++;
+	    foreach ($line =~ /(?:^|[^a-zA-Z_\#])($ident)\b/og) {
+		$tref{$_} .= "$lcount," if $xref{$_};
+	    }
+	}
 
-        while (($a, $b) = each(%tref)) {
-            chop($b);
-            $xref{$a} .= "R$fnum:$b\t";
-            $refs++;
-        }
+	while (($a, $b) = each(%tref)) {
+	    chop($b);
+	    $xref{$a} .= "R$fnum:$b\t";
+	    $refs++;
+	}
     }
     $totalrefs = $totalrefs + $refs;
     print(STDERR 
-          "Completed pass 2 C/C++ (",(time-$start),"s):",
-          "$refs references to known identifiers found (total: $totalrefs).\n\n");
+	  "Completed pass 2 C/C++ (",(time-$start),"s):",
+	  "$refs references to known identifiers found (total: $totalrefs).\n\n");
 }
 
 
@@ -943,25 +961,25 @@ sub dumpdb {
     my %xrefdb;
 
     tie (%xrefdb, "DB_File" , "xref.out.$$", O_RDWR|O_CREAT, 0664, $DB_HASH)
-        || die("Could not open \"xref\" for writing");
+	|| die("Could not open \"xref\" for writing");
 
     my $i = 0;
     my $k;
     my $v;
     while (($k, $v) = each(%xref)) {
-        $i++;
-        delete($xref{$k});
-        $xrefdb{$k} = $v;
-        unless ($i % 100) {
-            print(STDERR "(Pass 3) identifier $i of maximum $totaldefs...\n");
-        }
+	$i++;
+	delete($xref{$k});
+	$xrefdb{$k} = $v;
+	unless ($i % 100) {
+	    print(STDERR "(Pass 3) identifier $i of maximum $totaldefs...\n");
+	}
     }
 
     untie(%xrefdb);
     rename("xref.out.$$", "xref") || die "Couldn't rename xref.out.$$ to xref";
     print(STDERR 
-          "Completed pass 3 (",(time-$start),"s):",
-          "Information on $i identifiers dumped to disk.\n\n");
+	  "Completed pass 3 (",(time-$start),"s):",
+	  "Information on $i identifiers dumped to disk.\n\n");
 }
 
 
@@ -981,7 +999,7 @@ while (<FILES>) {
     }
     if (/\.(hh?|cpp?|cc?|java)$/i) {
         push(@ft, ($1 eq 'java')?1:0);
-        push(@f, $_);
+	push(@f, $_);
     }
     if (/\.(?:js)$/i) {
         push(@jsfiles, $_);

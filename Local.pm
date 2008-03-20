@@ -15,13 +15,12 @@ package Local;
 require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw(&fdescexpand &descexpand &dirdesc &convertwhitespace
-             &bonsaihost &beginbonsai  &endbonsai
-             &trachost   &begintrac    &endtrac
-             &beginviewcvs &endviewcvs
+             &localexpandtemplate
             );
 
 use lib 'lib';
 use LXR::Common;
+use File::Glob qw(bsd_glob :globally :nocase);
 
 # dme: Create descriptions for a file in a directory listing
 # If no description, return the string "\&nbsp\;" to keep the
@@ -239,10 +238,19 @@ sub descexpand {
     # passing parameters impossible. Use $filename from source and
     # $Path from Common.pm
     my $filename = $main::filename;
+    $filename .= '/' unless $filename =~ m{/$};
     my $linecount=0;
     local $desc= "";
 
-    if (open(DESC, $Path->{'real'}. $filename."/README.html")) {
+    my $readmefile = $Path->{'real'}. $filename. 'README{.html,.htm,}';
+    my @readmes = bsd_glob($readmefile);
+    my $readme;
+    foreach (@readmes) {
+    next unless -f;
+    $readme = $_;
+    last;
+    }
+    if ($readme =~ /\.html?$/ && open(DESC, $readme)) {
         undef $/;
         $desc = <DESC>;
         $/ = "\n";
@@ -287,16 +295,18 @@ sub descexpand {
         }
         close(FILE);
     }
-    if (!$desc && open(FILE, $rpath.$filename.'debian/control')) {
-        my $line;
-        while ($line = <FILE>) {
-            if ($line =~ /^Description:\s*(.*)/) {
-                $desc = $1;
-                last;
-            }
-            next if /^\w+:/;
-            $desc .= $line;
-        }
+    $desc ||= descdebcontrol2($rpath, $Path->{'virt'}, $filename, 0);
+# git would be one of the following, but it doesn't work
+# because the file {git}/description or {git}/.git/description
+# doesn't seem to actually appear in checkouts...
+=broken
+    if (!$desc && open(FILE, $rpath.$filename.'description')) {
+        $desc = <FILE>;
+        close(FILE);
+    }
+=cut
+    if (!$desc && open(FILE, $rpath.$filename.'README')) {
+        $desc = <FILE>;
         close(FILE);
     }
 
@@ -329,18 +339,19 @@ sub dirdesc {
     }
     if (-f $rpath."/README" ||
         -f $rpath."/ReadMe") {
-        descreadme($path);
-    } elsif (-f $rpath."/README.html") {
-        descreadmehtml($path);
-    } elsif (-f $rpath."/debian/control") {
-        descdebcontrol($path);
+        return if descreadme($path);
+    }
+    if (-f $rpath."/README.html") {
+        return if descreadmehtml($path);
+    }
+    if (-f $rpath."/debian/control") {
+        return if descdebcontrol($path);
     }
 }
 
 sub deschtmlfilesfolder {
     my ($path) = @_;
     my $rpath = $Path->{'real'};
-    my $file = undef;
     my $base = $rpath;
     # chomp off the directory special bit
     $base =~ s{_files/}{};
@@ -380,13 +391,19 @@ sub deschtmlfilesfolder {
 }
 
 sub descreadmehtml {
-    my ($path) = @_;
+    my ($path, $readme) = @_;
 
     my $string = ""; 
-
-    if (!(open(DESC, $Path->{'real'}."/README.html"))) {
+    my $readmefile = $Path->{'real'}. 'README{.html,.htm}';
+    my @readmes = bsd_glob($readmefile);
+    foreach (@readmes) {
+        next unless -f;
+        $readme = $_;
+        last;
+    }
+    if (!$readme || !open(DESC, $readme)) {
 	return;
-        }
+    }
     undef $/;
     $string = <DESC>;
     $/ = "\n";
@@ -402,15 +419,29 @@ sub descreadmehtml {
     # spans within the description.
     if ($string =~ /<SPAN CLASS=\"?LXRLONGDESC\"?>(.*?<SPAN CLASS=\"?LXRSHORTDESC\"?>.*?<\/SPAN>.*?)<\/SPAN>/is) {
         $long = $1;
-        if (!($long =~ /<span.*?\<span/is)) {
-            print($long . "<P>\nSEE ALSO: <A HREF=\"README.html\">README</A>\n");
+        if (!($long =~ m{<span.*?</span}is)) {
+            $long .= "<P>\nSEE ALSO: ./README.html\n";
         }
-    } elsif ($string =~ /<SPAN CLASS=\"?LXRLONGDESC\"?>(.*?)<\/SPAN>/is) {
+    } elsif ($string =~ m{<SPAN CLASS=['"]?LXRLONGDESC['"]?>(.*?)</SPAN>}is) {
         $long = $1;
-        if (!($long =~ /\<span/is)) {
-            print($long . "<P>\nSEE ALSO: <A HREF=\"README.html\">README</A>\n");
+        if (!($long =~ m{<span}is)) {
+            $long .= "<P>\nSEE ALSO: ./README.html\n";
         }
+    } elsif ($string =~ m{<pre>(.*?)</pre>}is) {
+        $long = $1;
+        $long =~ s{^\s*$}{}g;
+        $long =~ s/\n{2,}/\n/sg;
+        $long =~ s{^((?:[^\n]*\n){1,10})(.*)$}{$1}s;
+        $long = "<pre>" . $long;
+	if ($2) {
+            $readme =~ s{^.*/}{./};
+            $long .= "<P>SEE ALSO: $readme\n";
+        }
+        $long .= "\n</pre>";
     }
+    return 0 unless $long;
+    print $long;
+    return 1;
 }
 
 sub descreadme {
@@ -462,7 +493,6 @@ sub descreadme {
     $_ = $string;
     $count = tr/\n//;
 
-    print "<pre>\n";
     # If the file is small there's not much use splitting it up.
     # Just print it all
     if ($count > $maxlines) {
@@ -501,7 +531,7 @@ sub descreadme {
         if ($string =~ /SEE ALSO/) {
             $string = $string . ", README";
         } else {
-            $string = $string . "\n\nSEE ALSO: README";
+            $string = $string . "\n\nSEE ALSO: ./README";
         }
     }
 
@@ -513,7 +543,7 @@ sub descreadme {
     $string =~ s/\s*\n$//gs;
     chomp($string);
 
-    print($string . "</pre>\n<p>\n");
+    print("<pre>\n" . $string . "</pre>\n<p>\n");
 }
 
 sub descdebcontrol {
@@ -533,6 +563,7 @@ sub descdebcontrol {
         $string .= $line;
     }
     close(DESC);
+    my $string = descdebcontrol2($Path->{'real'}, $Path->{'virt'}, './', 1); 
     chomp($string);
     $string = markupstring($string, $Path->{'virt'});
     $string = convertwhitespace($string);
@@ -541,7 +572,47 @@ sub descdebcontrol {
     $string =~ s/\s*\n$//gs;
     chomp($string);
 
-    print($string . "</pre>\n<p>\n");
+    print("<pre>" . $string . "</pre>\n<p>\n");
+}
+
+sub descdebcontrol2 {
+    my $line;
+    my $package;
+    my %collection;
+    my %descriptions;
+    my ($rpath, $directory, $filename, $multiline) = @_;
+    return '' unless open(FILE, $rpath.$filename.'debian/control');
+    while ($filename eq '../') {
+        $directory =~ m{^(.*)/+([^/]+)};
+        ($directory, $filename) = ($1, $2.'/');
+    }
+    $directory =~ s{/+$}{};
+    $directory =~ s{^.*/}{};
+    while ($line = <FILE>) {
+    restart:
+        next unless $line =~ /^(Source|Package|Description):\s*(.*)\s*$/;
+        my ($kind, $value) = ($1, $2);
+        $collection{$kind} = $value;
+        $package ||= $value if $kind eq 'Package';
+        next unless $kind eq 'Description';
+        if ($multiline) {
+            my $accum;
+            while ($line = <FILE>) {
+                last unless $line =~ /\S/;
+                last if $line =~ /^\w+:/;
+                $accum .= "\n$line";
+            }
+            $value = $accum if $accum =~ /\S/;
+        }
+        $descriptions{$collection{'Package'}} = $value;
+        if ($multiline) {
+            goto restart if $line =~ /^\w+:/;
+        }
+    }
+    close(FILE);
+    return $descriptions{$collection{Source}}
+        || $descriptions{$directory}
+        || $descriptions{$package};
 }
 
 sub readman {
@@ -559,7 +630,7 @@ sub descmanfile {
         return;
     }
 
-    my $line, $string = undef;
+    my ($line, $string);
     while ($line = readman()) {
         if ($line =~ m{^\.so (?:man\d+\.*/|)(.*)$}) {
             my $file = $1;
@@ -629,6 +700,25 @@ sub endskip
 ';
 }
 
+sub localexpandtemplate
+{
+    my $template = shift;
+    return LXR::Common::expandtemplate($template,
+                          ('bonsaihost',        \&bonsaihost),
+                          ('beginbonsai',       \&beginbonsai),
+                          ('endbonsai',         \&endbonsai),
+                          ('trachost',          \&trachost),
+                          ('begintrac',         \&begintrac),
+                          ('endtrac',           \&endtrac),
+                          ('viewvctail',        \&viewvctail),
+                          ('viewvchost',        \&viewvchost),
+                          ('beginviewvc',       \&beginviewvc),
+                          ('endviewvc',         \&endviewvc),
+                          ('websvnhost',        \&websvnhost),
+                          ('beginwebsvn',       \&beginwebsvn),
+                          ('endwebsvn',         \&endwebsvn));
+};
+
 sub bonsaihost
 {
     my $cvsrootfile = $Path->{'real'}.'/CVS/Root';
@@ -662,31 +752,65 @@ sub endbonsai
 sub trachost
 {
     my $trac_not_found = 'http://error.trac-not-found.tld/ '.$Path->{'svnrepo'};
+    return 'https://projects.maemo.org/trac' if $Path->{'svnrepo'} =~ /projects\.maemo\.org/;
     return 'http://publicsvn.songbirdnest.com/trac' if $Path->{'svnrepo'} =~ /songbird/;
     return 'http://trac.webkit.org/projects/webkit' if $Path->{'svnrepo'} =~ /webkit/;
+    return 'http://svn-mirror.flock.com/trac/flock' if $Path->{'svnrepo'} =~ /flock/;
     return $trac_not_found;
 }
 
 sub begintrac
 {
-    return &beginskip unless $Path->{'svnrepo'} =~ /songbird|webkit/;
+    return &beginskip unless $Path->{'svnrepo'} =~ /flock|songbird|webkit/;
     return '';
 }
 
 sub endtrac
 {
-    return &endskip unless $Path->{'svnrepo'} =~ /songbird|webkit/;
+    return &endskip unless $Path->{'svnrepo'} =~ /flock|songbird|webkit/;
     return '';
 }
 
-sub beginviewcvs
+sub viewvctail
 {
-    return &beginskip unless $Path->{'svnrepo'} =~ /stage/;
+    if ($Path->{'svnrepo'} =~ m{\Qgarage.maemo.org/svn/\E([^/]+)}) {
+        return "?root=$1";
+    }
+    return '?';
+}
+
+sub viewvchost
+{
+    return 'https://garage.maemo.org/plugins/scmsvn/viewcvs.php' if $Path->{'svnrepo'} =~ /garage/;
+    return 'https://stage.maemo.org/viewcvs.cgi/maemo' if $Path->{'svnrepo'} =~ /stage/;
     return '';
 }
 
-sub endviewcvs
+sub beginviewvc
 {
-    return &endskip unless $Path->{'svnrepo'} =~ /stage/;
+    return &beginskip unless $Path->{'svnrepo'} =~ /stage|garage/;
+    return '';
+}
+
+sub endviewvc
+{
+    return &endskip unless $Path->{'svnrepo'} =~ /stage|garage/;
+    return '';
+}
+
+sub websvnhost
+{
+    return '';
+}
+
+sub beginwebsvn
+{
+    return &beginskip unless 0;
+    return '';
+}
+
+sub endwebsvn
+{
+    return &endskip unless 0;
     return '';
 }

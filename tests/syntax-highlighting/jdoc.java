@@ -34,5 +34,3 @@ public interface IMXRTestSupports {
    */
   void QueryInterface(nsid interface_id, [out,QIResult] out_result);
 }
-
-

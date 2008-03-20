@@ -3,6 +3,7 @@ use Test;
 require 'foo.pl';
 require'foo.pl';
 require"foo.pl";
+import syntax-highlighting::TestCase;
 
 var number = 1;
 var regexp = /this/;

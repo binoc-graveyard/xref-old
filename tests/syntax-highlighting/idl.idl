@@ -1,3 +1,6 @@
 interface idl
 {
+readonly attribute long eemp;
+attribute long meep;
+nsISupports peem();
 };

@@ -6,6 +6,3 @@ allow from 127.0.0.1
 </Files>
 DirectoryIndex index.cgi
 Options +ExecCGI +FollowSymlinks
-<Files favicon.ico>
-  ForceType image/png
-</Files>

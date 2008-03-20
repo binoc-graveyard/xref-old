@@ -3,7 +3,7 @@ use lib 'lib';
 use LXR::Common;
 use LXR::Config;
 
-($Conf, $HTTP, $Path, $head) = &init($0);
+($Conf, undef, $Path, $head) = &init($0);
 print "$head
 ";
 
@@ -12,7 +12,7 @@ print "$head
 # http://landfill.mozilla.org/mxr-test/
 # http://mxr-test.landfill.bugzilla.org/
 
-my $myserver = $ENV{'HTTP_HOST'} || $ENV{'SERVER_NAME'}; 
+my $myserver = $ENV{'HTTP_HOST'} || $ENV{'SERVER_NAME'};
 my $depth = ($myserver =~ /[lm]xr.*\./) ? 2 : 3;
 if ($ENV{SCRIPT_NAME}=~m%(?:/[^/]+){$depth,}%) {
 open INDEX, "<index.html";

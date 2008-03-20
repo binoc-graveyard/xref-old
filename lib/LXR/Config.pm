@@ -131,7 +131,12 @@ sub _initialize {
     my ($dir, $arg);
 
     unless ($conf) {
-	($conf = $0) =~ s#/[^/]+$#/#;
+        $conf = $0;
+        if ($conf =~ m{/}) {
+            $conf =~ s#/[^/]+$#/#;
+        } else {
+            $conf = './';
+        }
 	$conf .= $confname;
     }
     
@@ -145,7 +150,7 @@ sub _initialize {
 	if (($dir, $arg) = /^\s*(\S+):\s*(.*)/) {
 	    if ($dir eq 'variable') {
 		@args = &parseconf($arg);
-		if (@args[0]) {
+		if ($args[0]) {
 		    $self->{vardescr}->{$args[0]} = $args[1];
 		    push(@{$self->{variables}},$args[0]);
 		    $self->{varrange}->{$args[0]} = [split(/\0/,$args[2])];
@@ -157,6 +162,7 @@ sub _initialize {
 		}
 	    } elsif ($dir eq 'sourceroot' ||
                      $dir eq 'sourceprefix' ||
+		     $dir eq 'sourceoverlay' ||
 		     $dir eq 'srcrootname' ||
                      $dir eq 'virtroot' ||
 		     $dir eq 'baseurl' ||
