@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 # $Id: source,v 1.18 2006/12/07 04:59:38 reed%reedloden.com Exp $
-# source --	Present sourcecode as html, complete with references
+# source --        Present sourcecode as html, complete with references
 #
-#	Arne Georg Gleditsch <argggh@ifi.uio.no>
-#	Per Kristian Gjermshus <pergj@ifi.uio.no>
+#        Arne Georg Gleditsch <argggh@ifi.uio.no>
+#        Per Kristian Gjermshus <pergj@ifi.uio.no>
 #
 #
 # This program is free software; you can redistribute it and/or modify
@@ -22,8 +22,8 @@
 
 ######################################################################
 
+use lib 'lib';
 use Local;
-use lib 'lib/';
 use SimpleParse;
 use LXR::Common;
 use LXR::Config;
@@ -32,21 +32,27 @@ use File::Basename;
 sub diricon {
     my $img, $link;
     if ($filename eq '..') {
-	$img = "/icons/back.gif";
-	$link = $parentdir;
+        $img = "/icons/back.gif";
+        $link = $parentdir;
     } else {
-#	$img = "/icons/folder.gif";
-	$img = "internal-gopher-menu";
-	$link = $Path->{'virt'}.$filename;
+        my $dir =  $Path->{'real'}.$filename;
+        $dir =~ s#/$##;
+        if (-l $dir) {
+            $img = "/icons/forward.gif";
+        } else {
+            $img = "/icons/folder.gif";
+#            $img = "internal-gopher-menu";
+        }
+        $link = $Path->{'virt'}.$filename;
     }
     return(&fileref("<IMG ALIGN=ABSBOTTOM BORDER=0 SRC=\"$img\">", $link));
 }
 
 sub dirname {
     if ($filename eq '..') {
-	return(&fileref("Parent directory", $parentdir));
+        return(&fileref("Parent directory", $parentdir));
     } else {
-	return(&fileref($filename, $Path->{'virt'}.$filename));
+        return(&fileref($filename, $Path->{'virt'}.$filename));
     }
 }
 
@@ -55,24 +61,35 @@ sub fileicon {
     my $img;
 
     if ($filename =~ /^.*\.[ch]$/) {
-#	$img = "/icons/c.gif";
-	$img = "internal-gopher-text";
+        $img = "/icons/c.gif";
+#        $img = "internal-gopher-text";
     } elsif ($filename =~ /^.*\.(idl|cpp?|cc|java)$/) {
-	# TODO: Find a nice icon for c++ files (KDE?)
-#	$img = "/icons/c.gif";
-	$img = "internal-gopher-text";
-    } else {		
-#	$img = "/icons/text.gif";
-	$img = "internal-gopher-unknown";
+        # TODO: Find a nice icon for c++ files (KDE?)
+        $img = "/icons/c.gif";
+#        $img = "internal-gopher-text";
+    } elsif ($filename =~ /^.*\.(gif|p?jpe?g|[jpm][nm]g)$/) {
+        $img = "/icons/image2.gif";
+        my $s = (-s $Path->{'real'}.$filename);
+        if ($s < 10<<10) {
+            $img = $filename;
+        }
+    } else {                
+        $img = "/icons/text.gif";
+#        $img = "internal-gopher-unknown";
     }
 
     return(&fileref("<IMG ALIGN=ABSBOTTOM BORDER=0 SRC=\"$img\">",
-		    $Path->{'virt'}.$filename));
+                    $Path->{'virt'}.$filename));
 }
 
 
 sub filename {
-    return(&fileref($filename, $Path->{'virt'}.$filename));
+    my $string =
+        &fileref($filename, $Path->{'virt'}.$filename);
+    if (isHTML($filename) || isCSS($filename)) {
+        $string =~ s/(a href=".*)(")/$1?force=1$2/g;
+    }
+    return $string;
 }
 
 
@@ -81,19 +98,19 @@ sub filesize {
     my $s = (-s $Path->{'real'}.$filename);
     my $str;
     if ($s < 1<<10) {
-	$str = "$s";
+        $str = "$s";
     } else {
-#	if ($s < 1<<20) {
-	    $str = ($s>>10) . "k";
-#	} else {
-#	    $str = ($s>>20) . "M";
-#	}
+#        if ($s < 1<<20) {
+            $str = ($s>>10) . "k";
+#        } else {
+#            $str = ($s>>20) . "M";
+#        }
     }
     return(&expandtemplate($templ,
-			   ('bytes',	sub {return($str)}),
-			   ('kbytes',	sub {return($str)}),
-			   ('mbytes',	sub {return($str)})
-			   ));
+                           ('bytes',        sub {return($str)}),
+                           ('kbytes',        sub {return($str)}),
+                           ('mbytes',        sub {return($str)})
+                           ));
 }
 
 
@@ -105,7 +122,7 @@ sub modtime {
     my @t = gmtime($file_time);
 
     my @months = ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
     my ($sec, $min, $hour, $mday, $mon, $year) = @t;
     $year += 1900;
     $mon = $months[$mon];
@@ -114,16 +131,16 @@ sub modtime {
     my $six_months = $one_hour * 24 * int(365/2);
 
     if ($file_time <= ($current_time - $six_months) ||
-	$file_time >= ($current_time + $one_hour)) {
-	return sprintf("%s %2d  %04d", $mon, $mday, $year);
+        $file_time >= ($current_time + $one_hour)) {
+        return sprintf("%s %2d  %04d", $mon, $mday, $year);
     } else {
-	return sprintf("%s %2d %02d:%02d", $mon, $mday, $hour, $min);
+        return sprintf("%s %2d %02d:%02d", $mon, $mday, $hour, $min);
     }
 }
 
 sub bgcolor {
     if (!($line % 3)) {
-	$color = ($color eq "#EEEEEE")? "#FFFFFF": "#EEEEEE";
+        $color = ($color eq "#EEEEEE")? "#FFFFFF": "#EEEEEE";
     }
     return($color);
 }
@@ -140,26 +157,26 @@ sub direxpand {
     my $realpath = $Path->{'real'};
 
     foreach $filename (@dirs) {
-	$line++;
-	$direx .= &expandtemplate($templ,
-	    ('iconlink',		\&diricon),
-	    ('namelink',		\&dirname),
-	    ('filesize',		sub {return('-')}),
-	    ('modtime',		\&modtime),
-	    ('bgcolor',		\&bgcolor),
-	    ('description',	\&descexpand));
+        $line++;
+        $direx .= &expandtemplate($templ,
+            ('iconlink',                \&diricon),
+            ('namelink',                \&dirname),
+            ('filesize',                sub {return('-')}),
+            ('modtime',                \&modtime),
+            ('bgcolor',                \&bgcolor),
+            ('description',        \&descexpand));
     }
-	
+        
     foreach $filename (@files) {
-	$line++;
-	next if $filename =~ /^.*\.[oa]$|^core$|^00-INDEX$/;
-	$direx .= &expandtemplate($templ,
-	    ('iconlink',	\&fileicon),
-	    ('namelink',	\&filename),
-	    ('filesize',	\&filesize),
-	    ('modtime',		\&modtime),
-	    ('bgcolor',		\&bgcolor),
-	    ('description',	\&fdescexpand));
+        $line++;
+        next if $filename =~ /^.*\.[oa]$|^core$|^00-INDEX$/;
+        $direx .= &expandtemplate($templ,
+            ('iconlink',        \&fileicon),
+            ('namelink',        \&filename),
+            ('filesize',        \&filesize),
+            ('modtime',                \&modtime),
+            ('bgcolor',                \&bgcolor),
+            ('description',        \&fdescexpand));
     }
 
     return($direx);
@@ -173,53 +190,52 @@ sub printdir {
     local @files;
     local $parentdir;
 
-
     $template = "<ul>\n\$files{\n<li>\$iconlink \$namelink\n}</ul>\n";
     if ($Conf->htmldir) {
-	unless (open(TEMPL, $Conf->htmldir)) {
-	    &warning("Template ".$Conf->htmldir." does not exist.");
-	} else {
-	    $save = $/; undef($/);
-	    $template = <TEMPL>;
-	    $/ = $save;
-	    close(TEMPL);
-	}
+        unless (open(TEMPL, $Conf->htmldir)) {
+            &warning("Template ".$Conf->htmldir." does not exist.");
+        } else {
+            local $/;
+            $template = <TEMPL>;
+            close(TEMPL);
+        }
     }
-	
+        
     if (opendir(DIR, $Path->{'real'})) {
-	foreach $f (sort(grep/^[^\.]/,readdir(DIR))) {
-	    if ($f eq "CVS") {
-		# skip it
-	    } elsif (-d $Path->{'real'}.$f) {
-		push(@dirs,"$f/");
-	    } else {
-		push(@files,$f);
-	    }
-	}
-	closedir(DIR);
+        foreach $f (sort(grep/^[^\.]/,readdir(DIR))) {
+            if (-d $Path->{'real'}.$f) {
+                if ($f =~ /(^CVS|^\.svn|_files)$/) {
+                    #skip it
+                } else {
+                    push(@dirs,"$f/");
+                }
+            } else {
+                push(@files,$f);
+            }
+        }
+        closedir(DIR);
     } else {
-	print("<p align=center>\n<i>This directory does not exist.</i>\n");
-	if ($Path->{'real'} =~ m#(.+[^/])[/]*$#) {
-	    if (-e $1) {
-		&warning("Unable to open ".$Path->{'real'});
-	    }
-	}
-	return;
+        print("<p align=center>\n<i>This directory does not exist.</i>\n");
+        if ($Path->{'real'} =~ m#(.+[^/])[/]*$#) {
+            if (-e $1) {
+                &warning("Unable to open ".$Path->{'real'});
+            }
+        }
+        return;
     }
- 
+
     if (-f $Path->{'real'}."00-INDEX") {
-	open(INDEX,$Path->{'real'}."00-INDEX") ||
-	    &warning("Existing \"00-INDEX\" could not be opened.");
-	$save = $/; undef($/);
-	$index = <INDEX>;
-	$/ = $save;
-	
-	%index = $index =~ /\n(\S*)\s*\n\t-\s*([^\n]*)/gs;
+        open(INDEX,$Path->{'real'}."00-INDEX") ||
+            &warning("Existing \"00-INDEX\" could not be opened.");
+        local $/;
+        $index = <INDEX>;
+        
+        %index = $index =~ /\n(\S*)\s*\n\t-\s*([^\n]*)/gs;
     }
 
     if ($Path->{'virt'} =~ m#^(.*/)[^/]*/$#) {
-	$parentdir = $1;
-	unshift(@dirs, '..');
+        $parentdir = $1;
+        unshift(@dirs, '..');
     }
 
     # print the description of the current directory
@@ -227,80 +243,204 @@ sub printdir {
 
     #print the listing itself
     print(&expandtemplate($template,
-			  ('files',	\&direxpand)));
+                          ('files',        \&direxpand)));
+}
+
+sub isHTML {
+my $file = shift;
+    return ($file =~ /\.html?$/);
+}
+
+sub isCSS {
+my $file = shift;
+    return ($file =~ /stylesheet\.(css)$/) ||
+          (($file =~ /\.(css)$/) && $ENV{HTTP_ACCEPT} !~ 'text/html');
+}
+
+sub isImage {
+my $file = shift;
+    return
+          (($file =~ /\.([jmp][pnm]e?g|gif)$/) && $ENV{HTTP_ACCEPT} !~ 'text/html');
+}
+
+sub noWrap {
+my $file = shift;
+    return isHTML($file) ||
+           isImage($file) ||
+           isCSS($file);
 }
 
 sub printfile {
     my $string;
 
     unless ($Path->{'file'}) {
-	&printdir;
+        &printdir;
     } else {
-	if (open(SRCFILE, $Path->{'realf'})) {
-	    if (($Path->{'file'} =~ /\.(html)$/)) {
-		print <SRCFILE>;
-	    } elsif ($Path->{'file'} =~ /README$/i) {
-		print("<pre lang='en'>");
-		while(<SRCFILE>) {
-            	    $string = $string . $_;
-        	}
-                print(markupstring($string, $Path->{'virt'}));
-		print("</pre>");
-	    } else {
-	        if (($Path->{'file'} =~ /nsI\w*\.idl$/)) {
-	          my $base = basename($Path->{'file'}, ".idl"); 
-                  my $dir = $Path->{'virt'};
-                  $dir =~ s#([^/]+)(.*)#$1#;
-                  my $doxRoot = "http://unstable.elemental.com/mozilla/build/latest/mozilla/" . $dir . "/dox/";
-                  print("<P>Inheritance diagram for " . $base . ":</P>\n");
-                  print("<P ALIGN=\"CENTER\">\n");
-                  print("<IMG SRC=\"" . $doxRoot . "interface" . $base . "__inherit__graph.gif\"");
-		  print(" ALIGN=\"CENTER\" BORDER=\"0\" ALT=\"Inheritance graph\">\n");
-                  print("</P>\n");
-                  print("<P>Collaboration diagram for " . $base . ":</P>\n");
-                  print("<P ALIGN=\"CENTER\">\n");
-                  print("<IMG SRC=\"" . $doxRoot . "interface" . $base . "__coll__graph.gif\"");
-		  print(" ALIGN=\"CENTER\" BORDER=\"0\" ALT=\"Collaboration graph\">\n");
-                  print("</P>\n");
-                  print("<P ALIGN=\"CENTER\">\n");
-                  print("[ <A HREF=\"" .$doxRoot . "interface" . $base . ".html\">\n");
-                  print("<I>" . $base . "</I> Interface Reference</A> |");
-                  print(" <a href=\"" . $doxRoot . "graph_legend.html\">Graph Legend</a> ]\n");
-                  print("</P>\n");
+        if (open(SRCFILE, $Path->{'realf'})) {
+            if (isHTML($Path->{'file'})) {
+                local $/ = undef;
+                print <SRCFILE>;
+            } elsif (isCSS($Path->{'file'})) {
+$head = "Content-Type: text/css\r\n\r\n";
+                print $head;
+                local $/ = undef;
+my $body = <SRCFILE>;
+                print $body;
+            } elsif (isImage($Path->{'file'})) {
+                my $kind = 'x-unknown';
+                $kind = 'jpeg' if $Path->{'file'} =~ /\.jpe?g$/;
+                $kind = 'gif' if $Path->{'file'} =~ /\.gif$/; 
+                $kind = 'png' if $Path->{'file'} =~ /\.[jp]ng$/;
+                print 
+$head = "Content-Type: image/$kind\r\n\r\n";
+                local $/ = undef;
+my $body = <SRCFILE>;
+                print $body;
+            } elsif ($Path->{'file'} =~ /README$/i) {
+                print("<pre lang='en'>");
+                while(<SRCFILE>) {
+                        $string = $string . $_;
                 }
-		print("<pre lang='en'>");
-		&markupfile(\*SRCFILE, $Path->{'virt'}, $Path->{'file'},
+                print(markupstring($string, $Path->{'virt'}));
+                print("</pre>");
+            } else {
+                if (($Path->{'file'} =~ /nsI\w*\.idl$/)) {
+                  my $base = basename($Path->{'file'}, ".idl"); 
+                  my $dir = $Path->{'virt'};
+                  $dir =~ s#^/([^/]+)(.*)#$1#;
+                  my $doxRoot = "http://unstable.elemental.com/mozilla/build/latest/mozilla/" . $dir . "/dox/";
+                  print("<p>Inheritance diagram for " . $base . ":</P>\n");
+                  print("<p align=\"center\">\n");
+                  print("<img src=\"" . $doxRoot . "interface" . $base . "__inherit__graph.gif\"");
+                  print(" align=\"center\" border=\"0\" alt=\"Inheritance graph\">\n");
+                  print("</p>\n");
+                  print("<p>Collaboration diagram for " . $base . ":</p>\n");
+                  print("<p align=\"center\">\n");
+                  print("<Iimg src=\"" . $doxRoot . "interface" . $base . "__coll__graph.gif\"");
+                  print(" align=\"center\" border=\"0\" alt=\"Collaboration graph\">\n");
+                  print("</p>\n");
+                  print("<p align=\"center\">\n");
+                  print("[ <a href=\"" .$doxRoot . "interface" . $base . ".html\">\n");
+                  print("<i>" . $base . "</i> Interface Reference</a> |");
+                  print(" <a href=\"" . $doxRoot . "graph_legend.htm l\">Graph Legend</a> ]\n");
+                  print("</p>\n");
+                }
+                print("<pre lang='en'>");
+                &markupfile(\*SRCFILE, $Path->{'virt'}, $Path->{'file'},
                              sub { print shift });
-		print("</pre>");
-	    }
-	    close(SRCFILE);
-	} else {
-	    print("<p align=center>\n<i>This file does not exist.</i>\n");
-	    if (-f $Path->{'real'}.$Path->{'file'}) {
-		&warning("Unable to open ".$Path->{'realf'});
-	    }
-	}
+                print("</pre>");
+            }
+            close(SRCFILE);
+        } else {
+
+            print("<p align=center>\n<i>This file does not exist.</i>\n");
+            print("<p>Maybe you can <a href='".$Conf->baseurl."/find?string=".$Path->{'file'}."'>find it elsewhere</a>.\n");
+            if (-f $Path->{'real'}.$Path->{'file'}) {
+                &warning("Unable to open ".$Path->{'realf'});
+            }
+        }
     }
 }
 
-($Conf, $HTTP, $Path) = &init($0);
+($Conf, $HTTP, $Path, $head) = &init($0);
+my $exit = 0;
+
+my $tree = $HTTP->{'param'}->{'tree'};
+if (0 && $tree && ($tree ne $Conf->{'treename'})) {
+$head .= "Refresh: 0; url=".$Conf->baseurl."../$tree/search?string=$searchtext&find=$find&filter=$filter
+";
+}
+
+#only allow access to registered roots
+#for anything else redirect to the directory containing source
+unless (defined $Path->{'root'}) {
+    #if we're accessed as source/ then we need to be a bit more directed.
+    my $path = $ENV{'PATH_INFO'};
+    $path =~ s|[^/]+||g;
+    $path =~ s{/}{../}g;
+    my $prefix = $path || './';
+    my $refresh = "Refresh: 0; url=$prefix
+";
+    $head .= "$refresh
+";
+    $exit = 1;
+}
+
+if (($ENV{'PATH_INFO'} !~ m|/$|) && (-d $Path->{'realf'})) {
+ my @dirs = split m|/|, $Path->{'realf'};
+ my $entryname = $dirs[$#dirs];
+ my $refresh = "Refresh: 0; url=$entryname/
+";
+    $head .= "$refresh
+";
+
+ $exit = 1;
+} 
 
 #if the file is html then don't print a header because the file
 #has its own -dme
-if (!($Path->{'file'} =~ /\.(html)$/)) {
+my $strange_inexplicable_check = (-f $Path->{'real'}.$Path->{'file'});
+my $skip_wrap = $Path->{'file'} && noWrap($Path->{'file'});
+print "$head
+" if (!$Path->{'file'} || isHTML($Path->{'file'}) || !$skip_wrap);
+exit if $exit;
+
+if (
+    !$skip_wrap
+   ) {
     if ($Path->{'file'}) {
-	&makeheader('source');
+        &makeheader('source');
     } else {
-	&makeheader('sourcedir');
+        &makeheader('sourcedir');
+    }
+        my @othertrees = ();
+my @treelist = @{$Conf->{'trees'}};
+foreach my $othertree (@treelist) {
+   my $otherpath = $Conf->{'treehash'}{$othertree}.'/'.$Path->{'file'};
+   push @othertrees, $othertree if -f $otherpath;
+}
+if (scalar @othertrees) {
+print (q#
+<script>
+function changetarget() {
+ var baseurl = '# . $Conf->baseurl . q#/';
+ var thistree = '# . $Conf->{'treename'} . q#/';
+ var parent = baseurl.substr(0, baseurl.length - thistree.length);
+ var path = document.location.href;
+ if (parent == path.substr(0, parent.length) &&
+     document.getElementById) {
+  path = path.substring(baseurl.length);
+  var form = document.getElementById('source');
+  var target = document.getElementById('tree');
+  var newtree = target.value + '/';
+  if (thistree != newtree)
+   document.location = parent + newtree + path;
+ }
+}
+</script>
+#);
+        print(qq{<form name='source' id='source'>view using tree:
+<select name='tree' id='tree' onchange='changetarget()'>
+});
+foreach my $othertree (@othertrees) {
+my $otherpath = $Conf->{'treehash'}{$othertree}.'/'.$Path->{'file'};
+my $default=$othertree eq $Conf->{'treename'} ? ' selected=1' : '';
+print " <option$default value='$othertree'>$othertree</option>
+";
+}
+print (qq{</select></form>
+});
     }
 }
 
 &printfile;
 
-if (!($Path->{'file'} =~ /\.(html)$/)) {
+if (
+    !$skip_wrap
+   ) {
     if ($Path->{'file'}) {
-	&makefooter('source');
+        &makefooter('source');
     } else {
-	&makefooter('sourcedir');
+        &makefooter('sourcedir');
     }
 }

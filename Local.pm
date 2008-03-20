@@ -14,9 +14,13 @@ package Local;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw(&fdescexpand &descexpand &dirdesc &convertwhitespace );
+@EXPORT = qw(&fdescexpand &descexpand &dirdesc &convertwhitespace
+             &bonsaihost &beginbonsai  &endbonsai
+             &trachost   &begintrac    &endtrac
+             &beginviewcvs &endviewcvs
+            );
 
-use lib 'lib/';
+use lib 'lib';
 use LXR::Common;
 
 # dme: Create descriptions for a file in a directory listing
@@ -32,7 +36,7 @@ use LXR::Common;
 # Berkeley copyright notice is around 40 lines long so we need a bit more 
 # than this.
 #
-# Its common for file descriptions to be delimited by the file name or
+# It's common for file descriptions to be delimited by the file name or
 # the word "Description" which precedes the description. Search the entire
 # string for these. Sometimes they're put in odd places such as inside
 # the copyright notice or after the code begins. The file name should be
@@ -59,33 +63,51 @@ sub fdescexpand {
     # passing parameters impossible. Use $filename from source and
     # $Path from Common.pm
     my $filename = $main::filename;
-    my $linecount=0;
     my $copy= "";
     local $desc= "";
-    my $maxlines = 40; #only look at the beginning of the file
+    my $lic_length = 40;
+    my $lic_start;
+    my $maxlines = 20; #only look at the beginning of the file
+    my $excessivelines = 200; #sometimes people are too verbose for our own good
+    my $inlicense = 0;
 
-    #ignore files that aren't source code
-    if (!(
-	    ($filename =~ /\.c$/) |
-	    ($filename =~ /\.h$/) | 
-	    ($filename =~ /\.cc$/) |
-	    ($filename =~ /\.cp$/) | 
-	    ($filename =~ /\.cpp$/) | 
-	    ($filename =~ /\.idl$/) | 
-	    ($filename =~ /\.java$/)
-	    )){
-	return("\&nbsp\;");
-	}
+    #ignore files that are neither source code nor html
+    if ($filename =~ /\.\d+\w?(?:\.in|)$/) {
+        return descmanfile($Path->{'real'}."/".$filename);
+    }
+    return ("\&nbsp\;") unless
+	    ($filename =~ /\.(?:[chr](?:p?p?|c)|mm?|idl|java|p[lm]|(?:pl|vb|j|c|re)s|vb|html?)$/) ||
+	    0;
 
     if (open(FILE, $Path->{'real'}."/".$filename)) {
         while(<FILE>){
-	    $desc = $desc . $_ ;
-	    if($linecount++ > 60) {
+            my $descline = $_;
+	    $desc .= $descline ;
+            if (defined $lic_start && $descline =~ /END.*LICENSE/) {
+                my $lic_delta = $. - $lic_start;
+                $lic_length = $lic_delta if $lic_delta > $lic_length;
+                $inlicense = 0;
+            }
+            if (!defined $lic_start && $descline =~ /BEGIN.*LICENSE/) {
+                $lic_start = $.;
+                $inlicense = 1;
+            }
+            if($. > $excessivelines) {
+                last;
+            }
+	    if(!$inlicense && $. > $lic_length + $maxlines) {
 		last;
 	    }
 	}
 	close(FILE);
     } 
+    if ($filename =~ /\.html?$/) {
+        if ($desc =~ m{<title[^>]*>(.*)?</title}is) {
+            $desc = $1;
+            $desc =~ s/<[^>].*>//g;
+            return $desc;
+        }
+    }
 
     # sanity check: if there's no description then stop
     if (!($desc =~ /\w/)){
@@ -99,8 +121,8 @@ sub fdescexpand {
     # descriptions before we go to the trouble of looking for
     # one in the first comment. The whitespace between the 
     # delimiter and the description may include a newline.
-    if (($desc =~ s/(?:.*?$filename\s*?- ?-*\s*)([^\n]*)(?:.*)/$1/sgi) || 
-        ($desc =~ s/(?:.*?$filename\s*?:\s*)([^\n]*)(?:.*)/$1/sgi) ||
+    if (($desc =~ s/(?:.*?\Q$filename\E\s*?- ?-*\s*)([^\n]*)(?:.*)/$1/sgi) || 
+        ($desc =~ s/(?:.*?\Q$filename\E\s*?:\s*)([^\n]*)(?:.*)/$1/sgi) ||
         ($desc =~ s/(?:.*?Description:\s*)([^\n]*)(?:.*)/$1/sgi) 
 	){
         # if the description is non-empty then clean it up and return it
@@ -142,7 +164,7 @@ sub fdescexpand {
     $desc =~ s#(/\*.*tab-width.*?\*/)(.*)#$2#isg;
 
     # excise rcs crud
-    $desc =~ s#Id: $filename.*?Exp \$##g;
+    $desc =~ s#Id: \Q$filename\E.*?Exp \$##g;
 
     # Yuck, nuke these silly comments in js/jsj /* ** */
     $desc =~ s#\n\s*/\*+[\s\*]+\*/\n#\n#sg;
@@ -241,26 +263,39 @@ sub descexpand {
     }
 
     $desc = ""; 
-    if (open(FILE, $Path->{'real'}. $filename."README") ||
-        open(FILE, $Path->{'real'}. $filename."ReadMe")) {
+    my $rpath = $Path->{'real'};
+    if (open(FILE, $rpath. $filename.'README') ||
+        open(FILE, $rpath. $filename.'ReadMe')) {
 	$path = $Path->{'virt'}.$filename;
 	$path =~ s#/(.+)/#$1#;
         while(<FILE>){
             if($linecount++ > 10) {
                 last;
-            }elsif (/\s*$path\s*-\s*-*\s*/i){
-                $desc = (split(/\s*$path\s*-\s*-*\s*/i))[1];
+            }elsif (/\s*\Q$path\E\s*-\s*-*\s*/i){
+                $desc = (split(/\s*\Q$path\E\s*-\s*-*\s*/i))[1];
                 if ($desc) {last};
-            }elsif (/\s*$filename\s*-\s*-*\s*/i){
-                $desc = (split(/\s*$filename\s*-\s*-*\s*/i))[1];
+            }elsif (/\s*\Q$filename\E\s*-\s*-*\s*/i){
+                $desc = (split(/\s*\Q$filename\E\s*-\s*-*\s*/i))[1];
                 if ($desc) {last};
-            }elsif (/$path\s*:\s*/i){
-                $desc = (split(/ $path\s*:\s*/i))[1];
+            }elsif (/\Q$path\E\s*:\s*/i){
+                $desc = (split(/ \Q$path\E\s*:\s*/i))[1];
                 if ($desc) {last};
-            }elsif (/$filename\s*:\s*/i){
-                $desc = (split(/ $filename\s*:\s*/i))[1];
+            }elsif (/\Q$filename\E\s*:\s*/i){
+                $desc = (split(/ \Q$filename\E\s*:\s*/i))[1];
                 if ($desc) {last};
             }
+        }
+        close(FILE);
+    }
+    if (!$desc && open(FILE, $rpath.$filename.'debian/control')) {
+        my $line;
+        while ($line = <FILE>) {
+            if ($line =~ /^Description:\s*(.*)/) {
+                $desc = $1;
+                last;
+            }
+            next if /^\w+:/;
+            $desc .= $line;
         }
         close(FILE);
     }
@@ -288,15 +323,61 @@ sub descexpand {
 # inventing strict rules which create gobbledygook when they're broken.
 sub dirdesc {
     my ($path) = @_;
-
-    if (-f $Path->{'real'}."/README" ||
-        -f $Path->{'real'}."/ReadMe") {
-	    descreadme($path);
-    } elsif (-f $Path->{'real'}."/README.html") {
-	    descreadmehtml($path);
+    my $rpath = $Path->{'real'};
+    if ($rpath =~ m{_files/$}) {
+        return if deschtmlfilesfolder($path);
+    }
+    if (-f $rpath."/README" ||
+        -f $rpath."/ReadMe") {
+        descreadme($path);
+    } elsif (-f $rpath."/README.html") {
+        descreadmehtml($path);
+    } elsif (-f $rpath."/debian/control") {
+        descdebcontrol($path);
     }
 }
 
+sub deschtmlfilesfolder {
+    my ($path) = @_;
+    my $rpath = $Path->{'real'};
+    my $file = undef;
+    my $base = $rpath;
+    # chomp off the directory special bit
+    $base =~ s{_files/}{};
+    # try file.htm
+    my $file = "$base.htm";
+    unless (-f $file) {
+      # try file.html
+      $file .= 'l';
+      return undef unless -f $file;
+    }
+    if (!(open(DESC, $file))) {
+        return undef;
+    }
+    # we'll want the file name later
+    $file =~ s{^.*/}{};
+    my $line;
+    my $result;
+    while ($line = <DESC>) {
+        if ($line =~ m{<title>(.*)</title>}i) {
+            $result = $1;
+            last;
+        }
+    }
+    close(DESC);
+    return undef unless $result;
+    # we don't know if the content will be good or bad, it's easier to assume it's good for a bit
+    # convert it to bad
+    $result =~ s/\&lt;/</g;
+    $result =~ s/\&gt;/>/g;
+    $result =~ s/\&amp;/&/g;
+    # and now know that all content is bad, and convert it to good
+    $result =~ s/</&lt;/g;
+    $result =~ s/>/&gt;/g;
+    $result =~ s/\&/&amp;/g;
+    print "<p><h2><a href='../$file'>$result</a></h2><p>";
+    return 1;
+}
 
 sub descreadmehtml {
     my ($path) = @_;
@@ -367,7 +448,7 @@ sub descreadme {
 
     # strip the short description from the beginning
     $path =~ s#/(.+)/#$1#;
-    $string =~ s/.*$path\/*\s+--- .*//;
+    $string =~ s/.*\Q$path\E\/*\s+--- .*//;
 
     # strip away junk
     $string =~ s/#+\s*\n/\n/;
@@ -381,13 +462,10 @@ sub descreadme {
     $_ = $string;
     $count = tr/\n//;
 
+    print "<pre>\n";
     # If the file is small there's not much use splitting it up.
     # Just print it all
-    if ($count <= $maxlines) {
-        $string = markupstring($string, $Path->{'virt'});
-	$string = convertwhitespace($string);
-        print($string);
-    } else {
+    if ($count > $maxlines) {
         # grab the first n paragraphs, with n decreasing until the
         # string is 10 lines or shorter or until we're down to 
 	# one paragraph.
@@ -424,18 +502,101 @@ sub descreadme {
             $string = $string . ", README";
         } else {
             $string = $string . "\n\nSEE ALSO: README";
-        } 
-
-        $string = markupstring($string, $Path->{'virt'});
-	$string = convertwhitespace($string);
-
-        # strip blank lines at beginning and end of file again
-        $string =~ s/^\s*\n//gs;
-        $string =~ s/\s*\n$//gs;
-        chomp($string);
-
-        print($string . "<P>\n");
+        }
     }
+
+    $string = markupstring($string, $Path->{'virt'});
+    $string = convertwhitespace($string);
+
+    # strip blank lines at beginning and end of file again
+    $string =~ s/^\s*\n//gs;
+    $string =~ s/\s*\n$//gs;
+    chomp($string);
+
+    print($string . "</pre>\n<p>\n");
+}
+
+sub descdebcontrol {
+    my ($path) = @_;
+
+    if (!(open(DESC, $Path->{'real'}."/debian/control"))) {
+        return;
+    }
+
+    my $line;
+    while ($line = <DESC>) {
+        if ($line =~ /^Description:\s*(.*)/) {
+            $string = $1;
+            last;
+        }
+        next if /^\w+:/;
+        $string .= $line;
+    }
+    close(DESC);
+    chomp($string);
+    $string = markupstring($string, $Path->{'virt'});
+    $string = convertwhitespace($string);
+    # strip blank lines at beginning and end of file again
+    $string =~ s/^\s*\n//gs;
+    $string =~ s/\s*\n$//gs;
+    chomp($string);
+
+    print($string . "</pre>\n<p>\n");
+}
+
+sub readman {
+    my $string = <DESC>;
+    while ($string =~ /\\$/) {
+        chop($string);
+        $string .= <DESC>;
+    }
+    return $string;
+}
+
+sub descmanfile {
+    my ($path) = @_;
+    if (!(open(DESC, $path))) {
+        return;
+    }
+
+    my $line, $string = undef;
+    while ($line = readman()) {
+        if ($line =~ m{^\.so (?:man\d+\.*/|)(.*)$}) {
+            my $file = $1;
+            my $dir = $path;
+            $dir =~ s{/[^/]+$}{/$file};
+            if (-f $dir) {
+                close(DESC);
+                return descmanfile($dir);
+            } 
+        }
+        if ($line =~ /^\..*SH \S/) {
+            $string = $line;
+            $string = readman() while ($string =~ /^\.\\"/);
+            $string = readman() while ($string =~ /^\./);
+            $string = readman() while ($string =~ /^\.\\"/);
+            last;
+        }
+        if ($line =~ /^\.\\" .SH (?:"|'|)NAME(?:"|'|)\s*$/) {
+            (undef, $string) = (readman(), readman());
+            last;
+        }
+        if ($line =~ /^(?:|.\\" ).SH (?:"|'|)(?:NAME|\x540D\x79F0)(?:"|'|)\s*$/) {
+            $string = <DESC>;
+            last;
+        }
+    }
+    close(DESC);
+    chomp($string);
+    $string =~ s/\\//g;
+    $string = markupstring($string, $Path->{'virt'});
+    $string = convertwhitespace($string);
+    # strip blank lines at beginning and end of file again
+    $string =~ s/^\s*\n//gs;
+    $string =~ s/\s*\n$//gs;
+    chomp($string);
+
+    return $string;
 }
 
 # dme: substitute carriage returns and spaces in original text
@@ -454,3 +615,78 @@ sub convertwhitespace {
     return($string);
 }
 
+sub beginskip
+{
+    return '
+<!--
+';
+}
+
+sub endskip
+{
+    return '
+-->
+';
+}
+
+sub bonsaihost
+{
+    my $cvsrootfile = $Path->{'real'}.'/CVS/Root';
+    my $bonsai_not_found = 'http://error.bonsai-not-found.tld';
+    return $bonsai_not_found unless -f $cvsrootfile;
+    return $bonsai_not_found unless open(CVSROOT,'<',$cvsrootfile);
+    my $cvsroot = <CVSROOT>;
+    close(CVSROOT);
+    return 'http://bonsai-www.mozilla.org' if $cvsroot =~ m{mozilla\.org:/www};
+    return 'http://bonsai-l10n.mozilla.org' if $cvsroot =~ m{mozilla\.org:/l10n};
+    return 'http://bonsai.mozilla.org' if $cvsroot =~ /mozilla\.org:/;
+    return 'http://cvs.gnome.org/bonsai' if $cvsroot =~ /gnome\.org:/;
+    return 'http://bonsai.freedesktop.org' if $cvsroot =~ /freedesktop\.org:/;
+    return $bonsai_not_found;
+}
+
+sub beginbonsai
+{
+    return &beginskip unless -f $Path->{'real'}.'/CVS/Entries';
+    return &beginskip if $Path->{'svnrepo'};# =~ /songbird/;
+    return '';
+}
+
+sub endbonsai
+{
+    return &endskip unless -f $Path->{'real'}.'/CVS/Entries';
+    return &endskip if $Path->{'svnrepo'};# =~ /songbird/;
+    return '';
+}
+
+sub trachost
+{
+    my $trac_not_found = 'http://error.trac-not-found.tld/ '.$Path->{'svnrepo'};
+    return 'http://publicsvn.songbirdnest.com/trac' if $Path->{'svnrepo'} =~ /songbird/;
+    return 'http://trac.webkit.org/projects/webkit' if $Path->{'svnrepo'} =~ /webkit/;
+    return $trac_not_found;
+}
+
+sub begintrac
+{
+    return &beginskip unless $Path->{'svnrepo'} =~ /songbird|webkit/;
+    return '';
+}
+
+sub endtrac
+{
+    return &endskip unless $Path->{'svnrepo'} =~ /songbird|webkit/;
+    return '';
+}
+
+sub beginviewcvs
+{
+    return &beginskip unless $Path->{'svnrepo'} =~ /stage/;
+    return '';
+}
+
+sub endviewcvs
+{
+    return &endskip unless $Path->{'svnrepo'} =~ /stage/;
+    return '';
+}

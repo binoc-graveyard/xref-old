@@ -1,7 +1,11 @@
-<Files ~ (find|search|source|ident|diff)$>
+<Files ~ (find|search|source|ident|diff|index.cgi)$>
 SetHandler cgi-script
 order allow,deny
 allow from all
-deny from agni.nut.roche.com
-deny from user198.anilam.com
+allow from 127.0.0.1
+</Files>
+DirectoryIndex index.cgi
+Options +ExecCGI +FollowSymlinks
+<Files favicon.ico>
+  ForceType image/png
 </Files>

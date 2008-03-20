@@ -1,0 +1,7 @@
+$beginbonsai
+<span class=bonsailinks>(View <a href="$bonsaihost/cvslog.cgi?file=$pathname&amp;rev=$cvsversion">change log</a> or
+ <a href="$bonsaihost/cvsblame.cgi?&amp;file=$pathname&amp;mark=$fpos&amp;rev=$cvsversion">Blame annotations</a>)</span>
+$endbonsai
+$begintrac
+<span class=bonsailinks>(View <a href="$trachost$virttree/log/$virtfold/$filename">change log</a>)</span>
+$endtrac

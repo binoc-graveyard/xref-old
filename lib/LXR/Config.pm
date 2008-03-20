@@ -29,7 +29,8 @@ sub treeify {
     #each definition is a tree,directory pair.
 
     #remove the extra space that i stupidly added when parsing lxr.conf
-    $self->{'sourceroot'} =~ s/^\s+//;;
+    $self->{'sourceroot'} =~ s/^\s+//;
+    $self->{'sourceprefix'} =~ s/^\s+//;
 
     if ($self->{'sourceroot'} =~ /\S\s+\S/) {
         $self->{'oldroot'} = $self->{'sourceroot'};
@@ -38,23 +39,22 @@ sub treeify {
         #there is one or more tree defined. (Using directory names with
         #embedded spaces here would be a bad thing.)
         my %treehash = split(/\s+/, $self->{'sourceroot'});
+        $self->{'treehash'} = \%treehash;
 
         #To compute which tree we're looking at, grab the second to last
         #component from the script name which will be of the form: 
         # /seamonkey/source
-        if ($ENV{'SCRIPT_NAME'} =~ /.*\/([^\/]+)\/[\w]*$/) {
-            $self->{'treename'} = $1;
-        }
-        else {
-            &fatal("Invalid treename in URL");
-        }
+        $self->{'treename'} = $ENV{'SCRIPT_NAME'};
+        $self->{'treename'} =~ s|.*/([^/]+)/[^/]*|$1|;
 
+        my @treelist = sort keys %treehash;
+        $self->{'trees'} = \@treelist;
         #Match the tree name against our list of trees and extract the proper
         #directory. Set "sourceroot" to this directory.
         $self->{'sourceroot'} = $treehash{$self->{'treename'}};
 
         #set srcrootname to tree name
-        $self->{'sourcerootname'} = $self->{'treename'};
+        $self->{'srcrootname'} = $self->{'treename'};
 
         #append tree name to virtroot
         $self->{'virtroot'} =  $self->{'virtroot'} . "/" . $self->{'treename'} ;
@@ -70,6 +70,11 @@ sub treeify {
         my @pathdirs = split(/\//, $path);
         my $pathnum = @pathdirs;
         $self->{'bonsaicvsroot'} = $pathdirs[$pathnum - 1]; 
+
+        my %treehashp = split(/\s+/, $self->{'sourceprefix'});
+        $self->{'sourceprefix'} = defined $treehashp{$self->{'treename'}}
+                                ? $treehashp{$self->{'treename'}}
+                                : undef;
 
     }
     return($self);
@@ -133,6 +138,7 @@ sub _initialize {
     unless (open(CONFIG, $conf)) {
 	&fatal("Couldn't open configuration file \"$conf\".");
     }
+
     while (<CONFIG>) {
 	s/\#.*//;
 	next if /^\s*$/;
@@ -150,6 +156,7 @@ sub _initialize {
 			$self->{vdefault}->{$args[0]};
 		}
 	    } elsif ($dir eq 'sourceroot' ||
+                     $dir eq 'sourceprefix' ||
 		     $dir eq 'srcrootname' ||
                      $dir eq 'virtroot' ||
 		     $dir eq 'baseurl' ||
@@ -166,12 +173,14 @@ sub _initialize {
 		     $dir eq 'findhead' ||
 		     $dir eq 'findtail' ||
 		     $dir eq 'identhead' ||
+		     $dir eq 'identref' ||
 		     $dir eq 'identtail' ||
 		     $dir eq 'searchhead' ||
 		     $dir eq 'searchtail' ||
 		     $dir eq 'htmldir') {
 		if ($arg =~ /([^\n]+)/) {
-	            if ($dir eq 'sourceroot') {
+	            if ($dir eq 'sourceroot' ||
+                        $dir eq 'sourceprefix') {
 		        $self->{$dir} = $self->{$dir} . " " . $1;
                     }else{
 		    $self->{$dir} = $1;
@@ -241,10 +250,20 @@ sub sourceroot {
     return($self->varexpand($self->{'sourceroot'}));
 }
 
+sub treehash {
+    my $self = shift;
+    return %self->treehash;
+}
+
+sub prefix {
+    my $self = shift;
+    my $prefix = $self->{'sourceprefix'};
+    return $prefix;
+}
 
 sub sourcerootname {
     my $self = shift;
-    return($self->varexpand($self->{'srcrootname'}));
+    return($self->varexpand(defined $self->{'sourceprefix'} ? $self->{'sourceprefix'} : $self->{'srcrootname'}));
 }
 
 sub virtroot{
@@ -321,6 +340,11 @@ sub findtail {
 sub identhead {
     my $self = shift;
     return($self->varexpand($self->{'identhead'}));
+}
+
+sub identref {
+    my $self = shift;
+    return($self->varexpand($self->{'identref'}));
 }
 
 sub identtail {
