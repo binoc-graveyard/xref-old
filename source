@@ -58,29 +58,47 @@ sub dirname {
     }
 }
 
+sub resolvelink {
+    my $almost = readlink(shift);
+    my $rel = shift;
+    unless ($almost =~ m{^/}) {
+        $almost = $rel . '/' . $almost;
+    }
+    return $almost;
+}
 
 sub fileicon {
     my $img;
-
-    if ($filename =~ /^.*\.[ch]$/) {
+    my $tag = 'img';
+    my $realf = $Path->{'real'}.$filename;
+    if (-l $realf && !-e resolvelink($realf, $Path->{'real'})) {
+        $img = "/icons/broken.gif";
+    } elsif (!-r $realf) {
+        $img = "/icons/generic.sec.gif";
+    } elsif ($filename =~ /^.*\.[ch]$/) {
 	$img = "/icons/c.gif";
 #	$img = "internal-gopher-text";
     } elsif ($filename =~ /^.*\.(idl|cpp?|cc|hh|java)$/) {
 	# TODO: Find a nice icon for c++ files (KDE?)
 	$img = "/icons/c.gif";
 #	$img = "internal-gopher-text";
-    } elsif ($filename =~ /^.*\.(bmp|gif|p?jpe?g|[jpm][nm]g|ico|xpm|ani|svg)$/) {
+    } elsif (isImage($filename, 1)) {
         $img = "/icons/image2.gif";
-        my $s = (-s $Path->{'real'}.$filename);
+        my $s = (-s $realf);
         if ($s < 10<<10) {
             $img = "$filename?raw=1";
+            if ($filename =~ /\.svg$/i) {
+                my $ctype = 'image/svg+xml';
+                $img .= "&ctype=$ctype";
+                $tag = "embed type='$ctype'";
+            }
         }
     } else {		
 	$img = "/icons/text.gif";
 #	$img = "internal-gopher-unknown";
     }
 
-    return(&fileref("<IMG 'class='file icon' ALIGN=ABSBOTTOM BORDER=0 SRC=\"$img\">",
+    return(&fileref("<$tag 'class='file icon' ALIGN=ABSBOTTOM BORDER=0 SRC=\"$img\">",
 		    $Path->{'virt'}.$filename));
 }
 
@@ -119,7 +137,9 @@ sub filesize {
 sub modtime {
 
     my $current_time = time;
-    my $file_time = (stat($Path->{'real'}.$filename))[9];
+    my $realf = $Path->{'real'}.$filename;
+    return "Missing" unless -e $realf;
+    my $file_time = (stat($realf))[9];
 
     my @t = gmtime($file_time);
 
@@ -183,6 +203,18 @@ sub direxpand {
     return($direx);
 }
 
+sub unreadable {
+    my ($realf, $reald) = @_;
+    unless ($reald) {
+        $realf =~ m{^(.*)/};
+	$reald = $1;
+    }
+    return " links to a file that does not exist." if -l $realf && !-e resolvelink($realf, $reald);
+    return " does not exist." unless -e $realf;
+    return " is not readable." unless -r $realf;
+    return " could not be read for an unknown reason.";
+}
+
 sub printdir {
     my $template;
     my $index;
@@ -194,7 +226,7 @@ sub printdir {
     $template = "<ul>\n\$files{\n<li>\$iconlink \$namelink\n}</ul>\n";
     if ($Conf->htmldir) {
 	unless (open(TEMPL, $Conf->htmldir)) {
-	    &warning("Template ".$Conf->htmldir." does not exist.");
+	    &warning("Template ".$Conf->htmldir.unreadable($Conf->htmldir));
 	} else {
             local $/;
 	    $template = <TEMPL>;
@@ -216,10 +248,10 @@ sub printdir {
 	}
 	closedir(DIR);
     } else {
-	print("<p align=center>\n<i>This directory does not exist.</i>\n");
+	print("<p align=center>\n<i>This directory".unreadable($Path->{'real'})."</i>\n");
 	if ($Path->{'real'} =~ m#(.+[^/])[/]*$#) {
 	    if (-e $1) {
-		&warning("Unable to open ".$Path->{'real'});
+		&warning("Unable to open ".$Conf->{'treename'}.$Path->{'virt'});
 	    }
 	}
 	return;
@@ -294,6 +326,7 @@ print "export $key=".'"'.$ENV{$key}.'"'."
 print "-->
 ";
 }
+            my $kind = getMimeType($file);
 	    if (isHTML($file)) {
                 local $/ = undef;
 		print <SRCFILE>;
@@ -305,12 +338,13 @@ my $body = <SRCFILE>;
                 print $body;
             } elsif (isImage($file)) {
                 my $kind = 'x-unknown';
-                $kind = 'jpeg' if $file =~ /\.jpe?g$/;
-                $kind = 'gif' if $file =~ /\.gif$/; 
-                $kind = 'png' if $file =~ /\.[jp]ng$/;
-                $kind = 'bitmap' if $file =~ /\.bmp$/;
-                $kind = 'svg+xml' if $file =~ /\.svg$/;
-                $kind = 'x-icon' if $file =~ /\.(ico|ani|xpm)$/;
+                $kind = 'jpeg' if $file =~ /\.jpe?g$/i;
+                $kind = 'pjepg' if $file =~ /\.pjpe?g$/i;
+                $kind = 'gif' if $file =~ /\.gif$/i;
+                $kind = 'png' if $file =~ /\.[jp]ng$/i;
+                $kind = 'bitmap' if $file =~ /\.bmp$/i;
+                $kind = 'svg+xml' if $file =~ /\.svg$/i;
+                $kind = 'x-icon' if $file =~ /\.(ico|ani|xpm)$/i;
                 print 
 $head = "Content-Type: image/$kind\r\n\r\n";
                 local $/ = undef;
@@ -324,8 +358,8 @@ my $body = <SRCFILE>;
                 print(markupstring($string, $Path->{'virt'}));
 		print("</pre>");
 	    } else {
-	        if (($file =~ /nsI\w*\.idl$/)) {
-	          my $base = basename($file, ".idl"); 
+                if (($file =~ /nsI\w*\.idl$/)) {
+                  my $base = basename($file, ".idl"); 
                   my $dir = $Path->{'virt'};
                   $dir =~ s#^/([^/]+)(.*)#$1#;
                   my $doxRoot = "http://unstable.elemental.com/mozilla/build/latest/mozilla/" . $dir . "/dox/";
@@ -346,16 +380,19 @@ my $body = <SRCFILE>;
                   print("</p>\n");
                 }
 		print("<pre lang='en'>");
-		&markupfile(\*SRCFILE, $Path, $file,
+               &markupfile(\*SRCFILE, $Path, $file,
                              sub { print shift });
 		print("</pre>");
 	    }
 	    close(SRCFILE);
 	} else {
-	    print("<p align=center>\n<i>This file does not exist.</i>\n");
+	    print("<p align=center>\n<i>This file".unreadable($Path->{'realf'})."</i>\n");
+            if (-l $Path->{'realf'}) {
+                print('<br><tt>'.readlink($Path->{'realf'})."</tt></p>\n");
+            }
             print("<p>Maybe you can <a href='".$Conf->baseurl."/find?string=/".$file."&hint=$Path->{virt}'>find it elsewhere</a>.\n");
-	    if (-f $Path->{'real'}.$file) {
-		&warning("Unable to open ".$Path->{'realf'});
+	    if (-f $Path->{'realf'}) {
+		&warning("Unable to open ".$Conf->{'treename'}.$Path->{'virtf'});
 	    }
 	}
     }
@@ -406,16 +443,6 @@ my $skip_wrap = $Path->{'file'} && noWrap($Path->{'file'});
 print "$head
 " if (!$Path->{'file'} || isHTML($Path->{'file'}) || !$skip_wrap);
 exit if $exit;
-
-if (0) {
-print "<!--
-";
-foreach my $ykey (keys %ENV) {
-print qq|export $ykey="$ENV{$ykey}"
-|;
-}
-print "-->";
-}
 
 if (
     !$skip_wrap
@@ -476,3 +503,5 @@ if (
 	&makefooter('sourcedir');
     }
 }
+
+1;

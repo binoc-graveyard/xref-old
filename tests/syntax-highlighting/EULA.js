@@ -5,8 +5,17 @@
 # ***** END LICENSE BLOCK *****
 
 var gEULADialog = {
+  /**
+   * The nsIWebProgress object associated with the privacy policy frame.
+   */
+  _webProgress: null,
+
+  /**
+   * Initializes UI and starts the privacy policy loading.
+   */
   init: function ()
   {
+    sizeToContent();
     const Cc = Components.classes, Ci = Components.interfaces;
   }
 };

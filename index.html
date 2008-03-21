@@ -16,9 +16,9 @@ font-size: 70%;
 <BODY   BGCOLOR="#FFFFFF" TEXT="#000000"
 	LINK="#0000EE" VLINK="#551A8B" ALINK="#FF0000">
 
-<TABLE BGCOLOR="#000000" WIDTH="100%" BORDER=0 CELLPADDING=0 CELLSPACING=0>
+<table bgcolor="#000000" class=banner width="100%" border=0 cellpadding=0 cellspacing=0>
 <tr><td><a id="logo href="http://www.mozilla.org/"><img
- src="http://www.mozilla.org/images/mozilla-banner.gif" alt=""
+ src="http://www.mozilla.org/images/mozilla-banner.gif" alt="mozilla.org"
  border=0 width=600 height=58></a></td></tr></table>
 
 <TABLE BORDER=0 CELLPADDING=0 CELLSPACING=6 WIDTH="100%">
@@ -37,37 +37,22 @@ font-size: 70%;
 <BR>
          <FONT SIZE="-1">
           Browse from the root
-          of this directory tree.
+          of this tree.
          </FONT>
-<P>
-<FORM METHOD=GET ACTION="search">
-<div align="right"><nobr>
-	     <B><A HREF="search">Text Search</A>:</B>
-	     <INPUT TYPE=TEXT NAME="string" VALUE="" SIZE=29>
-	     <INPUT TYPE=SUBMIT VALUE="Find">
-</nobr></div>
-<FONT SIZE="-1">
-	     Use this field to search through all the text.</FONT>
-</FORM>
-<P>
 <FORM METHOD=GET ACTION="find">
 <div align="right"><nobr>
-	     <B><A HREF="find">File Name Search</A>:</B>
-	      <INPUT TYPE=TEXT NAME="string" maxlength="29" VALUE="" SIZE=29>
+<br> <b><a href="search">Search for</a>:</b>
+              <input type=text name="text" size=29 value="">
+<select name=kind>
+<option value="text">text
+<option value="regexp">regexp
+<option value="ident">ident
+</select>
+<br> <b><a href="find">File path</a>:</b>
+              <INPUT TYPE=TEXT NAME="string" maxlength="29" VALUE="" SIZE=29>
+<br>
 	      <INPUT TYPE=SUBMIT VALUE="Find">
 </nobr></div>
-<FONT SIZE="-1">
-	     Use this field to search for files by name.</FONT>
-</FORM>
-</P>
-<FORM METHOD=GET ACTION="ident">
-<div align="right"><nobr>
-	     <B><A HREF="ident">Identifier Search</A>:</B>
-	     <INPUT TYPE=TEXT NAME="i" VALUE="" SIZE=29>
-	     <INPUT TYPE=SUBMIT VALUE="Find">
-</nobr></div>
-<FONT SIZE="-1">
-	     Use this field to find a particular function, variable, etc.</FONT>
 </FORM>
 </p>
 <p>
@@ -124,6 +109,19 @@ the people listed on this page know or care about this MXR.
 <!--
   ++ / good place
   -->
+
+<p>
+There are two MXRs running on <a
+href="http://landfill.bugzilla.org/">landfill.bugzilla.org</a>:
+<ul>
+<li><a href="http://mxr.landfill.bugzilla.org/$treename/">MXR for $treename</a> - pure <a
+href="../webtools/source/lxr">MXR from cvs</a>
+<li><a href="http://mxr-test.landfill.bugzilla.org/$treename/">MXR-test for $treename</a> - MXR from <a
+href="../webtools/source/lxr">MXR from cvs</a> with <a
+href="http://mxr-test.landfill.bugzilla.org/patches/">patches</a> applied (see <a
+href="http://mxr-test.landfill.bugzilla.org/patches/README">README</a>)
+</ul>
+
   </TD>
  </TR>
 </TABLE>

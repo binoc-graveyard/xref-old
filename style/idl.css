@@ -1,5 +1,5 @@
 @import url(style.css);
-.comment {
+.c { /* comment */
  color: black;
  font-weight: bold;
 }

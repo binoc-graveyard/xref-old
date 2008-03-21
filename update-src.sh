@@ -13,19 +13,19 @@ TREE=$1
 export TREE
 
 lxr_dir=.
-db_dir=`sed -n 's@^dbdir:[ 	]*\(.*\)@\1@p' < $lxr_dir/lxr.conf`/$TREE
+db_dir=`sed -n 's@^dbdir:[\t ]*\(.*\)@\1@p' < $lxr_dir/lxr.conf`/$TREE
 
 if [ "$TREE" = '' ]
 then
     #since no tree is defined, assume sourceroot is defined the old way 
     #grab sourceroot from config file indexing only a single tree where
     #format is "sourceroot: dirname"
-    src_dir=`sed -n 's@^sourceroot:[    ]*\(.*\)@\1@p' < $lxr_dir/lxr.conf`
+    src_dir=`sed -n 's@^sourceroot:[\t ]*\(.*\)@\1@p' < $lxr_dir/lxr.conf`
  
 else
     #grab sourceroot from config file indexing multiple trees where
     #format is "sourceroot: treename dirname"
-    src_dir=`sed -n 's@^sourceroot:[    ]*\(.*\)@\1@p' < $lxr_dir/lxr.conf | grep $TREE | sed -n "s@^$TREE \(.*\)@\1@p"`
+    src_dir=`sed -n 's@^sourceroot:[\t ]*\(.*\)@\1@p' < $lxr_dir/lxr.conf | grep $TREE | sed -n "s@^$TREE \(.*\)@\1@p"`
 fi 
 
 log=$db_dir/cvs.log

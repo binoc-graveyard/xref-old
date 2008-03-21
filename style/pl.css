@@ -1,7 +1,7 @@
 @import url(style.css);
-.comment {
+.c { /* comment */
  font-weight: bold;
 }
-.string {
+.s { /* string */
  font-weight: bold;
 }

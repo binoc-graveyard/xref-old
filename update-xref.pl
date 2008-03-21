@@ -11,6 +11,8 @@ my $TIME = 'time ';
 my $UPTIME = 'uptime ';
 my $DATE = 'date ';
 my $STDERRTOSTDOUT = '2>&1';
+my $STDERRTODEVNUL = '2>/dev/null';
+my $ERROR_OUTPUT = $STDERRTOSTDOUT;
 
 my $TREE;
 my $was_arg;
@@ -22,6 +24,7 @@ if ($TREE) {
 if ($TREE eq '-cron') {
 $was_arg = 1;
  $TIME = $UPTIME = '';
+ $ERROR_OUTPUT = $STDERRTODEVNUL;
 }
 $TREE =~ s{/$}{};
 }
@@ -72,7 +75,7 @@ chdir "$db_dir/tmp";
 
 #XXX what does |set -e| mean?
 #system ("set -e >> $log");
-if (system("$TIME $lxr_dir/genxref $src_dir >> $log $STDERRTOSTDOUT") == 0) {
+if (system("$TIME $lxr_dir/genxref $src_dir >> $log $ERROR_OUTPUT") == 0) {
     system("chmod", "-R", "a+r", ".");
     system("mv xref fileidx ../");
 } else {

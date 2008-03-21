@@ -24,10 +24,81 @@
 ######################################################################
 
 use lib 'lib';
+use Local;
 use LXR::Common;
 use LXR::Config;
 
 $maxhits = 1000;
+
+my ($openlist, $lastfilepath, $skip);
+my $styles="
+<style type='text/css'>";
+my $stylee="</style>
+";
+
+sub toggle_style
+{
+  my ($n, $m) = @_;
+  my $s=0; my $t=10;
+  my @inline = (), @none = ();
+  push @none, ".$m$s"."_".(($n-1 % $t) % 10);
+  push @inline, ".$m$s"."_".(($n % $t) % 10);
+  if (($n % $t) == 0) {
+    do {
+      $n = ($n / 10) | 0;
+      ++$s;
+      if ($n % 10 == 0) {
+          push @none, ".$m$s"."_9";
+          push @inline, ".$m$s"."_0";
+      }
+    } while ($n>=10 && (($n % 10) == 0));
+    push @none, ".$m$s"."_".(($n -1) % 10);
+    push @inline, ".$m$s"."_".($n % 10);
+  }
+  return join(',',@none)."{display:none;}
+".join(',',@inline)."{display:inline;}";
+}
+
+sub display_line
+{
+    my ($glimpseline) = @_;
+    $sourceroot = $Conf->sourceroot;
+    $glimpseline =~ s/$sourceroot//;
+    ($file, $line, $text) =
+        $glimpseline =~ /(.*?):\s*(\d+)\s*:(.*)/;
+    $text =~ s/&/&amp;/g;
+    $text =~ s/</&lt;/g;
+    $text =~ s/>/&gt;/g;
+    my $filepath='';
+    my $filename;
+    my $skip = $lastfilepath eq $file;
+    #$skip = 0;
+    $lastfilepath = $file;
+    if ($openlist && !$skip) {
+        $openlist = 0;
+        print ('</ul>');
+    }
+    ($file,$filename)=split m|/(?!.*/)|, $file;
+    foreach my $filepart ($file =~ m{^/?$} ? ('') : split m|/|, $file) {
+        $filepath .= "$filepart/";
+        unless ($skip) {
+            print(&fileref($filepart ? $filepart : '/', "$filepath"),
+                  $filepart && '/');
+        }
+    }
+    $filepath = $filepath ? $filepath . $filename : "/$filename";
+    unless ($skip) {
+        print(&fileref("$filename", "$filepath"));
+        print(&blamerefs($file.'/'.$filename));
+    }
+    unless ($skip) {
+        print ('<ul>');
+        $openlist = 1;
+    }
+    print ('<li>');
+    print(&fileref("line $line", "$filepath", $line),
+          " -- $text<br>\n");
+}
 
 sub search {
     print(qq{<P ALIGN=CENTER>
@@ -70,6 +141,7 @@ function changefindpreset() {
     }
 
     $s = $searchtext;
+    $s =~ s/\&/\&amp;/g;
     $s =~ s/"/\&quot;/g;
     print('<B>Search for: </B></TD><TD><input type=text name="string" ',
           'value="',$s,'" maxlength=29 size=30>
@@ -123,6 +195,7 @@ $value =~ s/>/&gt;/g;
 \.js
 \.rdf
 \.in
+debian/control
 );
 
 $findi = cleanFind($findi);
@@ -178,7 +251,8 @@ using tree:</td><td>
 	    push @execparams, ('-F', $find);
 	}
 	push @execparams, ('-e', $searchtext);
-	unless (open(GLIMPSE, "-|")) {
+        my $glimpsepid;
+        unless ($glimpsepid = open(GLIMPSE, "-|")) {
 	    open(STDERR, ">&STDOUT");
 	    $!='';
 	    exec(@execparams);
@@ -203,41 +277,109 @@ print "<!--
                 $search_case =~ s/([\$.\^|\(\){}+*?])/\\$1/g;
             }
         }
+        $searchtext = $displayedsearch;
+        $searchtext =~ s/&/&amp;/g;
+        $searchtext =~ s/</&lt;/g;
+        $searchtext =~ s/>/&gt;/g;
+
+        print("<h1>$searchtext</h1>\n");
+
         my $hit_file_count = 0;
         my $hit_for_current_file = 0;
         my $prev_file;
+        print "$styles
+.status.searching {display:block}
+.status {display: none}
+$stylee
+<p><b>
+<span class='status searching'>Searching... </span>
+<span class='status error_toolong'>Pattern too long. Use a maximum 29 characters.</span>
+<span class='status matches_zero'>No matching files</span>
+<span class='status matches_one'>Found one matching line</span>
+<span class='status matches_n'>Found
+$styles
+.m0, .m1, .m2, .f0, .f1, .f2, .matches_f {display:none}
+.m0_2 {display:inline}
+$stylee";
+for (my $q1=3;$q1--;) {
+for (my $r1=0;$r1<10;++$r1) {
+print "<span class='m$q1 m$q1"."_$r1'>$r1</span>";
+}
+}
+print " matching lines
+<span class='status matches_f'> in ";
+for (my $q=3;$q--;) {
+for (my $r=0;$r<10;++$r) {
+print "<span class='f$q f$q"."_$r'>$r</span>";
+}
+}
+print " files</span></span>
+<span class='status matches_max'>Too many hits, displaying the first $maxhits</span>
+</b></p>
+";
 	LINE: while (my $line = <GLIMPSE>) {
 	    next if $line =~ m|using working-directory '.*' to locate dictionaries|;
             next if $search_sensitive && $line !~ /$search_case/;
 	    if (!$filter || $line =~ /$filter/){
                 my ($curr_file, undef, undef) =
                         $line =~ /(.*?):\s*(\d+)\s*:(.*)/;
+                my $lstyle = '';
                 if ($prev_file ne $curr_file) {
                     $prev_file = $curr_file;
                     $hit_for_current_file = 1;
                     ++$hit_file_count;
+                    if ($hit_file_count == 2) {
+                        $lstyle .= ".matches_f {display: inline;}";
+                    }
+                    $lstyle .= toggle_style($hit_file_count, 'f');
                 } elsif (defined $hitlimit &&
                          ++$hit_for_current_file > $hitlimit) {
                     next LINE;
                 }
-		$numlines++;
-		push(@glimpselines,$line);
+                $numlines++;
+                if ($numlines == 1) {
+                    $lstyle .= ".status.matches_one {display: block}
+";
+                } elsif ($numlines == 2) {
+                    $lstyle .= ".status.matches_one {display: none}
+.status.matches_n {display: block}
+";
+                } else {
+                    $lstyle .= toggle_style($numlines, 'm');
+                }
+                if ($numlines > $maxhits) {
+                    $lstyle .= ".status.matches_n {display: none}
+.status.matches_max {display: block}";
+                }
+                if ($lstyle) {
+                    print "$styles$lstyle$stylee";
+                }
+                display_line($line);
 		if ($numlines > $maxhits) {
 		    last;
 		}
 	    }
 	}
+        my $none = $numlines == 0 ? '.status.matches_zero {display: block}' : '';
+        print "$styles $none
+.status.searching {display: none}
+</style>";
+        print ('</ul>') if $openlist;
+        print "<p>";
 
-	close(GLIMPSE);
-
-	$retval = $? >> 8;
-
+        if ($numlines < 5) {
+            close(GLIMPSE);
+            $retval = $? >> 8;
+        } else {
+            kill 15, $glimpsepid;
+            $retval = 0;
+        }
 	# The manpage for glimpse says that it returns 2 on syntax errors or
 	# inaccessible files. It seems this is not the case. 
 	# We will have to work around it for the time being.
     
 	if ($retval == 0) {
-	    if (@glimpselines == 0) {
+	    if ($numlines == 0) {
 		print("No matching files<br>\n");
 	    } elsif ($glimpselines[0] =~ /pattern too long/) {
                 print ("Pattern too long. Use a maximum 29 characters.\n");
@@ -258,52 +400,9 @@ print "<!--
                     }
                 }
 
-                $searchtext = $displayedsearch;
-                $searchtext =~ s/&/&amp;/g;
-                $searchtext =~ s/</&lt;/g;
-                $searchtext =~ s/>/&gt;/g;
-
-		print("<h1>$searchtext</h1>\n");
-		$sourceroot = $Conf->sourceroot;
-my $lastfilepath;
-my $openlist;
-		foreach $glimpseline (@glimpselines) {
-		    
-		    $glimpseline =~ s/$sourceroot//;
-		    ($file, $line, $text) = 
-			$glimpseline =~ /(.*?):\s*(\d+)\s*:(.*)/;
-		    $text =~ s/&/&amp;/g;
-		    $text =~ s/</&lt;/g;
-		    $text =~ s/>/&gt;/g;
-		    my $filepath='';
-		    my $filename;
-my $skip = $lastfilepath eq $file;
-#$skip = 0;
-$lastfilepath = $file;
-if ($openlist && !$skip) {
 $openlist = 0;
-print ('</ul>');
-}
-		    ($file,$filename)=split m|/(?!.*/)|, $file;
-		    foreach my $filepart ($file =~ m{^/?$} ? ('') : split m|/|, $file) {
-			$filepath .= "$filepart/";
-unless ($skip) {
-			print(&fileref($filepart ? $filepart : '/', "$filepath"),
-			      $filepart && '/');
-}
-		    }
-		    $filepath = $filepath ? $filepath . $filename : "/$filename";
-unless ($skip) {
-		    print(&fileref("$filename", "$filepath"),
-			  ", ");
-}
-unless ($skip) {
-print ('<ul>');
-$openlist = 1;
-}
-print ('<li>');
-		    print(&fileref("line $line", "$filepath", $line),
-			  " -- $text<br>\n");
+		foreach $glimpseline (@glimpselines) {
+		  display_line($glimpseline); 
 		}
 print ('</ul>') if $openlist;
 	    }
@@ -405,3 +504,4 @@ print "$head
 &search;
 &makefooter('search');
 
+1;

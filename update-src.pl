@@ -18,6 +18,17 @@ my $CVSROOTFLAGS = "-d $CVSROOT ";
 my $CVSCO = 'checkout ';
 my $CVSUP = 'update ';
 my $CVSCOMMAND = "$CVS $CVSQUIETFLAGS $CVSROOTFLAGS";
+
+my $SVN = 'svn ';
+my $SVNQUIETFLAGS = '--non-interactive ';
+my $SVNCO = 'checkout ';
+my $SVNUP = 'update ';
+my $SVNCOMMAND = "$SVN $SVNQUIETFLAGS";
+
+my $HGCOMMAND = 'hg ';
+my $HGUPDATE = 'pull -u ';
+my $EACHONE = 'xargs -n1 ';
+
 my $TREE;
 my $was_arg;
 do {
@@ -72,6 +83,10 @@ chdir '..';
 
 # endico: check out the source
 for ($TREE) {
+    /^world-all$/ && do {
+        print LOG `$TIME (echo */* | $EACHONE $SVNCOMMAND $SVNUP)`;
+        last;
+    };
     /^classic$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P -rMozillaSourceClassic_19981026_BRANCH MozillaSource $STDERRTOSTDOUT`;
         last; 
@@ -89,10 +104,12 @@ for ($TREE) {
         last;
     };
     /^webtools$/ && do {
+        chdir '..';
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/webtools $STDERRTOSTDOUT`;
         last;
     };
-    /^bugzilla([23].*|)$/ && do {
+    /^bugzilla(\d.*|)$/ && do {
+        chdir '../..';
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/webtools/bugzilla $STDERRTOSTDOUT`;
         last;
     };
@@ -108,16 +125,16 @@ for ($TREE) {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P SeaMonkeyMailNews $STDERRTOSTDOUT`;
         last;
     };
-    /^(l10n|l10n-mozilla1\.8|aviarybranch|mozilla1\.8\.0)$/ && do {
-        print LOG `$TIME $CVSCOMMAND -d ':pserver:anonymous\@cvs-mirror.mozilla.org:/l10n' $CVSUP $STDERRTOSTDOUT`;
-        last;
-    };
-    /^(?:bugzilla|mozilla(?:foundation|))-org|devmo(?:wiki)|spreadfirefox|mozilla-com$/ && do {
-        print LOG `$TIME $CVS $CVSQUIETFLAGS $CVSUP -P $TREE $STDERRTOSTDOUT`;
-        last;
-    };
     /^mozilla$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla $STDERRTOSTDOUT`;
+        last;
+    };
+    /^mozillasvn-all$/ && do {
+        print LOG `$TIME $SVNCOMMAND $SVNUP svn.mozilla.org $STDERRTOSTDOUT`;
+        last;
+    };
+    /^mozilla-central$/ && do {
+        print LOG `cd $src_dir; $TIME python2.4 ./client.py checkout $STDERRTOSTDOUT`;
         last;
     };
     /^nspr$/ && do {
@@ -130,15 +147,15 @@ for ($TREE) {
         print LOG `cd mozilla; $TIME $CVSCOMMAND $CVSUP-d tools` if /^seamonkey$/;
         last;
     };
-    /^(?:netbeans|openoffice|gnome|eclipse|mozilla.*-.*|devmo.*|)$/ && do {
+    /^(?:netbeans|openoffice|gnome|eclipse|(?:bug|mo)zilla.*-.*|devmo.*|)$/ && do {
         print LOG `cd $src_dir; $TIME $CVSCOMMAND $CVSUP-d * $STDERRTOSTDOUT`;
         last;
     };
-    /^fuel$/ && do {
-        print LOG `$TIME $CVSCOMMAND $CVSCO -P -d fuel -rFUEL_DEVEL_BRANCH mozilla/browser/fuel $STDERRTOSTDOUT`;
+    /^(?:.*)-central$/ && do {
+        print LOG `cd $src_dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
         last;
     };
-    warn "unrecognized tree '$TREE'. fixme!";
+    warn "unrecognized tree. fixme!";
 }
 
 print LOG `$DATE $STDERRTOSTDOUT`;

@@ -1,0 +1,14 @@
+--- index.html	2006-02-08 08:32:04.000000000 -0800
++++ index.html.0	2006-02-08 18:13:25.000000000 -0800
+@@ -66,11 +65,0 @@
+-         <FONT SIZE="+1"><A HREF="mozilla1.0/"><B>Mozilla 1.0</B></A></FONT>
+-      </DT>
+-      <DD>
+-         <FONT SIZE="-1">
+-          This is the Mozilla 1.0 release.
+-         </FONT>
+-      </DD>
+-
+-      <P>
+-
+-      <DT>

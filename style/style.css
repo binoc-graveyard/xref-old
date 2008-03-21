@@ -1,22 +1,24 @@
-.comment {
+.c { /* comment */
  font-style: italic;
  color: dimgrey;
 }
-.verb {
+.v { /* verb */
  color: darkred;
 }
-.string {
+.s { /* string */
  color: purple;
 }
-.include {
+.i { /* include */
  color: blue;
 }
 ul {
  margin: 0px 0px 0px 1em;
 }
-.line {
+.l { /* line */
  font-style: normal;
  font-weight: normal;
+ text-decoration: none;
+ color: gray;
 }
 img.icon {
  max-width: 128px;

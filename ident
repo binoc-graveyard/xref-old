@@ -29,39 +29,20 @@ use LXR::Common;
 use LXR::Config;
 use DB_File;
 
-%ty = (('M', 'preprocessor macro'),
-       ('V', 'variable'),
-       ('f', 'function prototype'),
+@tyy= (('M', 'preprocessor macro'),
        ('F', 'function'),
+       ('I', 'interface'),
        ('C', 'class'),			# C++
-       ('c', '(forwarded) class'),	# C++
        ('T', 'type'),
        ('S', 'struct type'),
        ('E', 'enum type'),
        ('U', 'union type'),
+       ('f', 'function prototype'),
+       ('c', '(forwarded) class'),	# C++
+       ('V', 'variable'),
        ('R', 'reference'),
-       ('I', 'interface'),
       );
-
-sub blamerefs {
-    my ($pathname, $lines) = (@_);
-    $LXR::Common::who = 'source';
-    &LXR::Common::fixpaths($pathname);
-    my $template = "";
-    if ($Conf->identref) {
-        unless (open(TEMPL, $Conf->identref)) {
-            &warning("Template ".$Conf->identref." does not exist.");
-        } else {
-            local $/;
-            $template = <TEMPL>;
-            close(TEMPL);
-        }
-    }
-
-    return (&bigexpandtemplate(&expandtemplate($template,
-                           ('fpos',     sub {return($lines)})
-                           )));
-}
+%ty = @tyy;
 
 sub list_links
 {
@@ -272,20 +253,18 @@ my ($refkind, $reffnum, $refline, $classes) = ($1, $2, $3, $4);
                 }
             }
 
-            foreach $t (keys(%ty)) {
-                #next if $t eq 'R';
-                if ($f{$t}) {
-                    print("Defined as a $ty{$t} in:<ul>\n");
+            foreach $t (@tyy) {
+                next unless ($f{$t});
+                print("Defined as a $ty{$t} in:<ul>\n");
 
-                    my %kind_map = %{$big_map{$t}};
-                    foreach $fnum (sort { $a <=> $b } keys %kind_map) {
-                        my $fnam = $fileidx{$fnum};
-                        foreach my $filelist ($kind_map{$fnum}) {
-                            list_links($t, $fnam, $concise, $filelist);
-                        }
+                my %kind_map = %{$big_map{$t}};
+                foreach $fnum (sort { $a <=> $b } keys %kind_map) {
+                    my $fnam = $fileidx{$fnum};
+                    foreach my $filelist ($kind_map{$fnum}) {
+                        list_links($t, $fnam, $concise, $filelist);
                     }
-                    print("</ul>");
                 }
+                print("</ul>");
             }
 
             my @normal_refs = keys %normal_refh;
@@ -348,3 +327,4 @@ print "$head
 &ident;
 &makefooter('ident');
 
+1;

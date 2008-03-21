@@ -1,6 +1,12 @@
+/* Header line */
 interface idl
 {
 readonly attribute long eemp;
+/**
+ * multi line
+ */ 
 attribute long meep;
+// single line C
+// single line C
 nsISupports peem();
 };

@@ -12,7 +12,7 @@ my @paths=qw(
 /usr/local/apache/html/mxr/glimpse
 /usr/local/glimpse-4.18.1p/bin
 /usr/local/glimpse-3.6/bin
-/export/home/build/glimpse-3.6.src/bin
+/home/build/glimpse-3.6.src/bin
 );
 
 my $TIME = 'time ';
@@ -94,8 +94,8 @@ mkdir $db_dir unless -d $db_dir;
               -x      After  expanding  each  simple command, for
                       command, case command, select  command,  or
                       arithmetic   for   command,   display   the
-                      expanded value of PS4, followed by the comï¿½
-                      mand  and its expanded arguments or associï¿½
+                      expanded value of PS4, followed by the com�
+                      mand  and its expanded arguments or associ�
                       ated word list.
 =cut
 
@@ -137,18 +137,26 @@ exit 6;
 } 
 
 # do index everything in lxrroot
+my @include_paths = qw (
+/var/www/html/mxr/lxr-root
+
+);
+unshift @include_paths, $db_dir;
+push @include_paths, '';
 open GLIMPSEINCLUDE, '>.glimpse_include';
-print GLIMPSEINCLUDE $db_dir;
+print GLIMPSEINCLUDE join("\n", @include_paths);
 close GLIMPSEINCLUDE;
 
-# don't index CVS files
+# don't index VCS files
 open GLIMPSEEXCLUDE, '>.glimpse_exclude';
-# don't index CVS files
-print GLIMPSEEXCLUDE '/CVS/
-';
-# don't index SVN files
-print GLIMPSEEXCLUDE '/.svn/
-';
+my @exclude_paths = qw (
+/CVS/
+/.hg/
+/.git/
+/.svn/
+);
+push @exclude_paths, '';
+print GLIMPSEEXCLUDE join("\n", @exclude_paths);
 close GLIMPSEEXCLUDE;
 
 #XXX what does |set -e| mean?

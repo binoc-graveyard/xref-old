@@ -16,6 +16,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw(&fdescexpand &descexpand &dirdesc &convertwhitespace
              &localexpandtemplate
+	     &isForce &isImage &isHTML &isCSS &getMimeType
             );
 
 use lib 'lib';
@@ -70,15 +71,24 @@ sub fdescexpand {
     my $excessivelines = 200; #sometimes people are too verbose for our own good
     my $inlicense = 0;
 
-    #ignore files that are neither source code nor html
-    if ($filename =~ /\.\d+\w?(?:\.in|)$/) {
-        return descmanfile($Path->{'real'}."/".$filename);
+    #for broken symlinks list their target
+    my $realf = $Path->{'real'}.'/'.$filename;
+    if (!-e $realf && -l $realf) {
+        $desc = readlink $realf;
+        $desc =~ s/\&/&amp;/g;
+        $desc = '<tt>'.$desc.'</tt>';
+        return $desc;
     }
+    #handle man pages
+    if ($filename =~ /\.\d+\w?(?:\.in|)$/) {
+        return descmanfile($realf);
+    }
+    #ignore files that are neither source code nor html
     return ("\&nbsp\;") unless
 	    ($filename =~ /\.(?:[chr](?:p?p?|c)|mm?|idl|java|p[lm]|(?:pl|vb|j|c|re)s|vb|html?)$/) ||
 	    0;
 
-    if (open(FILE, $Path->{'real'}."/".$filename)) {
+    if (open(FILE, $realf)) {
         while(<FILE>){
             my $descline = $_;
 	    $desc .= $descline ;
@@ -110,8 +120,8 @@ sub fdescexpand {
 
     # sanity check: if there's no description then stop
     if (!($desc =~ /\w/)){
-	return("\&nbsp\;");;
-	}
+	return("\&nbsp\;");
+    }
 
     # save a copy for later
     $copy = $desc;
@@ -140,7 +150,7 @@ sub fdescexpand {
             #htmlify the comments making links to symbols and files
             $desc = markupstring($desc, $Path->{'virt'});
             return($desc);
-           } 
+        } 
     }
 
     # we didn't find any well behaved descriptions above so start over 
@@ -246,9 +256,9 @@ sub descexpand {
     my @readmes = bsd_glob($readmefile);
     my $readme;
     foreach (@readmes) {
-    next unless -f;
-    $readme = $_;
-    last;
+        next unless -f;
+        $readme = $_;
+        last;
     }
     if ($readme =~ /\.html?$/ && open(DESC, $readme)) {
         undef $/;
@@ -296,6 +306,9 @@ sub descexpand {
         close(FILE);
     }
     $desc ||= descdebcontrol2($rpath, $Path->{'virt'}, $filename, 0);
+    if ($filename =~ m%^debian/$%i) {
+        $desc ||= descdebcontrol2($rpath, $Path->{'virt'}, './', 0);
+    }
 # git would be one of the following, but it doesn't work
 # because the file {git}/description or {git}/.git/description
 # doesn't seem to actually appear in checkouts...
@@ -344,7 +357,8 @@ sub dirdesc {
     if (-f $rpath."/README.html") {
         return if descreadmehtml($path);
     }
-    if (-f $rpath."/debian/control") {
+    if (-f $rpath.'/DEBIAN/control' ||
+        -f $rpath.'/debian/control') {
         return if descdebcontrol($path);
     }
 }
@@ -536,7 +550,8 @@ sub descreadme {
     }
 
     $string = markupstring($string, $Path->{'virt'});
-    $string = convertwhitespace($string);
+    $string = convertwhitespace($string, 1);
+    $string =~ s/(SEE ALSO:)/\n$1/g;
 
     # strip blank lines at beginning and end of file again
     $string =~ s/^\s*\n//gs;
@@ -549,7 +564,8 @@ sub descreadme {
 sub descdebcontrol {
     my ($path) = @_;
 
-    if (!(open(DESC, $Path->{'real'}."/debian/control"))) {
+    if (!(open(DESC, $Path->{'real'}.'/DEBIAN/control')) &&
+        !(open(DESC, $Path->{'real'}.'/debian/control'))) {
         return;
     }
 
@@ -566,7 +582,7 @@ sub descdebcontrol {
     my $string = descdebcontrol2($Path->{'real'}, $Path->{'virt'}, './', 1); 
     chomp($string);
     $string = markupstring($string, $Path->{'virt'});
-    $string = convertwhitespace($string);
+    $string = convertwhitespace($string, 1);
     # strip blank lines at beginning and end of file again
     $string =~ s/^\s*\n//gs;
     $string =~ s/\s*\n$//gs;
@@ -581,7 +597,8 @@ sub descdebcontrol2 {
     my %collection;
     my %descriptions;
     my ($rpath, $directory, $filename, $multiline) = @_;
-    return '' unless open(FILE, $rpath.$filename.'debian/control');
+    return '' unless open(FILE, $rpath.$filename.'DEBIAN/control') ||
+                     open(FILE, $rpath.$filename.'debian/control');
     while ($filename eq '../') {
         $directory =~ m{^(.*)/+([^/]+)};
         ($directory, $filename) = ($1, $2.'/');
@@ -593,14 +610,18 @@ sub descdebcontrol2 {
         next unless $line =~ /^(Source|Package|Description):\s*(.*)\s*$/;
         my ($kind, $value) = ($1, $2);
         $collection{$kind} = $value;
-        $package ||= $value if $kind eq 'Package';
+	if ($kind eq 'Package') {
+            if ($package =~ /^$|-d(?:ev|bg)$/) {
+	        $package = $value;
+            }
+        }
         next unless $kind eq 'Description';
         if ($multiline) {
             my $accum;
             while ($line = <FILE>) {
                 last unless $line =~ /\S/;
-                last if $line =~ /^\w+:/;
-                $accum .= "\n$line";
+                last if $line =~ /^\S+:/;
+                $accum .= $line;
             }
             $value = $accum if $accum =~ /\S/;
         }
@@ -674,14 +695,15 @@ sub descmanfile {
 # for html equivalent so we don't need to use <pre> and can
 # use variable width fonts but preserve the formatting
 sub convertwhitespace {
-    my ($string) = @_;
+    my ($string, $pre) = @_;
+    my $p = $pre ? '' : '<p>';
 
     # handle ascii bulleted lists
     $string =~ s/<p>\n\s+o\s/<p>\n\&nbsp\;\&nbsp\;o /sg;
     $string =~ s/\n\s+o\s/&nbsp\;\n<br>\&nbsp\;\&nbsp\;o /sg;
 
     #find paragraph breaks and replace with <P>
-    $string =~ s/\n\s*\n/<p>\n/sg;
+    $string =~ s/\n\s*\n/$p\n/sg;
 
     return($string);
 }
@@ -700,6 +722,56 @@ sub endskip
 ';
 }
 
+sub isForce {
+my $force = $HTTP->{'param'}->{'force'};
+$force = (defined $force && $force =~ /1|on|yes/ ? 1 : 0);
+return $force;
+}
+
+sub isImage {
+    return 0 if isForce();
+my ($file, $ignore) = @_;
+    return 0 unless (defined $ignore || $ENV{HTTP_ACCEPT} !~ 'text/html');
+    return ($file =~ /\.(p?[jmp][pnm]e?g|gif|x[bp]m|svg|ico|ani|bmp)$/i);
+}
+
+sub isHTML {
+    return 0 if isForce();
+my $file = shift;
+    return ($file =~ /\.html?$/);
+}
+
+sub isCSS {
+    return 0 if isForce();
+my $file = shift;
+    return ($file =~ /stylesheet\.(css)$/) ||
+          (($file =~ /\.(css)$/) && $ENV{HTTP_ACCEPT} !~ 'text/html');
+}
+
+sub getMimeType
+{
+    my ($file) = @_;
+    my ($cat, $kind) = ('application', 'octet-stream');
+    if (isHTML($file)) {
+        $cat = 'text';
+        $kind = 'html';
+    } elsif (isCSS($file)) {
+        $cat = 'text';
+        $kind = 'css';
+    } elsif (isImage($file)) {
+        $kind = 'x-unknown';
+        $cat = 'image';
+        $kind = 'jpeg' if $file =~ /\.jpe?g$/i;
+        $kind = 'pjepg' if $file =~ /\.pjpe?g$/i;
+        $kind = 'gif' if $file =~ /\.gif$/i;
+        $kind = 'png' if $file =~ /\.[jp]ng$/i;
+        $kind = 'bitmap' if $file =~ /\.bmp$/i;
+        $kind = 'svg+xml' if $file =~ /\.svg$/i;
+        $kind = 'x-icon' if $file =~ /\.(ico|ani|xpm)$/i;
+    }
+    return "$cat/$kind";
+}
+
 sub localexpandtemplate
 {
     my $template = shift;
@@ -716,7 +788,11 @@ sub localexpandtemplate
                           ('endviewvc',         \&endviewvc),
                           ('websvnhost',        \&websvnhost),
                           ('beginwebsvn',       \&beginwebsvn),
-                          ('endwebsvn',         \&endwebsvn));
+                          ('endwebsvn',         \&endwebsvn),
+                          ('webhghost',         \&webhghost),
+                          ('beginwebhg',        \&beginwebhg),
+                          ('endwebhg',          \&endwebhg)
+);
 };
 
 sub bonsaihost
@@ -782,19 +858,23 @@ sub viewvctail
 sub viewvchost
 {
     return 'https://garage.maemo.org/plugins/scmsvn/viewcvs.php' if $Path->{'svnrepo'} =~ /garage/;
-    return 'https://stage.maemo.org/viewcvs.cgi/maemo' if $Path->{'svnrepo'} =~ /stage/;
+    return 'https://garage.maemo.org/plugins/scmsvn/viewcvs.php/' if $Path->{'svnrepo'} =~ /garage/;
+    return 'https://stage.maemo.org/viewcvs.cgi/maemo/' if $Path->{'svnrepo'} =~ /stage/;
+    return 'http://viewvc.svn.mozilla.org/vc' if $Path->{'svnrepo'} =~ /mozilla\.org/;
     return '';
 }
 
 sub beginviewvc
 {
-    return &beginskip unless $Path->{'svnrepo'} =~ /stage|garage/;
+    return '' if $Path->{'svnrepo'} =~ /garage/;
+    return &beginskip unless $Path->{'svnrepo'} =~ /stage|garage|mozilla\.org/;
     return '';
 }
 
 sub endviewvc
 {
-    return &endskip unless $Path->{'svnrepo'} =~ /stage|garage/;
+    return '' if $Path->{'svnrepo'} =~ /garage/;
+    return &endskip unless $Path->{'svnrepo'} =~ /stage|garage|mozilla\.org/;
     return '';
 }
 
@@ -814,3 +894,68 @@ sub endwebsvn
     return &endskip unless 0;
     return '';
 }
+
+my %hgcache = ();
+sub webhghost
+{
+    return 'http://hg.mozilla.org';
+}
+
+sub checkhg
+{
+  my ($virt, $real) = ($Path->{'virt'}, $Path->{'real'});
+  $real =~ s{/$}{};
+  $virt =~ s{^/}{};
+  my @dirs;# = split m%/%, $virt;
+  while (!defined $hgcache{$real} && $real) {
+print "<!-- check for .hg in $real -->
+";
+    if (-d $real.'/.hg') {
+print "<!-- found .hg -->
+";
+      $hgcache{$real} = '0 '.$real . '/.hg/store/data';
+      last;
+    }
+    $real =~ s{/([^/]*)$}{};
+    unshift @dirs, $1;
+  }
+  if (defined $hgcache{$real}) {
+    my $hgpath = $hgcache{$real};
+    my $ll = 0 + $hgpath;
+    $hgpath =~ s/^\d+ //;
+print "<!-- $ll @ $hgpath -->
+";
+      $ll = 0 + $hgcache{$real};
+print "<!-- hgcache{$real} [$#dirs,$ll]= ".$hgcache{$real}."
+$hgpath -->
+";
+      while ($#dirs >= 0) {
+        my $dir = '/' . (shift @dirs);
+        $real .= $dir;
+        $dir =~ s/([A-Z])/_$1/g;
+        $dir = lc $dir;
+        $hgpath .= $dir;
+        ++$ll;
+        $hgcache{$real} = -d $hgpath ? "$ll ". $hgpath : "0";
+print "<!-- ann $real [$hgpath]: ".$hgcache{$real}." -->
+";
+      }
+  }
+  $real = $Path->{'real'};
+  $real =~ s{/$}{};
+  return $hgcache{$real};
+}
+
+sub beginwebhg
+{
+    return &beginskip unless checkhg($Path->{'virt'}, $Path->{'real'});
+    return '';
+}
+
+sub endwebhg
+{
+    return &endskip unless checkhg($Path->{'virt'}, $Path->{'real'});
+    return '';
+}
+
+1;

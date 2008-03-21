@@ -12,3 +12,6 @@
 .idl_DEPRECATED {
  border: 1px solid brown;
 }
+.l { /* line */
+ display: none;
+}

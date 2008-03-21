@@ -104,6 +104,12 @@ ln -s . nspr
 ln -s . js
 ln -s . webtools
 
+ The more formal way to do this is now:
+./add-root.pl ef /lxr-root/lxr-data/ef/mozilla ef
+./add-root.pl nspr /lxr-root/lxr-data/nspr/mozilla nspr
+./add-root.pl seamonkey /lxr-root/lxr-data/seamonkey/mozilla mozilla
+ add-root will both create the symlink and add the appropriate lines to lxr.conf
+
 Currently root/index.html is not automatically generated,
 it could and should be.
 
@@ -166,6 +172,9 @@ The lxr.conf file:
  dbdir 
   Where to find the database files that lxr needs (fileidx xref and 
   the glimpse files). The tree name (if any) is appended to this.
+
+ alias
+  Defines another tree with the same properties as an existing alias/tree.
 
  glimpsebin 
   Location of the glimpse binary on your system.

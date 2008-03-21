@@ -59,7 +59,7 @@ my @reserved = ('auto', 'break', 'case', 'char', 'const', 'continue',
 	     '__asm__','__inline__');
 
 
-my @reservedJS = ( 'abstract',   'as',   'break',   'case',   'catch',   'class',   'const',   'continue',  'default',   'delete',   'do',   'else',   'export',   'extends',   'false',   'final',   'finally',   'for',   'function',   'if',   'import',   'in',   'instanceof',   'is',   'namespace',   'new',   'null',   'package',   'private',   'public',   'return',   'static',   'super',   'switch',   'this ',  'throw',   'true',   'try',   'typeof',   'use',   'var',   'void',   'while',   'with');
+my @reservedJS = ( 'abstract',   'as',   'break',   'case',   'catch',   'class',   'const',   'continue',  'default',   'delete',   'do',   'else',   'export',   'extends',   'false',   'final',   'finally',   'for',   'function',   'if',   'import',   'in',   'instanceof',   'is',   'namespace',   'new',   'null',   'package',   'private',   'public',   'return',   'static',   'super',   'switch',   'this ',  'throw',   'true',   'try',   'typeof',   'use',   'var',   'let',    'void',   'while',   'with');
 
 my @reservedXUL = (''); #nothing yet
 
@@ -317,7 +317,7 @@ sub findidentJS {
             my $line = $ct = $_;
             $ct2 = ($ct =~ s/\n//g) || 0;
             my $bl = $l;
-            if ($line =~ /^(.*\n|)(\s*(?:var|const)\s+)($ident(?:\s*(?:=[^,;]*|),\s*$ident)*)(.*?)(\n|$)/s) {
+            if ($line =~ /^(.*\n|)(\s*(?:var|let|const)\s+)($ident(?:\s*(?:=[^,;]*|),\s*$ident)*)(.*?)(\n|$)/s) {
                 ($pre, $ct, $ids, $junk) = ($1, $2, $3, $4);
                 $l += ($pre =~ s/\n//g) || 0;
                 $l += ($ct =~ s/\n//g) || 0;
@@ -379,6 +379,10 @@ sub findidentJS {
 
 sub c_clean {
     my $contents = $_[0];
+    # We don't care so much about proper style,
+    # from our perspective, most operators are equivalent to ,
+    $contents =~ s{[-+<>=%&|?^]+}{,}g;
+
     # Find macro (un)definitions.
     my $l = 0;
     my $defs;
@@ -955,7 +959,7 @@ sub findusage {
 
 
 sub dumpdb {
-    print(STDERR "Starting pass 3: Dump database to disk.\n");
+    print STDERR "Starting pass 3: Dump database to disk.\n";
 
     my $start = time;
     my %xrefdb;
@@ -1001,10 +1005,10 @@ while (<FILES>) {
         push(@ft, ($1 eq 'java')?1:0);
 	push(@f, $_);
     }
-    if (/\.(?:js)$/i) {
+    if (/\.(?:js)(?:\.in|)$/i) {
         push(@jsfiles, $_);
     }
-    if (/\.(?:p[lm]|cgi)$/i) {
+    if (/\.(?:p[lm]|cgi)(?:\.in|)$/i) {
         push(@plfiles, $_);
     }
 #   Duplicated in lib/LXR/Common.pm

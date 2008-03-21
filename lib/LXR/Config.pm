@@ -19,6 +19,17 @@ sub new {
     return(treeify($self));
 }
 
+my %aliases;
+sub resolvealias {
+    my ($orig, $xp) = @_;
+    my $real = $orig;
+    while (defined $aliases{$real}) {
+        return ${$xp}{$real} if (defined $xp && defined ${$xp}{$real});
+        $real = $aliases{$real};
+    }
+    return $real;
+}
+
 sub treeify {
     my ($self) = @_;
 
@@ -39,6 +50,17 @@ sub treeify {
         #there is one or more tree defined. (Using directory names with
         #embedded spaces here would be a bad thing.)
         my %treehash = split(/\s+/, $self->{'sourceroot'});
+        $self->{'alias'} =~ s/^\s+//;
+        %aliases = split(/\s+/, $self->{'alias'});
+        foreach my $alias (keys %aliases) {
+            if (defined $treehash{$alias}) {
+if (0) {
+                print STDERR ("Defining an alias for an existing tree '$alias'");
+}
+                next;
+            }
+            $treehash{$alias} = $treehash{resolvealias($alias)};
+        }
         $self->{'treehash'} = \%treehash;
 
         #To compute which tree we're looking at, grab the second to last
@@ -57,13 +79,13 @@ sub treeify {
         $self->{'srcrootname'} = $self->{'treename'};
 
         #append tree name to virtroot
-        $self->{'virtroot'} =  $self->{'virtroot'} . "/" . $self->{'treename'} ;
+        $self->{'virtroot'} .= "/" . $self->{'treename'} ;
 
-        #append tree name to baserul
-        $self->{'baseurl'} =  $self->{'baseurl'} . $self->{'treename'};
+        #append tree name to baseurl
+        $self->{'baseurl'} .= $self->{'treename'};
 
         #append tree name to dbdir
-        $self->{'dbdir'} =  $self->{'dbdir'} . "/" . $self->{'treename'} ;
+        $self->{'dbdir'} .= "/" . (resolvealias($self->{'treename'}));
 
         #find the cvsroot to sed in proper bonsai url
         my $path = $self->{'sourceroot'};
@@ -72,8 +94,18 @@ sub treeify {
         $self->{'bonsaicvsroot'} = $pathdirs[$pathnum - 1]; 
 
         my %treehashp = split(/\s+/, $self->{'sourceprefix'});
-        $self->{'sourceprefix'} = defined $treehashp{$self->{'treename'}}
-                                ? $treehashp{$self->{'treename'}}
+        foreach my $alias (keys %aliases) {
+            if (defined $treehash{$alias}) {
+if (0) {
+                print STDERR ("Defining an alias for an existing sourceprefix '$alias'");
+}
+                next;
+            }
+            $treehashp{$alias} = $treehash{resolvealias($alias, \%treehashp)};
+        }
+        my $sourceprefix = $treehashp{resolvealias($self->{'treename'}, \%treehashp)};
+        $self->{'sourceprefix'} = defined $sourceprefix
+                                ? $sourceprefix
                                 : undef;
 
     }
@@ -162,7 +194,8 @@ sub _initialize {
 		}
 	    } elsif ($dir eq 'sourceroot' ||
                      $dir eq 'sourceprefix' ||
-		     $dir eq 'sourceoverlay' ||
+                     $dir eq 'sourceoverlay' ||
+                     $dir eq 'alias' ||
 		     $dir eq 'srcrootname' ||
                      $dir eq 'virtroot' ||
 		     $dir eq 'baseurl' ||
@@ -186,10 +219,11 @@ sub _initialize {
 		     $dir eq 'htmldir') {
 		if ($arg =~ /([^\n]+)/) {
 	            if ($dir eq 'sourceroot' ||
-                        $dir eq 'sourceprefix') {
-		        $self->{$dir} = $self->{$dir} . " " . $1;
+                        $dir eq 'sourceprefix' ||
+                        $dir eq 'alias') {
+                        $self->{$dir} .= " " . $1;
                     }else{
-		    $self->{$dir} = $1;
+                        $self->{$dir} = $1;
                     }
 		}
 	    } elsif ($dir eq 'map') {

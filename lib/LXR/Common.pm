@@ -1,7 +1,7 @@
 # $Id: Common.pm,v 1.31 2006/12/06 10:22:03 reed%reedloden.com Exp $
 
 package LXR::Common;
-
+use POSIX qw(log10);
 use DB_File;
 use lib '../..';
 use Local;
@@ -11,15 +11,15 @@ require Exporter;
 @EXPORT = qw($Path &warning &fatal &abortall &fflush &urlargs 
 	     &fileref &idref &htmlquote &freetextmarkup &markupfile
 	     &markspecials &statustextmarkup &markupstring
+	     markupstring2
 	     &init &glimpse_init &makeheader &makefooter &expandtemplate
-             &bigexpandtemplate);
-
+             &bigexpandtemplate, &blamerefs
+);
 
 $wwwdebug = 1;
 
 $SIG{__WARN__} = 'warning';
 $SIG{__DIE__}  = 'fatal';
-
 
 my @term = (
   'atom',	'\\\\.',	'',
@@ -30,7 +30,7 @@ my @term = (
   'verb',	'\\b(?:for|do|while|else|if|throw|return)\\b',	'[\s(]',
   'verb',	'\\b(?:true|false|void|unsigned|int|double|float|short|long|bool|char)\\b',	'[\s();]',
   'verb',	
-'^(?:const|static|switch|case|default|break|next|continue|class|struct|union|enum)\b',	
+'^(?:const|static|switch|case|default|break|next|continue|class|struct|union|enum)\\b',	
 '\s',
   'include',	'#\\s*include\\b',	'[\r\n\b]',
   'include',	'#\\s*import\\b',	'[\r\n]',
@@ -73,7 +73,11 @@ push @cppterm, (
 
 my @jsterm = @javaterm;
 push @jsterm, (
-  'verb',  '\\b(?:var|function|[gs]et\s|typeof)\\b', '[\s(]',
+  'verb',  '\\b(?:let|var|switch|for|yield|function|get|set|typeof)\\b', '[\\s(]',
+  'verb',  '\\b(?:this|prototype)\\b', '.',
+  'verb',  '\\bdefault\\s*:', '\\b',
+  'verb',  '\\bcase\\b',   '\\b',
+  'verb',  '\\b(?:break|continue)\\s*;', '\\b',
 );
 
 my @pterm = (
@@ -143,6 +147,16 @@ my @dtdterm = (
   'idprefix', '<!ENTITY\b', '>',
 );
 
+my @shterm = (
+  'atom', '\\\\.', '',
+  'comment', 'dnl |#', '$',
+  'verb', '(?:if|fi|case|esac|in|then|test|else|for|do|done)\\b', '\b',
+#  'string',     '"',            '"',
+#  'string',     "'",            "'",
+#  'string',     '`',            '`',
+
+  
+);
 
 my %alreadywarned = ();
 
@@ -212,7 +226,9 @@ $path =~ s/\n//g;
     # but here we need to allow plus signs in file names for gtk+
     # hopefully this doesn't break anything else
     if ($path ne '') {
-        $path =~ s|([^-a-zA-Z0-9.+\@/_\r\n])|sprintf("%%%02X", ord($1))|ge;
+    # dealing w/ a url that has {},,@%-
+    # http://timeless.justdave.net/mxr-test/chinook/source/defoma-0.11.7osso/%7Barch%7D/,,inode-sigs/gus@inodes.org--debian%25defoma--debian--1.0--patch-1
+        $path =~ s|([^-a-zA-Z0-9.+,{}\@/_\r\n])|sprintf("%%%02X", ord($1))|ge;
         $path = "$Conf->{virtroot}/source$path";
     }
     return("<a href=\"$path".
@@ -236,7 +252,14 @@ sub diffref {
 my %id_cache = ();
 
 sub maybe_idref {
-  my ($ident, $filenum, $line) = @_;
+  my ($desc, $filenum, $line) = @_;
+  my $ident = !defined ($xref{$desc})
+    && $desc =~ /([A-Z])(.*)|([a-z])(.*)/
+    && $1
+   ? (lc $1) . $2
+   : ($3
+     ? (uc $3) . $4
+     : $desc);
   return &atomref($ident) unless (defined($xref{$ident}));
   my %ty = (('M', 'macro'),
             ('V', 'var'),
@@ -286,7 +309,9 @@ $refline++;
       $class = $ty{$refkind};
   }
 }
-  return &idref($ident,$ident,$class);
+  my @args;
+  push @args, 'scriptidly=1' if $desc ne $ident;
+  return &idref($desc,$ident,$class,@args);
 }
 
 sub idref {
@@ -351,13 +376,20 @@ sub linetag {
 #    my $tag = '<a href="'.$_[0].'#L'.$_[1].
 #              '" name="L'.$_[1].'">'.$_[1].' </a>';
     my $tag;
-    $tag = '<span class=line>';
-    $tag .= ' ' if $_[1] < 10;
-    $tag .= ' ' if $_[1] < 100;
-    $tag .= ' ' if $_[1] < 1000;
+    my $y = log10($_[1]);
+    my $x = $y | 0;
+    my $class = "class='l d$x'";
+    if ($x && ($x == $y)) {
+        my $style = '<style>';
+        my $s = '';
+        while ($y-- > 0) {
+          $s .= ' ';
+          $style .= ".d$y:before{content:'$s'} ";
+        }
+        $tag = $style . '</style>' . $tag;
+    }
     $tag .= &fileref($_[1], '', $_[1]).' ';
-    $tag .= '</span>';
-    $tag =~ s/<a/<a name=$_[1]/;
+    $tag =~ s/<a/<a $class name=$_[1]/;
 #    $_[1]++;
     return($tag);
 }
@@ -664,24 +696,35 @@ sub markupfile {
     $line = 1;
 
     # A C/C++ file 
-    if ($fname =~ /\.(?:java|idl)(?:.in|)$/i) {
+    my $name = $fname =~ /(.*)\.in$/ ? $1 : $fname;
+    if (defined $HTTP->{'param'}->{'handlename'}) {
+        $name = $HTTP->{'param'}->{'handlename'};
+    }
+    if (defined $ENV{'HTTP_COOKIE'} && $ENV{'HTTP_COOKIE'} =~ /handlename/) {
+        my %cookie_jar = split('[;=] *',$ENV{'HTTP_COOKIE'});
+        $name = $cookie_jar{'handlename'} if defined $cookie_jar{'handlename'};
+    }
+    if ($name =~ /\.(?:java|idl)$/i) {
         @terms = @javaterm;
-    } elsif ($fname =~ /\.(?:hh?|cpp?|cc?|mm?|pch\+?\+?)(?:.in|)$/i) { # Duplicated in genxref.
+    } elsif ($name =~ /\.(?:hh?|cpp?|cc?|mm?|pch\+?\+?)$/i) { # Duplicated in genxref.
         @terms = @cppterm;
-    } elsif ($fname =~ /\.(?:js)(?:.in|)$/) {
+    } elsif ($name =~ /\.(?:js)$/) {
         @terms = @jsterm;
-    } elsif ($fname =~ /\.(?:p[lm]|cgi|pod|t|tt2)$/i) {
+    } elsif ($name =~ /\.(?:p[lm]|cgi|pod|t|tt2)$/i) {
         @terms = @pterm;
-    } elsif ($fname =~ /\.(?:tm?pl)$/) {
+    } elsif ($name =~ /\.(?:tm?pl)$/) {
         @terms = @tterm;
-    } elsif ($fname =~ /\.(?:po)$/) {
+    } elsif ($name =~ /\.(?:po)$/) {
         @terms = @poterm;
-    } elsif ($fname =~ /\.(?:dtd)$/) {
+    } elsif ($name =~ /\.(?:dtd)$/) {
         @terms = @dtdterm;
+    } elsif ($name =~ /(configure|\.sh)$/) {
+        @terms = @shterm;
     } else {
-        open HEAD_HANDLE, $Path->{'realf'};
+        open HEAD_HANDLE, $fname;
         my $file_head = <HEAD_HANDLE>;
-        @terms = @pterm if $file_head =~ /^#!.*perl|-\*-perl-\*-/;
+        @terms = @pterm if $file_head =~ /^#!.*perl/;
+        @terms = @shterm if $file_head =~ /^dnl /;
         close HEAD_HANDLE;
     }
     if (@terms) {
@@ -733,20 +776,20 @@ sub markupfile {
                 }
                 $frag =~ s%L\0\0<(.*?)\0_>%L\0<$1\0>%g;
                 $frag =~ s%L\0\0<%L\0<%g;
-                $frag = "<span class='perldoc comment'>$frag</span>";
-                $frag =~ s#\n#</span>\n<span class='perldoc comment'>#g;
+                $frag = "<span class='perldoc c'>$frag</span>";
+                $frag =~ s#\n#</span>\n<span class='perldoc c'>#g;
             } elsif ($btype eq 'comment') {
                 # Comment
                 # Convert mail addresses to mailto:
                 &freetextmarkup($frag);
                 &statustextmarkup($frag);
-                $frag = "<span class='comment'>$frag</span>";
-                $frag =~ s#\n#</span>\n<span class='comment'>#g;
+                $frag = "<span class='c'>$frag</span>";
+                $frag =~ s#\n#</span>\n<span class='c'>#g;
             } elsif ($btype eq 'string') {
                 # String
-                $frag = "<span class='string'>$frag</span>";
+                $frag = "<span class='s'>$frag</span>";
             } elsif ($btype eq 'idprefix') {
-                if ($frag =~ s#(\w+)(\W+)([\w_]*)#<span class='verb'>$1</span>$2<a href="$Conf->{virtroot}/search?string=$3">$3</a>#) {
+                if ($frag =~ s#(\w+)(\W+)([\w_]*)#<span class='v'>$1</span>$2<a href="$Conf->{virtroot}/search?string=$3">$3</a>#) {
 
                 #print "<!-- -->";
 }
@@ -772,22 +815,22 @@ sub markupfile {
                         &filelookup($inc_file, $virtp.$inc_file,$prettyfile)#e;
                 }
                 $frag =~ s/('[^'+]*)\+(.*?')/$1\%2b$2/ while $frag =~ /(?:'[^'+]*)\+(?:.*?')/;
-                $frag =~ s|(#?\s*[^\s"'<]+)|<span class='include'>$1</span>|;
+                $frag =~ s|(#?\s*[^\s"'<]+)|<span class='i'>$1</span>|;
             } elsif ($btype eq 'use') {
                 # perl use directive
-                $frag =~ s#(use|USE)(\s+)([^\s;]*)#<span class='include'>$1</span>$2$3#;
+                $frag =~ s#(use|USE)(\s+)([^\s;]*)#<span class='i'>$1</span>$2$3#;
                 my $module = $3;
                 my $modulefile = "$module.pm";
                 $modulefile =~ s|::|/|g; 
                 $module = (&filelookup($modulefile, $modulefile, $module));
                 $frag =~ s|(</span>\s+)([^\s;]*)|$1$module|;
             } elsif ($btype eq 'verb') {
-                $frag =~ s/^/<span class='verb'>/;
+                $frag =~ s/^/<span class='v'>/;
                 $frag =~ s|$|</span>|;
             } else {
                 # Code
                 $frag =~ s#(^|[^a-zA-Z_\#0-9])([a-zA-Z_][a-zA-Z0-9_]*)\b#
-                    $1.(&maybe_idref($2, $filenum, $line))#ge;
+                    $1.(defined($xref{$2}) ? &maybe_idref($2, $filenum, $line) : &atomref($2))#ge;
             }
 
             &htmlquote($frag);
@@ -800,14 +843,22 @@ sub markupfile {
 #       &$outfun("</pre>\n");
         untie(%xref);
 
-    } elsif ($fname =~ /\.(gif|p?jpe?g|xbm|bmp|[jmp]ng)$/i) {
+    } elsif (Local::isImage($fname, 1)) {
 
         &$outfun("</pre>");
         &$outfun("<ul><table><tr><th valign=middle><b>Image: </b></th>");
         &$outfun("<td valign=middle>");
 
-        &$outfun("<img src=\"$Conf->{virtroot}/source".$virtp.$fname.
-                 &urlargs("raw=1")."\" border=\"0\" alt=\"$fname\">");
+        my $img = 'img';
+	my $ctype;
+	my $extra;
+	if ($fname =~ /\.svg$/) {
+            $ctype = 'image/svg+xml';
+            $extra = "&ctype=$ctype";
+            $img = "embed type='$ctype'";
+	}
+        &$outfun("<$img src=\"$Conf->{virtroot}/source".$virtp.$fname.
+                 &urlargs("raw=1").$extra."\" border=\"0\" alt=\"$fname\">");
 
         &$outfun("</tr></td></table></ul><pre>");
 
@@ -888,7 +939,7 @@ sub fixpaths {
     $Path->{'root'} = $Conf->sourceroot;
     
     while ($virtf =~ s#/[^/]+/\.\./#/#g) {
-       }
+    }
     $virtf =~ s#/\.\./#/#g;
 	   
     $virtf .= '/' if (-d $Path->{'root'}.$virtf);
@@ -911,7 +962,7 @@ sub fixpaths {
         my $svntree = $1;
         $svnpath = $2;
         $svnpath =~ s/[\n\r]//g;
-	$svntree =~ s{^(.)}{/$1};
+        $svntree =~ s{^(.)}{/$1};
 
         $Path->{'svnvirt'} = $svnpath;
         $Path->{'svntree'} = $svntree;
@@ -1015,6 +1066,7 @@ sub set_this_url {
     my $proto = $default_port == 443 ? 'https://' : 'http://';
     my $query = $ENV{'QUERY_STRING'};
     $query = '?' . $query if $query ne '';
+
     $HTTP->{'this_url'} = &http_wash(join('', $proto,
                                           $ENV{'SERVER_NAME'},
                                           $port,
@@ -1028,7 +1080,7 @@ sub glimpse_init {
 
     foreach ($ENV{'QUERY_STRING'} =~ /([^;&=]+)(?:=([^;&]+)|)/g) {
         push(@a, &http_wash($_));
-        }
+    }
     $HTTP->{'param'} = {@a};
     my $head = init_all();
 
@@ -1040,7 +1092,7 @@ sub glimpse_init {
     }
 
     return($Conf, $HTTP, $Path, $head);
-    }
+}
 
 
 sub init {
@@ -1048,11 +1100,11 @@ sub init {
     my @a;
     foreach ($ENV{'QUERY_STRING'} =~ /([^;&=]+)(?:=([^;&]+)|)/g) {
         push(@a, &http_wash($_));
-        }
+    }
     $HTTP->{'param'} = {@a};
     my $head = init_all();
     return($Conf, $HTTP, $Path, $head);
-    }
+}
 
 sub pretty_date
 {
@@ -1126,9 +1178,15 @@ sub init_all {
     
     
     if (defined($readraw)) {
+      unless (open(RAW, "<", $Path->{'realf'})) {
+        print "Status: 404 File Not Found
+Content-Type: text/html
+
+";
+  die "couldn't open $Conf->{'treename'}:$Path->{'virtf'}";
+      }
         print "$head
-"; 
-	open(RAW, "<", $Path->{'realf'}) || die "couldn't open $Path->{'realf'}";
+";
 	while (<RAW>) {
 	    print;
 	}
@@ -1548,6 +1606,26 @@ sub bigexpandtemplate
     			  ('variables',		\&varexpand));
 }
 
+sub blamerefs {
+    my ($pathname, $lines) = (@_);
+
+    $who = 'source';
+    fixpaths($pathname);
+    my $template = "";
+    if ($Conf->identref) {
+        unless (open(TEMPL, $Conf->identref)) {
+            &warning("Template ".$Conf->identref." does not exist.");
+        } else {
+            local $/;
+            $template = <TEMPL>;
+            close(TEMPL);
+        }
+    }
+
+    return (bigexpandtemplate(&expandtemplate($template,
+                           ('fpos',     sub {return($lines)})
+                           )));
+}
 
 sub makefooter {
     local $who = shift;
