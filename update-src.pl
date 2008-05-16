@@ -109,7 +109,7 @@ for ($TREE) {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/webtools/bugzilla $STDERRTOSTDOUT`;
         last;
     };
-    /^(l10n|l10n-mozilla1\.8|aviarybranch|mozilla1\.8\.0)$/ && do {
+    /^(l10n|l10n-(?:mozilla1\.8|aviarybranch|mozilla1\.8\.0))$/ && do {
         print LOG `$TIME $CVS $CVSQUIETFLAGS -d ':pserver:anonymous\@cvs-mirror.mozilla.org:/l10n' $CVSUP -dP $STDERRTOSTDOUT`;
         last;
     };
@@ -133,7 +133,7 @@ for ($TREE) {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P NSPR $STDERRTOSTDOUT`;
         last;
     };
-    /^(?:seamonkey|(?:aviary(101)?|reflow)branch|mozilla1.*)$/ && do {
+    /^(?:seamonkey|(?:aviary(?:101)?|reflow)branch|mozilla1.*)$/ && do {
         print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=all $STDERRTOSTDOUT`;
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
         print LOG `cd mozilla; $TIME $CVSCOMMAND $CVSUP-d tools` if /^seamonkey$/;
