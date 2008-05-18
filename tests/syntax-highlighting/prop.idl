@@ -3,3 +3,4 @@ interface testInterface {
   attribute boolean writableBar;
   void longMethod();
 }
+/* interface to be tested by implementation */

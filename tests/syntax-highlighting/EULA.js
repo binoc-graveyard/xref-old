@@ -4,6 +4,7 @@
 #
 # ***** END LICENSE BLOCK *****
 
+/* Sample EULA block - invalid js */
 var gEULADialog = {
   /**
    * The nsIWebProgress object associated with the privacy policy frame.

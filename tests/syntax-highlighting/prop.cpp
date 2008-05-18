@@ -4,7 +4,7 @@ class props : testInterface
 {
   NS_DECL_TESTINTERFACE
 } 
-
+/* interface implementation */
 NS_IMETHODIMP
 props::GetReadableFoo(PRBool *aFoo)
 {

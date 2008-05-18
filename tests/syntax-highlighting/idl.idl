@@ -1,4 +1,4 @@
-/* Header line */
+/* interface Header line */
 interface idl
 {
 readonly attribute long eemp;

@@ -13,7 +13,7 @@
 static int number = 1;
 const char[] regexp = "/this/";
 volatile char* regexpi = "/InSensitive/i";
-/* simple C style comment */
+/* simple C style comment - generic file */
 (void) 1;
 // simple C++ style comment
 (void) 2;

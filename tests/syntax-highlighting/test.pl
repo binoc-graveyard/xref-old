@@ -5,7 +5,7 @@ require 'testInclude.pl';
 my $number = 1;
 my $regexp = /this/;
 my $regexpi = /InSensitive/i;
-# simple perl sytle comment
+# simple perl style comment
 1;
 const constant = 3;
 my $single_quoted_string = 'singly quoted string';

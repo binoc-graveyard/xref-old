@@ -3,3 +3,4 @@ interface foo;
 interface blah {
 
 };
+/* some interface */

@@ -9,7 +9,7 @@ import syntax-highlighting::TestCase;
 var number = 1;
 var regexp = /this/;
 var regexpi = /InSensitive/i;
-/* simple C style comment */
+/* simple C style comment - generic file */
 (void) 1;
 // simple C++ style comment
 (void) 2;

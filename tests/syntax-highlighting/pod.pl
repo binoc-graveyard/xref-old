@@ -7,7 +7,7 @@ print "this is not a comment";
 print "this is not a comment";
 
  =pod
-print "this block is a compiler error";
+print "this block is a compiler error (tests perl plain old documentation)";
  =cut
 =pod
 This is POD

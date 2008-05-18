@@ -5,7 +5,7 @@ public:
   virtual void method();
   virtual void method2();
 };
-
+/* derived class and method tests */
 void derived_class::method()
 {
 }

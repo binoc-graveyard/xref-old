@@ -1,4 +1,4 @@
-
+/* tests for static declarations */
 static fook fookk (fookkk * fookkkk) {
 fook koof;
 return koof;
