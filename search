@@ -425,32 +425,13 @@ $regexp = $regexp =~ /1|on|yes/ ? 1 : '';
 $find = $HTTP->{'param'}->{'find'};
 $findi = $HTTP->{'param'}->{'findi'};
 $search_sensitive = defined $HTTP->{'param'}->{'case'} ? $HTTP->{'param'}->{'case'} =~ /1|on|yes/ : '';
-$filter = $HTTP->{'param'}->{'filter'};
+$filter = $HTTP->{'param'}->{'filter'} ||
+# '^[^\\0]*$'
+'%5E%5B%5E\\0%5D%2A%24';
 $hitlimit = cleanHitlimit($HTTP->{'param'}->{'hitlimit'}) || undef;
 
-sub cleanFilter
-{
-  my $filter = shift;
-$filter =~ s|\+| |g;
-$filter =~ s|%5B|[|gi;
-$filter =~ s|%5D|]|gi;
-$filter =~ s|%5E|^|gi;
-$filter =~ s|%2B|+|gi;
-$filter =~ s|%2A|*|gi;
-$filter =~ s|%21|!|g;
-$filter =~ s|%28|(|g;
-$filter =~ s|%29|)|g;
-$filter =~ s|%3F|?|gi;
-$filter =~ s{%24}{\$}g;
-$filter =~ s|%40|\\@|g;
-$filter =~ s/%7C/|/gi;
-  return $filter;
-}
-$filter = cleanFilter($filter);
-$filter = $HTTP->{'param'}->{'filter'};
 $filter =~ tr/+/ /;
 $filter =~ s/%(\w\w)/chr(hex $1)/ge;
-$filter =~ s/`//g;
 
 sub cleanHitlimit {
   my $hitLimit = shift;
@@ -466,6 +447,7 @@ if (defined $findi && $findi ne '') {
    #$find = $findi;
   }
 }
+
 sub cleanFind {
 my $find = shift;
 $find =~ s/["`'<>|()]+//g;
