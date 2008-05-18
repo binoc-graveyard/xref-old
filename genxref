@@ -135,7 +135,7 @@ sub findidentPL {
               "), file $curfnum of ",$#plfiles+1,"...\n");
 
         # Remove comments.
-        $contents =~ s/^\s=(?:\w+)\n(.*?)=cut/&wash($1)/ges; # Perl Pod
+        $contents =~ s/^\s=(?:\w+?\n)(.*?)=cut/&wash($1)&wash($2)/ges; # Perl Pod
         $contents =~ s/\#[^\n]*//g; # Perl Comment
 
         # Unwrap continuation lines.
@@ -159,7 +159,7 @@ sub findidentPL {
             "()".&wash($1)/ges;
 
         # Ranges are uninteresting (and confusing).
-        $contents =~ s/\[.*?\]//gs;
+        $contents =~ s/\[(.*?)\]/&wash($1)/ges;
 
         # From here on, \01 and \02 are used to encapsulate found
         # identifiers,
@@ -294,7 +294,7 @@ sub findidentJS {
         $contents =~ s/operator[\<\>\=\!\+\-\*\%\/]{1,2}/operator/g;
 
         # Ranges are uninteresting (and confusing).
-        $contents =~ s/\[(.*?)\]/&wash($1)/gs;
+        $contents =~ s/\[(.*?)\]/&wash($1)/ges;
 
         # From here on, \01 and \02 are used to encapsulate found
         # identifiers,
@@ -434,7 +434,7 @@ sub c_clean {
     $contents =~ s/operator[\<\>\=\!\+\-\*\%\/]{1,2}/operator/g;
 
     # Ranges are uninteresting (and confusing).
-    $contents =~ s/\[.*?\]//gs;
+    $contents =~ s/\[(.*?)\]/&wash($1)/ges;
 
     # And so are assignments.
     $contents =~ s/\=(.*?);/";".&wash($1)/ges;
@@ -560,7 +560,7 @@ sub findidentIDL {
 #                s/^(\s*)(struct|enum|union|inline)/$1/;
 # we don't care about [noscript] and similar friends
 # they're too complicated
-                s/\[([^]]*)\]/&wash($1)/g;
+                s/\[([^]]*)\]/&wash($1)/ge;
 
                 if (/$ident[^a-zA-Z0-9_]+$ident/) { # It takes two, baby.
 
@@ -771,7 +771,7 @@ sub findusagePL {
               "), file $curfnum of ",$#plfiles+1,"...\n");
 
         # Remove comments.
-        $contents =~ s/^\s=(?:\w+)\n(.*?)=cut/&wash($1)/ges; # Perl Pod
+        $contents =~ s/^\s=(?:\w+?\n)(.*?)=cut/&wash($1)&wash($2)/ges; # Perl Pod
         $contents =~ s/\#[^\n]*//g; # Perl Comment
 
 	# FIXME: "var"
