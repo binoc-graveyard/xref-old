@@ -1,0 +1,1692 @@
+# $Id: Common.pm,v 1.31 2006/12/06 10:22:03 reed%reedloden.com Exp $
+
+package LXR::Common;
+use POSIX qw(log10);
+use DB_File;
+use lib '../..';
+use Local;
+
+require Exporter;
+@ISA = qw(Exporter);
+@EXPORT = qw($Path &warning &fatal &abortall &fflush &urlargs 
+	     &fileref &idref &htmlquote &freetextmarkup &markupfile
+	     &markspecials &statustextmarkup &markupstring
+	     markupstring2
+	     &init &glimpse_init &makeheader &makefooter &expandtemplate
+             &bigexpandtemplate, &blamerefs
+);
+
+$wwwdebug = 1;
+
+$SIG{__WARN__} = 'warning';
+$SIG{__DIE__}  = 'fatal';
+
+my @term = (
+  'atom',	'\\\\.',	'',
+  'comment',	'/\*',		'\*/',
+  'comment',	'//',		'[\r\n]',
+  'string',	'"',		'"',
+  'string',	"'",		"'",
+  'verb',	'\\b(?:for|do|while|else|if|throw|return)\\b',	'[\s(]',
+  'verb',	'\\b(?:true|false|void|unsigned|int|double|float|short|long|bool|char)\\b',	'[\s();]',
+  'verb',	
+'^(?:const|static|switch|case|default|break|next|continue|class|struct|union|enum)\\b',	
+'\s',
+  'include',	'#\\s*include\\b',	'[\r\n\b]',
+  'include',	'#\\s*import\\b',	'[\r\n]',
+  #'include',    '\\s*interface\\b,      ';'
+);
+
+my @javaterm = @term;
+push @javaterm, (
+  'verb',
+  '\\b(?:public|protected|private|package|implements|interface|extends|final|import|throws|abstract)\\b',
+  '[\s]',
+  'verb',       '\\b(?:try|catch|finally)\\b', '[\s{(]',
+  'verb',
+  '\\b(?:new|delete|instanceof|null)\\b',
+  '[\s(]',
+);
+
+my @cterm = @term;
+push @cterm, (
+  'verb',  '\\b(?:typedef)\\b', '[\s]',
+  'verb',
+'^#\\s*(?:if|(?:ifn?|un)def|else|elif|define|endif|pragma|warn(?:ing|)|error)\\b',
+'(?:\s|$)',
+  'verb',  '\\b(?:sizeof)\\b', '[\s(]',
+  'verb',  '\\b(?:register)\\b',     '[\s();]',
+);
+
+my @cppterm = @cterm;
+push @cppterm, (
+  'verb',  '\\b(?:template)\\b', '[\s<]',
+  'verb',  '\\b(?:inline|extern|explicit|new)\\b', '[\s]',
+  'verb',
+  '\\b(?:public|protected|private|interface|virtual)\\b',
+  '[\s:(]',
+  'verb',       '\\b(?:try|catch|finally|operator)\\b', '[\s{(]',
+  'verb',
+  '\\b(?:new|delete|null)\\b',
+  '[\s(]',
+);
+
+my @jsterm = @javaterm;
+push @jsterm, (
+  'verb',  '\\b(?:let|var|switch|for|yield|function|get|set|typeof)\\b', '[\\s(]',
+  'verb',  '\\b(?:this|prototype)\\b', '.',
+  'verb',  '\\bdefault\\s*:', '\\b',
+  'verb',  '\\bcase\\b',   '\\b',
+  'verb',  '\\b(?:break|continue)\\s*;', '\\b',
+);
+
+my @pterm = (
+  'atom',       '\\\\.',        '',
+  'comment',    '#',            '[\r\n]',
+  'comment',    '^=(?:begin|pod|head)', '=cut',
+  #'comment',    '^=cut',   '^=back',
+  'string',     "'",            "'",
+  'string',     '"',            '"',
+  'string',     '\\b(?:qq?|m)\|', '\|',
+  'string',     '\\b(?:qq?|m)#',  '#',
+  'string',     '\\b(?:qq?|m)\(', '\)',
+  'string',     '\\b(?:qq?|m){',  '}',
+  'string',     '\\b(?:qq?|m)<',  '>',
+  #'string',     '^/',           '/',
+  'verb',       '\\bsub\\b',      '\s',
+#loop control
+  'verb',
+'^\s*(?:new|for|foreach|while|else|elsif|if|unless|do|BEGIN|END)\b',
+'[ \(\{]',
+#decl
+  'verb',
+'^\s*(?:my|local|our)\b',
+'[ \(\{]',
+#internal type
+  'verb',
+'^\s*(?:defined|undef)\b',
+'[ \(\{]',
+#comparitors
+  'verb',
+'^\s*(?:eq|ne|ge|le|s|tr|lib)\b',
+'[\s\(\{]',
+#native functions
+  'verb',
+'^\s*(?:close|open|join|split|print|die|warn|push|pop|shift|unshift|delete|keys|tie|untie|length|scalar|ord|uc|lc|sprintf|qq|qw|q)\b',
+'[ \(\{]',
+  'verb',
+'^\s*(?:exit|return|break|next|last|package)\\b',
+'[ ;\(]',
+  'verb',  '\\b(?:use|local|my)\\b', '[\s(]',
+  'include',    '\\b(?:require|import)\\b',';',
+  'use',        '\\buse\\b',      ';',
+  'atom',       '(?:[\$\@\&\%\=]?\w+)', '\\W',
+);
+
+my @tterm = (
+  'atom',       '\\\\.',        '',
+  'comment',    '\[\%#',        '\%\]',
+  'include',    '\\bPROCESS\\b',      '\%\]|\s$',
+  'include',    '\\bINCLUDE\\b',      '\%\]|\s$',
+  'use',        '\\bUSE\\b',          '\%\]',
+  'string',     '"',            '"',
+  'string',     "'",            "'",
+);
+
+my @poterm = (
+  'atom', '\\\\.', '',
+  'comment', '^#', '$',
+  'verb', 'msgstr', '"',
+  'idprefix', 'msgid\b.*"', '"',
+# 'verb', 'msgstr', '"',
+);
+
+my @dtdterm = (
+  'atom', '\\\\.', '',
+  'comment', '<!--', '-->',
+  'idprefix', '<!ENTITY\b', '>',
+);
+
+my @shterm = (
+  'atom', '\\\\.', '',
+  'comment', 'dnl |#', '$',
+  'verb', '(?:if|fi|case|esac|in|then|test|else|for|do|done)\\b', '\b',
+#  'string',     '"',            '"',
+#  'string',     "'",            "'",
+#  'string',     '`',            '`',
+
+  
+);
+
+my %alreadywarned = ();
+
+sub warning {
+    return if defined $_[1] && $_[1] && defined $alreadywarned{$_[1]};
+    print(STDERR "[",scalar(localtime),"] warning: $_[0]\n");
+    print("<h4 align=\"center\"><i>** Warning: $_[0]</i></h4>\n") if $wwwdebug;
+    $alreadywarned{$_[1]} = 1;
+}
+
+
+sub fatal {
+    print(STDERR "[",scalar(localtime),"] fatal: $_[0]\n");
+    print("<h4 align=\"center\"><i>** Fatal: $_[0]</i></h4>\n") if $wwwdebug;
+    exit(1);
+}
+
+
+sub abortall {
+    print(STDERR "[",scalar(localtime),"] abortall: $_[0]\n");
+    print("Content-Type: text/html\n\n",
+	  "<html>\n<head>\n<title>Abort</title>\n</head>\n",
+	  "<body><h1>Abort!</h1>\n",
+	  "<b><i>** Aborting: $_[0]</i></b>\n",
+	  "</body>\n</html>\n") if $wwwdebug;
+    exit(1);
+}
+
+
+sub fflush {
+    $| = 1; print('');
+}
+
+
+sub urlargs {
+    my @args = @_;
+    my %args = ();
+    my $val;
+
+    foreach (@args) {
+	$args{$1} = $2 if /(\S+)=(\S*)/;
+    }
+    @args = ();
+
+    foreach ($Conf->allvariables) {
+	$val = $args{$_} || $Conf->variable($_);
+	push(@args, "$_=$val") unless ($val eq $Conf->vardefault($_));
+	delete($args{$_});
+    }
+
+    foreach (keys(%args)) {
+	push(@args, "$_=$args{$_}");
+    }
+
+    return($#args < 0 ? '' : '?'.join(';',@args));
+}    
+
+
+sub fileref {
+    my ($desc, $path, $line, @args) = @_;
+$desc =~ s/\n//g;
+$path =~ s/\n//g;
+    #$path =~ s/\+/ /;
+
+    # jwz: URL-quote any special characters.
+    # endico: except plus. plus signs are normally used to represent spaces
+    # but here we need to allow plus signs in file names for gtk+
+    # hopefully this doesn't break anything else
+    if ($path ne '') {
+    # dealing w/ a url that has {},,@%-
+    # http://timeless.justdave.net/mxr-test/chinook/source/defoma-0.11.7osso/%7Barch%7D/,,inode-sigs/gus@inodes.org--debian%25defoma--debian--1.0--patch-1
+        $path =~ s|([^-a-zA-Z0-9.+,{}\@/_\r\n])|sprintf("%%%02X", ord($1))|ge;
+        $path = "$Conf->{virtroot}/source$path";
+    }
+    return("<a href=\"$path".
+           &urlargs(@args).
+           ($line > 0 ? "#$line" : "").
+           "\"\>$desc</a>");
+}
+
+
+sub diffref {
+    my ($desc, $path, $darg) = @_;
+
+    ($darg,$dval) = $darg =~ /(.*?)=(.*)/;
+    return("<a href=\"$Conf->{virtroot}/diff$path".
+           &urlargs(($darg ? "diffvar=$darg" : ""),
+                    ($dval ? "diffval=$dval" : ""),
+                    @args).
+           "\"\>$desc</a>");
+}
+
+my %id_cache = ();
+
+sub maybe_idref {
+  my ($desc, $filenum, $line) = @_;
+  my $ident = !defined ($xref{$desc})
+    && $desc =~ /([A-Z])(.*)|([a-z])(.*)/
+    && $1
+   ? (lc $1) . $2
+   : ($3
+     ? (uc $3) . $4
+     : $desc);
+  return &atomref($ident) unless (defined($xref{$ident}));
+  my %ty = (('M', 'macro'),
+            ('V', 'var'),
+            ('f', 'proto'),
+            ('F', 'function'),
+            ('C', 'class'),
+            ('c', 'class_forward'),
+            ('T', 'type'),
+            ('S', 'struct'),
+            ('E', 'enum'),
+            ('U', 'union'),
+            ('R', 'reference'),
+            ('I', 'interface'),
+           );
+
+  my $class = 'ident';  
+if (1) {
+} elsif (0) {
+my $id_line;
+  if (defined $id_cache{$ident}) {
+   $id_line = $id_cache{$ident};
+  } else {
+   $id_line = $id_cache{$ident} = $xref{$ident};
+  }
+  my @refs = split(/\t/,$id_line);
+ if (1 || ($#refs < 100)) {
+  foreach my $ref (@refs) {
+    if ($ref =~ /^(.)(.*):(.*)/) {
+      my ($refkind, $reffnum, $refline) = ($1, $2, $3);
+# I have no explanation for this off by one problem.
+$refline++;
+#$reffnum++;
+#print "<!-- $ident ($line/$refline) [$reffnum/$filenum] [$refkind] -->";
+      next unless $refline == $line;
+      next unless $filenum == $reffnum;
+#print "<!-- $ident ($line/$refline) [$reffnum/$filenum] $refkind /".(length $refkind)."/{".($ty{$refkind})."} -->";
+#print "<!-- $ident $line $reffnum $refkind -->";
+      $class = $ty{$refkind};
+      last;
+    }
+  }
+ }
+} elsif (1) {
+  --$line;
+  if ($xref{$ident} =~ /(?:^|\t)(.)$filenum:$line(?:$|\t)/) {
+      my ($refkind) = ($1);
+      $class = $ty{$refkind};
+  }
+}
+  my @args;
+  push @args, 'scriptidly=1' if $desc ne $ident;
+  return &idref($desc,$ident,$class,@args);
+}
+
+sub idref {
+    my ($desc, $id, $class, @args) = @_;
+    $class ||= 'ident';
+    return("<a class='$class' href=\"$Conf->{virtroot}/ident".
+           &urlargs(($id ? "i=$id" : ""),
+                    @args).
+           "\"\>$desc</a>");
+}
+
+
+sub atomref {
+    my ($atom) = @_;
+    return "<span class='atom'>$atom</span>";
+}
+
+sub http_wash {
+    my $t = shift;
+    # $t =~ s/\+/%2B/g;
+
+    $t =~ s/\%2b/\%252b/gi;
+
+    #endico: don't use plus signs to represent spaces as is the normal
+    #case. we need to use them in file names for gtk+
+
+    $t =~ s/\%([\da-f][\da-f])/pack("C", hex($1))/gie;
+
+    # Paranoia check. Regexp-searches in Glimpse won't work.
+    # if ($t =~ tr/;<>*|\`&$!#()[]{}:\'\"//) {
+
+    return($t);
+}
+
+
+sub markspecials {
+    $_[0] =~ s/([\&\<\>])/\0$1/g;
+}
+
+
+sub htmlquote {
+    $_[0] =~ s/\0&/&amp;/g;
+    $_[0] =~ s/\0</&lt;/g;
+    $_[0] =~ s/\0>/&gt;/g;
+    $_[0] =~ s#\b(href=)("([^"]*)")\b#$1<a href="$3">$2</a>#gi;
+}
+
+sub freetextmarkup {
+    $_[0] =~ s#((?:ftp|https?)://\S*[^\s."')>])#<a href=\"$1\">$1</a>#gi;
+    $_[0] =~ s#(&amp;lt;(?:[Mm][Aa][Ii][Ll][Tt][Oo]:|)([^\s"']*?@[^\s"']*?)&amp;gt;)#<a href=\"mailto:$2\">$1</a>#g;
+    $_[0] =~ s#(\((?:[Mm][Aa][Ii][Ll][Tt][Oo]:|)([^\s"']*?@[^\s"']*?)\))#<a href=\"mailto:$2\">$1</a>#g;
+    $_[0] =~ s#(\0<(?:[Mm][Aa][Ii][Ll][Tt][Oo]:|)([^\s"']*?@[^\s"']*?)\0>)#<a href=\"mailto:$2\">$1</a>#g;
+}
+
+sub statustextmarkup {
+    return unless $_[0] =~ /\@status/;
+    $_[0] =~ s#(\@status\s+)(FROZEN|UNDER_REVIEW|DEPRECATED)\b#<span class="idl_$2">$1$2</span>#gi;
+}
+
+sub linetag {
+#$frag =~ s/\n/"\n".&linetag($virtp.$fname, $line)/ge;
+#    my $tag = '<a href="'.$_[0].'#L'.$_[1].
+#              '" name="L'.$_[1].'">'.$_[1].' </a>';
+    my $tag;
+    my $y = log10($_[1]);
+    my $x = $y | 0;
+    my $class = "class='l d$x'";
+    if ($x && ($x == $y)) {
+        my $style = '<style>';
+        my $s = '';
+        while ($y-- > 0) {
+          $s .= ' ';
+          $style .= ".d$y:before{content:'$s'} ";
+        }
+        $tag = $style . '</style>' . $tag;
+    }
+    $tag .= &fileref($_[1], '', $_[1]).' ';
+    $tag =~ s/<a/<a $class name=$_[1]/;
+#    $_[1]++;
+    return($tag);
+}
+
+# dme: Smaller version of the markupfile function meant for marking up 
+# the descriptions in source directory listings.
+sub markupstring {
+    my ($string, $virtp) = @_;
+
+    # Mark special characters so they don't get processed just yet.
+    markspecials($string);
+
+    # Look for identifiers and create links with identifier search query.
+    tie (%xref, "DB_File", $Conf->dbdir."/xref", O_RDONLY, 0664, $DB_HASH)
+        || &warning("Cannot open xref database.", 'xref-db');
+    $string =~ s#(^|\s)([a-zA-Z_~][a-zA-Z0-9_]*)\b#
+                $1.(is_linkworthy($2) ? &idref($2,$2) : $2)#ge;
+    untie(%xref);
+
+    # HTMLify the special characters we marked earlier,
+    # but not the ones in the recently added xref html links.
+    $string=~ s/\0&/&amp;/g;
+    $string=~ s/\0</&lt;/g;
+    $string=~ s/\0>/&gt;/g;
+
+    # HTMLify email addresses and urls.
+    $string =~ s#((ftp|https?|nntp|snews|news)://(\w|\w\.\w|\~|\-|\/|\#)+(?!\.\b))#<a href=\"$1\">$1</a>#g;
+    # htmlify certain addresses which aren't surrounded by <>
+    $string =~ s/([\w\-\_]*\@(?:netscape\.com|mozilla\.(?:com|org)|gnome\.org|linux\.no))(?!&gt;)/<a href=\"mailto:$1\">$1<\/a>/g;
+    $string =~ s/(&lt;)(.*@.*)(&gt;)/$1<a href=\"mailto:$2\">$2<\/a>$3/g;
+
+    # HTMLify file names, assuming file is in the current directory.
+    $string =~ s#\b(([\w\-_\/]+\.(cc?|hh?|cc|cpp?|mm?|idl|java|js|p[lm]))|README(?:\.(?:txt|html?)|))\b#<a href=\"$Conf->{virtroot}/source$virtp$1\">$1</a>#g;
+
+    return($string);
+}
+
+# dme: Return true if string is in the identifier db and it seems like its
+# use in the sentence is as an identifier and it isn't just some word that
+# happens to have been used as a variable name somewhere. We don't want
+# words like "of", "to" and "a" to get links. The string must be long 
+# enough, and  either contain "_" or have some letter other than the first 
+# which is capitalized
+sub is_linkworthy{
+    my ($string) = @_;
+
+    if  ( ($string =~ /....../) &&
+          ( ($string =~ /_/) ||
+            ($string =~ /.[A-Z]/)
+          ) &&
+          (defined($xref{$string}))
+        ){
+        return (1);
+    }else{
+        return (0);
+    }
+}
+
+my $indexname;
+my $sourceroot;
+my @file_listing;
+my $file_iterator;
+my $file_length;
+
+sub getnext_fileentry_1{
+    unless (@file_listing)
+    {
+        $indexname ||= $Conf->dbdir."/.glimpse_filenames";
+        $sourceroot = $sourceroot || $Conf->sourceroot;
+
+        return undef unless open(FILELLISTING,$indexname);
+        $file_length = <FILELLISTING>;
+        $file_length =~ s/[\r\n]//g;
+        @file_listing = ();
+    }
+    return 1;
+}
+sub getnext_fileentry_2{
+    my ($filematch) = @_;
+    my $fileentry;
+    if ($file_length == scalar @file_listing) {
+        while ($file_iterator < $file_length) {
+            $fileentry = $file_listing[$file_iterator++];
+            if ($fileentry =~ /$filematch/) {
+                return $fileentry;
+            }
+        }
+    }
+    return undef;
+}
+sub getnext_fileentry_3_1{
+    my ($filematch) = @_;
+    my $fileentry;
+        $fileentry = <FILELLISTING>;
+        chomp $fileentry;
+        $fileentry =~ s/^$sourceroot//;
+        $fileentry =~ s/\n//;
+        push @file_listing, $fileentry;
+        if ($fileentry =~ /$filematch/) {
+            $file_iterator = scalar @file_listing;
+            return $fileentry;
+        }
+        #return $fileentry;
+    return undef;
+}
+sub getnext_fileentry_3_S{
+    my ($filematch) = @_;
+    my $fileentry;
+    while (scalar @file_listing < $file_length) {
+        $fileentry = getnext_fileentry_3_1($filematch);
+        return $fileentry if $fileentry;
+    }
+    return undef;
+}
+sub getnext_fileentry_3{
+    my ($filematch) = @_;
+    return getnext_fileentry_3_S($filematch);
+    my $fileentry;
+    while (scalar @file_listing < $file_length) {
+        $fileentry = <FILELLISTING>;
+        chomp $fileentry;
+        $fileentry =~ s/^$sourceroot//;
+        $fileentry =~ s/\n//;
+        push @file_listing, $fileentry;
+        if ($fileentry =~ /$filematch/) {
+            $file_iterator = scalar @file_listing;
+            return $fileentry;
+        }
+        #return $fileentry;
+    }
+    return undef;
+}
+sub getnext_fileentry_4{
+    $file_iterator = scalar @file_listing;
+    if ($file_iterator == $file_length) {
+        close FILELLISTING;
+        return undef;
+    }
+
+    return undef;
+}
+sub getnext_fileentry_S{
+    my ($filematch) = @_;
+    return undef unless getnext_fileentry_1($filematch);
+    return getnext_fileentry_2($filematch) ||
+           getnext_fileentry_3($filematch) ||
+           getnext_fileentry_4($filematch);
+}
+sub getnext_fileentry{
+    my ($filematch) = @_;
+    return getnext_fileentry_S($filematch) if defined $ENV{'TIMELESS'};
+    unless (@file_listing)
+    {
+        my $indexname = $indexname || $Conf->dbdir."/.glimpse_filenames";
+        $sourceroot = $sourceroot || $Conf->sourceroot;
+
+        return undef unless open(FILELLISTING,$indexname);
+        $file_length = <FILELLISTING>;
+        $file_length =~ s/[\r\n]//g;
+        @file_listing = ();
+    }
+    my $fileentry;
+    if ($file_length == scalar @file_listing) {
+        while ($file_iterator < $file_length) {
+            $fileentry = $file_listing[$file_iterator++];
+            if ($fileentry =~ /$filematch/) {
+                return $fileentry;
+            }
+        }
+    }
+    while (scalar @file_listing < $file_length) {
+        $fileentry = <FILELLISTING>;
+        chomp $fileentry;
+        $fileentry =~ s/^$sourceroot//;
+        $fileentry =~ s/\n//;
+        push @file_listing, $fileentry;
+        if ($fileentry =~ /$filematch/) {
+            $file_iterator = scalar @file_listing;
+            return $fileentry;
+        }
+        #return $fileentry;
+    }
+    $file_iterator = scalar @file_listing;
+    if ($file_iterator == $file_length) {
+        close FILELLISTING;
+        return undef;
+    }
+
+    return undef;
+}
+
+sub filelookup{
+    my ($filename,$bestguess,$prettyname)=@_;
+    $prettyname = $filename unless defined $prettyname;
+    my $idlfile;
+    $idlfile = $1 if ($filename =~ /(^.*)\.h$/);
+    return &fileref($prettyname, $bestguess) if -e $Conf->sourceroot.$bestguess;
+    my $baseurl = $Conf->{virtroot}; # &baseurl;
+    my ($pfile_ref,$gfile_ref,$ifile_ref,$jfile_ref,$kfile_ref,$loosefile,$basefile,$p,$g,$i,$j,$k);
+    $filename =~ s|([(){}^\$.*?\&\@\\+])|\\$1|g;
+    if ($filename =~ m|/|) {
+        $basefile = $loosefile = $filename;
+        $basefile =~ s|^.*/|/|g;
+        $loosefile =~ s|/|/.*/|g;
+    }
+    $filename = '/' . $filename . '$';
+    $file_iterator = 0;
+    while ($fileentry = &getnext_fileentry($idlfile || $filename)) {
+        if ($fileentry =~ m|/\Q$bestguess\E$|i) {
+            $pfile_ref=&fileref($prettyname, $fileentry, $hash);
+            $p++;
+        }
+        if ($fileentry =~ m|$filename|i) {
+            $gfile_ref=&fileref($prettyname, $fileentry, $hash);
+            $g++;
+        }
+        if ($idlfile && $fileentry =~ m|/\Q$idlfile.idl\E$|i) {
+            $ifile_ref=&fileref($prettyname, $fileentry, $hash);
+            $i++;
+        }
+        if ($loosefile && $fileentry =~ m|$loosefile|i) {
+            $jfile_ref=&fileref($prettyname, $fileentry, $hash);
+            $j++;
+        }
+        if ($basefile && $fileentry =~ m|$basefile$|i) {
+            $kfile_ref=&fileref($prettyname, $fileentry, $hash);
+            $k++;
+        }
+        # Short circuiting:
+        # If there's more than one idl file then just give a find for all stems
+        # If there's an idl file and a header file then just give a find for all stems
+        return "<a href='$baseurl/find?string=$idlfile'>$prettyname</a>" if ($p || $g || $i > 1) && $i;
+    }
+    return $pfile_ref if $p == 1;
+    if  ($p == 0) {
+        return $gfile_ref if $g == 1;
+        if ($g == 0) {
+            return $ifile_ref if $i == 1;
+            if ($i == 0) {
+                return $jfile_ref if $j == 1;
+                return $kfile_ref if $j == 0 && $k == 1;
+            }
+        }
+    }
+    return "<a href='$baseurl/find?string=$idlfile$hash'>$prettyname</a>" if $i;
+    return "<a href='$baseurl/find?string=$filename$hash'>$prettyname</a>" if $p || $g || !$loosefile;
+    return "<a href='$baseurl/find?string=$loosefile$hash'>$prettyname</a>" if $j;
+    return "<a href='$baseurl/find?string=$basefile$hash'>$prettyname</a>";
+}
+
+sub notvcalled {
+ my ($entryrev,$entrybranch,$keywords);
+ my ($entriespath, $entryname) = split m|/(?!.*/)|, $Path->{'realf'};
+ if (open(CVSENTRIES, "$entriespath/CVS/Entries")) {
+  while (<CVSENTRIES>) {
+   next unless m|^/\Q$entryname\E/([^/]*)/[^/]*/([^/]*)/(.*)|;
+   ($entryrev,$keywords,$entrybranch)=($1,$2,$3);
+   last;
+  }
+  close(CVSENTRIES);
+ }
+ return ($entryrev,$entrybranch,$keywords);
+}
+sub notycalled {
+ my $entrybranch = 'HEAD';
+ if (open(CVSTAG, " $Path->{'real'}/CVS/Tag")) {
+  while (<CVSTAG>) {
+   next unless /^T(.*)$/;
+   $entrybranch=$1;
+   last;
+  }
+  close(CVSTAG);
+ }
+ return $entrybranch;
+}
+
+sub get_mime_type {
+    my $fname = shift;
+    my $ext = $fname;
+    $ext =~ s/^.*\.//;
+    my $mime_types = '/etc/mime.types';
+    return '' unless $ext ne '' || !-f $mime_types;
+    my $override = '&ctype=';
+    my $type;
+
+    if (open(MIMETYPES,"<$mime_types")) {
+        my $mime_entry;
+        while (!defined $type && ($mime_entry = <MIMETYPES>)) {
+            next unless $mime_entry =~ /^(\S+)\s.*\b$ext\b/;
+            $type = $1;
+        }
+        close(MIMETYPES);
+        return $override.$type;
+    }
+    return '';
+}
+
+sub markupfile {
+    my ($INFILE, $Path, $fname, $outfun) = @_;
+    my $virtp = $Path->{'virt'};
+    my @terms;
+    my $filenum;
+
+    $line = 1;
+
+    # A C/C++ file 
+    my $name = $fname =~ /(.*)\.in$/ ? $1 : $fname;
+    if (defined $HTTP->{'param'}->{'handlename'}) {
+        $name = $HTTP->{'param'}->{'handlename'};
+    }
+    if (defined $ENV{'HTTP_COOKIE'} && $ENV{'HTTP_COOKIE'} =~ /handlename/) {
+        my %cookie_jar = split('[;=] *',$ENV{'HTTP_COOKIE'});
+        $name = $cookie_jar{'handlename'} if defined $cookie_jar{'handlename'};
+    }
+    if ($name =~ /\.(?:java|idl)$/i) {
+        @terms = @javaterm;
+    } elsif ($name =~ /\.(?:hh?|cpp?|cc?|mm?|pch\+?\+?)$/i) { # Duplicated in genxref.
+        @terms = @cppterm;
+    } elsif ($name =~ /\.(?:js)$/) {
+        @terms = @jsterm;
+    } elsif ($name =~ /\.(?:p[lm]|cgi|pod|t|tt2)$/i) {
+        @terms = @pterm;
+    } elsif ($name =~ /\.(?:tm?pl)$/) {
+        @terms = @tterm;
+    } elsif ($name =~ /\.(?:po)$/) {
+        @terms = @poterm;
+    } elsif ($name =~ /\.(?:dtd)$/) {
+        @terms = @dtdterm;
+    } elsif ($name =~ /(configure|\.sh)$/) {
+        @terms = @shterm;
+    } else {
+        open HEAD_HANDLE, $fname;
+        my $file_head = <HEAD_HANDLE>;
+        @terms = @pterm if $file_head =~ /^#!.*perl/;
+        @terms = @shterm if $file_head =~ /^dnl /;
+        close HEAD_HANDLE;
+    }
+    if (@terms) {
+        &SimpleParse::init($INFILE, @terms);
+
+        my $hash_params = new DB_File::HASHINFO;
+        $hash_params->{'cachesize'} = 30000;
+        tie (%xref, "DB_File", $Conf->dbdir."/xref", O_RDONLY, 0664, $hash_params)
+            || &warning("Cannot open xref database.", 'xref-db');
+        if (tie(%fileidx, "DB_File", $Conf->dbdir."/fileidx",
+            O_RDONLY, undef, $hash_params)) {
+            foreach my $key (keys %fileidx) {
+                if (($virtp.$fname eq $fileidx{$key}) ||
+                    ($virtp.$fname eq '/'.$fileidx{$key})) {
+                    $filenum = $key, last;
+                }
+            }
+            untie(%fileidx);
+        } else {
+            &warning('Cross reference database is missing its file list for "'.$Conf->{'treename'}.'" please complain to the webmaster [cite: fileidx]');
+        }
+
+        &$outfun(# "<pre>\n".
+                 #"<a name=\"".$line++.'"></a>');
+                 &linetag($virtp.$fname, $line++));
+
+        ($btype, $frag) = &SimpleParse::nextfrag;
+
+        while (defined($frag)) {
+#print "<!--$btype-->" if @terms eq @pterm;
+            &markspecials($frag);
+
+            if ($btype eq 'perldoc') {
+                # PerlDoc
+                $frag =~ s#(=head.\s+([^\s(]*)(?:([(]).*?([)])|))#<a name="$2$3$4">$1</a>#g;
+                $frag =~ s#(I\0?<)(.*?)(\0?>)#$1<i>$2</i>$3#g;
+                $frag =~ s#(C\0<)(.*?)(\0>)#$1<code><u>$2</u></code>$3#g;
+                $frag =~ s#(E\0<lt\0>)([^\0]*?@[^\0]*)(E\0<gt\0>)#$1<a href="mailto:$2">$2</a>$3#g;
+                $frag =~ s%(L\0)(<)(\w+?://[^\0]*?)(\0>)%$1\0$2<a href="$3">$3</a>$4%g;
+                $frag =~ s%(L\0)(<)([^(\0]*?\(\))(\0>)%$1\0$2<a href="#$3">$3</a>$4%g;
+                my ($ref_name, $ref_file, $ref_hash, $prettyfile);
+                while ($frag =~ s%(L\0)(<)(([^\|#\0]*)(?:\|(([^#\0]*)(#[^\0]*?|))|))(\0)(>)%
+                               "$1\0$2\0!$3\0!$8_$9"%e) {
+                    ($ref_name, $ref_file, $ref_hash, $prettyfile) = ($4, $6 || $4, $7, $3);
+                    $ref_file =~ s|::|/|g;
+                    $ref_file .= '.pm';
+                    $frag =~ s#\0!.*?\0!#
+                               &filelookup($ref_file, $virtp.$ref_file, $prettyfile, $ref_hash)#e;
+                }
+                $frag =~ s%L\0\0<(.*?)\0_>%L\0<$1\0>%g;
+                $frag =~ s%L\0\0<%L\0<%g;
+                $frag = "<span class='perldoc c'>$frag</span>";
+                $frag =~ s#\n#</span>\n<span class='perldoc c'>#g;
+            } elsif ($btype eq 'comment') {
+                # Comment
+                # Convert mail addresses to mailto:
+                &freetextmarkup($frag);
+                &statustextmarkup($frag);
+                $frag = "<span class='c'>$frag</span>";
+                $frag =~ s#\n#</span>\n<span class='c'>#g;
+            } elsif ($btype eq 'string') {
+                # String
+                $frag = "<span class='s'>$frag</span>";
+            } elsif ($btype eq 'idprefix') {
+                if ($frag =~ s#(\w+)(\W+)([\w_]*)#<span class='v'>$1</span>$2<a href="$Conf->{virtroot}/search?string=$3">$3</a>#) {
+
+                #print "<!-- -->";
+}
+            } elsif ($btype eq 'include') { 
+                # Include directive
+                if ($frag =~ s#\0(<)(.*?)\0(>)#
+                    '&lt;'.
+                    &filelookup($2, $Conf->mappath($Conf->incprefix.'/'.$2)).
+                    '&gt;'#e) {
+                } else {
+                    my ($inc_head, $inc_file, $inc_tail, $prettyfile);
+                        if ($frag =~ s#(\s*[\"\'])(.*?)([\"\'])#
+                                ($1)."\0$2\0".($3)#e) {
+                            ($inc_head, $inc_file, $inc_tail, $prettyfile) = ($1, $2, $3, $2);
+                        } elsif ($frag =~ s#((?:\s*require|)\s+)([^\s;]+)#
+                                ($1)."\0$2\0"#e) {
+                        ($inc_head, $inc_file, $inc_tail, $prettyfile) = ($1, $2, undef, $2);
+                    }
+                    unless (length $inc_tail) {
+                        $inc_file .= '.pm' if $inc_file =~ s|::|/|g;
+                    }
+                    $frag =~ s#\0.*?\0#
+                        &filelookup($inc_file, $virtp.$inc_file,$prettyfile)#e;
+                }
+                $frag =~ s/('[^'+]*)\+(.*?')/$1\%2b$2/ while $frag =~ /(?:'[^'+]*)\+(?:.*?')/;
+                $frag =~ s|(#?\s*[^\s"'<]+)|<span class='i'>$1</span>|;
+            } elsif ($btype eq 'use') {
+                # perl use directive
+                $frag =~ s#(use|USE)(\s+)([^\s;]*)#<span class='i'>$1</span>$2$3#;
+                my $module = $3;
+                my $modulefile = "$module.pm";
+                $modulefile =~ s|::|/|g; 
+                $module = (&filelookup($modulefile, $modulefile, $module));
+                $frag =~ s|(</span>\s+)([^\s;]*)|$1$module|;
+            } elsif ($btype eq 'verb') {
+                $frag =~ s/^/<span class='v'>/;
+                $frag =~ s|$|</span>|;
+            } else {
+                # Code
+                $frag =~ s#(^|[^a-zA-Z_\#0-9])([a-zA-Z_][a-zA-Z0-9_]*)\b#
+                    $1.(defined($xref{$2}) ? &maybe_idref($2, $filenum, $line) : &atomref($2))#ge;
+            }
+
+            &htmlquote($frag);
+            $frag =~ s/(?:\r?\n|\r)/"\n".&linetag($virtp.$fname, $line++)/ge;
+            &$outfun($frag);
+
+            ($btype, $frag) = &SimpleParse::nextfrag;
+        }
+
+#       &$outfun("</pre>\n");
+        untie(%xref);
+
+    } elsif (Local::isImage($fname, 1)) {
+
+        &$outfun("</pre>");
+        &$outfun("<ul><table><tr><th valign=middle><b>Image: </b></th>");
+        &$outfun("<td valign=middle>");
+
+        my $img = 'img';
+	my $ctype;
+	my $extra;
+	if ($fname =~ /\.svg$/) {
+            $ctype = 'image/svg+xml';
+            $extra = "&ctype=$ctype";
+            $img = "embed type='$ctype'";
+	}
+        &$outfun("<$img src=\"$Conf->{virtroot}/source".$virtp.$fname.
+                 &urlargs("raw=1").$extra."\" border=\"0\" alt=\"$fname\">");
+
+        &$outfun("</tr></td></table></ul><pre>");
+
+    } elsif ($fname eq 'CREDITS') {
+        while (<$INFILE>) {
+	    &SimpleParse::untabify($_);
+	    &markspecials($_);
+	    &htmlquote($_);
+            s/^N:\s+(.*)/<strong>$1<\/strong>/gm;
+	    s/^(E:\s+)(\S+@\S+)/$1<a href=\"mailto:$2\">$2<\/a>/gm;
+	    s/^(W:\s+)(.*)/$1<a href=\"$2\">$2<\/a>/gm;
+#	    &$outfun("<a name=\"L$.\"><\/a>".$_);
+	    &$outfun(&linetag($virtp.$fname, $.).$_);
+	}
+    } else {
+	my $is_binary = -1;
+	my $keywords;
+	(undef,undef,$keywords) = &notvcalled;
+	READFILE:
+	my $first_line = <$INFILE>;
+
+	$_ = $first_line;
+	if ($keywords =~ /-kb/) {
+	    $is_binary = 1;
+	    print "CVS Says this is binary<br>";
+	} elsif ( m/^\#!/ ) {			# it's a script
+	    $is_binary = 0;
+	} elsif ( m/-\*-.*mode:/i ) {		# has an emacs mode spec
+	    $is_binary = 0;
+	} elsif (length($_) > 132) {		# no linebreaks
+	    my $macline = $_;
+	    if ($is_binary == -1 && $macline =~ s/\r//g > 5) {	# mac linebreaks?
+		seek $INFILE, 0, 0;		# restart at the beginning of the file
+		$. = 0;				# reset the line counter to the beginning
+		$/ = "\r";			# set the input record to macnewline
+		$is_binary = -2;		# make sure not to loop infinitely
+		goto READFILE;
+	    }
+	    $is_binary = 1;
+	} elsif ( m/[\000-\010\013\014\016-\037\200-Ÿ]/ ) {	# ctrl or ctrl+
+	    $is_binary = 1;
+	} else {				# no idea, but assume text.
+	    $is_binary = 0;
+	}
+
+	if ( $is_binary ) {
+
+	    &$outfun("</pre>");
+	    &$outfun("<ul><b>Binary File: ");
+
+            # jwz: URL-quote any special characters.
+            my $uname = $fname;
+            $uname =~ s|([^-a-zA-Z0-9.\@/_\r\n])|sprintf("%%%02X", ord($1))|ge;
+            my $ctype = get_mime_type($fname);
+
+	    &$outfun("<A HREF=\"$Conf->{virtroot}/source".$virtp.$uname.
+		     &urlargs("raw=1").$ctype."\">");
+	    &$outfun("$fname</a></b>");
+	    &$outfun("</ul><pre>");
+
+	} else {
+	    $_ = $first_line;
+	    do {
+		&SimpleParse::untabify($_);
+		&markspecials($_);
+		&htmlquote($_);
+		&freetextmarkup($_);
+#	    &$outfun("<a name=\"L$.\"><\/a>".$_);
+		&$outfun(&linetag($virtp.$fname, $.).$_);
+	    } while (<$INFILE>);
+	}
+    }
+}
+
+
+sub fixpaths {
+    my $virtf = '/'.shift;
+    $Path->{'root'} = $Conf->sourceroot;
+    
+    while ($virtf =~ s#/[^/]+/\.\./#/#g) {
+    }
+    $virtf =~ s#/\.\./#/#g;
+	   
+    $virtf .= '/' if (-d $Path->{'root'}.$virtf);
+    $virtf =~ s#//+#/#g;
+    
+    my ($virt, $file) = $virtf =~ m#^(.*/)([^/]*)$#;
+    ($Path->{'virtf'}, $Path->{'virt'}, $Path->{'file'}) = ($virtf, $virt, $file);
+
+    my $real = $Path->{'real'} = $Path->{'root'}.$virt;
+    my $realf = $Path->{'realf'} = $Path->{'root'}.$virtf;
+
+    my $svndirprop = $real . ".svn/dir-wcprops";
+    if (-f $svndirprop) {
+      if (open (SVN, $svndirprop))
+      {
+        my $svnpath;
+        $svnpath = <SVN> while $svnpath !~ /^V \d+$/;
+        $svnpath = <SVN>;
+        $svnpath =~ m|^/svn/([^/]*)/!svn/ver/\d+/(.*)|;
+        my $svntree = $1;
+        $svnpath = $2;
+        $svnpath =~ s/[\n\r]//g;
+        $svntree =~ s{^(.)}{/$1};
+
+        $Path->{'svnvirt'} = $svnpath;
+        $Path->{'svntree'} = $svntree;
+        close SVN;
+      }
+    }
+
+    my $svnentries = $real . ".svn/entries";
+    if (-f $svnentries) {
+      if (open (SVN, $svnentries))
+      {
+        my $svnrepo;
+        my $ignore = q|
+        8
+
+        dir
+        379
+        https://garage.maemo.org/svn/browser/mozilla/trunk/microb-eal/src
+        https://garage.maemo.org/svn/browser
+        |;
+        my $svnpath = $Path->{'svnvirt'} || undef; 
+        my $svnurl;
+        my $svnhead = <SVN>;
+        if ($svnhead =~ /<\?xml/) {
+          while ($svnrepo = <SVN>) {
+            unless ($svnpath) {
+              if ($svnrepo =~ /url="(.*)"/) {
+                $Path->{'svnrepo'} = $svnurl = $1;
+              }
+            }
+            if ($svnrepo =~ /repos="(.*)"/) {
+              $Path->{'svnrepo'} = $1;
+              $svnrepo = $1 . '/';
+              last if $svnpath;
+              if ($svnurl) {
+                my $i = rindex $svnurl, $svnrepo;
+                if ($i > -1) {
+                  $svnpath = substr $svnurl, $i + length $svnrepo;
+		  $svnpath =~ s{^(.)}{/$1};
+                  $Path->{'svnvirt'} = $svnpath;
+                  last;
+                }
+              }
+            }
+          }
+        } elsif ($svnhead =~ /^8/) {
+          local $/ = "\f";
+          my $svnentry = <SVN>;
+          my $svnpath;
+          (undef, undef, undef, $svnurl, $svnrepo) = split /\n/, $svnentry;
+          my $i = rindex $svnurl, $svnrepo;
+          if ($i > -1) {
+            $svnpath = substr $svnurl, $i + length $svnrepo;
+          }
+          $Path->{'svnrepo'} = $svnurl;
+          $Path->{'svnvirt'} = $svnpath;
+        }
+        close SVN;
+      }
+    }
+
+    @pathelem = $Path->{'virtf'} =~ /([^\/]+$|[^\/]+\/)/g;
+    
+    $fpath = '';
+    foreach (@pathelem) {
+        $fpath .= $_;
+        push(@addrelem, $fpath);
+    }
+    my $fix = '';
+    if (defined $Conf->prefix) {
+        $fix = $Conf->prefix.'/';
+        unshift(@pathelem, $fix);
+        unshift(@addrelem, "");
+        $fix =~ s#[^/]##g;
+        $fix =~ s#/#../#g;
+    }
+    unshift(@pathelem, $Conf->sourcerootname.'/');
+    unshift(@addrelem, $fix);
+    
+    foreach (1..$#pathelem) {
+        if (defined($addrelem[$_])) {
+
+            # jwz: put a space after each / in the banner so that it's possible
+            # for the pathnames to wrap.  The <wbr> tag ought to do this, but
+            # it is ignored when sizing table cells, so we have to use a real
+            # space.  It's somewhat ugly to have these spaces be visible, but
+            # not as ugly as getting a horizontal scrollbar...
+            #
+            $Path->{'xref'} .= &fileref($pathelem[$_], "/$addrelem[$_]") . " ";
+        } else {
+            $Path->{'xref'} .= $pathelem[$_];
+        }
+    }
+    $Path->{'xref'} =~ s#/</a>#</a>/#gi;
+}
+
+sub set_this_url {
+# HTTPS
+    my $default_port = $ENV{'HTTPS'} ? 443 : 80;
+    my $port = $default_port eq $ENV{'SERVER_PORT'} ? '' : ':'. $ENV{'SERVER_PORT'};
+    my $proto = $default_port == 443 ? 'https://' : 'http://';
+    my $query = $ENV{'QUERY_STRING'};
+    $query = '?' . $query if $query ne '';
+
+    $HTTP->{'this_url'} = &http_wash(join('', $proto,
+                                          $ENV{'SERVER_NAME'},
+                                          $port,
+                                          $ENV{'SCRIPT_NAME'},
+                                          $ENV{'PATH_INFO'},
+                                          $query));
+}
+sub glimpse_init {
+    set_this_url();
+    my @a;
+
+    foreach ($ENV{'QUERY_STRING'} =~ /([^;&=]+)(?:=([^;&]+)|)/g) {
+        push(@a, &http_wash($_));
+    }
+    $HTTP->{'param'} = {@a};
+    my $head = init_all();
+
+    if ($ENV{'QUERY_STRING'} =~ s/\&regexp=on//) {
+        $Conf->{'regexp'} = 'on';
+    } else {
+        $ENV{'QUERY_STRING'} =~ s/\&regexp=off//;
+        $Conf->{'regexp'} = 'off';
+    }
+
+    return($Conf, $HTTP, $Path, $head);
+}
+
+
+sub init {
+    set_this_url();
+    my @a;
+    foreach ($ENV{'QUERY_STRING'} =~ /([^;&=]+)(?:=([^;&]+)|)/g) {
+        push(@a, &http_wash($_));
+    }
+    $HTTP->{'param'} = {@a};
+    my $head = init_all();
+    return($Conf, $HTTP, $Path, $head);
+}
+
+sub pretty_date
+{
+    my $time = shift;
+    my @t = gmtime($time);
+    my ($sec, $min, $hour, $mday, $mon, $year,$wday) = @t;
+    my @days = ("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
+    my @months = ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+    $year += 1900;
+    $wday = $days[$wday];
+    $mon = $months[$mon];
+    return sprintf("%s, %02d %s %d %02d:%02d:%02d GMT",
+                  $wday, $mday, $mon, $year, $hour, $min, $sec);
+}
+
+sub init_all {
+    my ($argv_0) = @_;
+
+    $HTTP->{'path_info'} = &http_wash($ENV{'PATH_INFO'});
+    $HTTP->{'param'}->{'v'} ||= $HTTP->{'param'}->{'version'};
+    $HTTP->{'param'}->{'a'} ||= $HTTP->{'param'}->{'arch'};
+    $HTTP->{'param'}->{'i'} ||= $HTTP->{'param'}->{'identifier'};
+
+
+    $identifier = $HTTP->{'param'}->{'i'};
+    $readraw    = $HTTP->{'param'}->{'raw'};
+    $ctype      = $HTTP->{'param'}->{'ctype'};
+    $Conf = new LXR::Config;
+
+    foreach ($Conf->allvariables) {
+	$Conf->variable($_, $HTTP->{'param'}->{$_}) if $HTTP->{'param'}->{$_};
+    }
+    
+    &fixpaths($HTTP->{'path_info'} || $HTTP->{'param'}->{'file'});
+
+    my $head = '';
+    if (defined($readraw)) {
+	$ctype = ($ctype =~ m|([\w\d\.;/+-]+)|) ? $1 : undef;
+	$head .= ("Content-Type: $ctype\n") if defined $ctype;
+    } else {
+        $head .= ("Content-Type: text/html\n");
+
+	#
+	# Print out a Last-Modified date that is the larger of: the
+	# underlying file that we are presenting; and the "source" script
+	# itself (passed in as an argument to this function.)  If we can't
+	# stat either of them, don't print out a L-M header.  (Note that this
+	# stats lxr/source but not lxr/lib/LXR/Common.pm.  Oh well, I can
+	# live with that I guess...)    -- jwz, 16-Jun-98
+	#
+	my $file1 = $Path->{'realf'};
+	my $file2 = $argv_0;
+
+	# make sure the thing we call stat with doesn't end in /.
+	if ($file1) { $file1 =~ s@/$@@; }
+	if ($file2) { $file2 =~ s@/$@@; }
+
+	my $time1 = 0, $time2 = 0;
+	if ($file1) { $time1 = (stat($file1))[9]; }
+	if ($file2) { $time2 = (stat($file2))[9]; }
+
+	my $mod_time = ($time1 > $time2 ? $time1 : $time2);
+	if ($mod_time > 0) {
+	    # Last-Modified: Wed, 10 Dec 1997 00:55:32 GMT
+	    $head .= ("Last-Modified: ".(pretty_date($mod_time))."\n");
+	    # Expires: Thu, 11 Dec 1997 00:55:32 GMT
+	    $head .= ("Expires: ".(pretty_date(time+1200))."\n");
+	}
+    }
+    
+    
+    if (defined($readraw)) {
+      unless (open(RAW, "<", $Path->{'realf'})) {
+        print "Status: 404 File Not Found
+Content-Type: text/html
+
+";
+  die "couldn't open $Conf->{'treename'}:$Path->{'virtf'}";
+      }
+        print "$head
+";
+	while (<RAW>) {
+	    print;
+	}
+	close(RAW);
+	exit;
+    }
+
+#exit;
+    return($Conf, $HTTP, $Path, $head);
+}
+
+
+sub expandtemplate {
+    my ($templ, %expfunc) = @_;
+    my ($expfun, $exppar);
+
+    while ($templ =~ s/(\{[^\{\}]*)\{([^\{\}]*)\}/$1\01$2\02/s) {}
+    
+    $templ =~ s/(\$(\w+)(\{([^\}]*)\}|))/{
+	if (defined($expfun = $expfunc{$2})) {
+	    if ($3 eq '') {
+		&$expfun(undef, @expfunc);
+	    } else {
+		$exppar = $4;
+		$exppar =~ s#\01#\{#gs;
+		$exppar =~ s#\02#\}#gs;
+		&$expfun($exppar, @expfunc);
+	    }
+	} else {
+	    $1;
+	}
+    }/ges;
+
+    $templ =~ s/\01/\{/gs;
+    $templ =~ s/\02/\}/gs;
+    return($templ);
+}
+
+
+# What follows is a pretty hairy way of expanding nested templates.
+# State information is passed via localized variables.
+
+# The first one is simple, the "banner" template is empty, so we
+# simply return an appropriate value.
+sub bannerexpand {
+    if ($who eq 'source' || $who eq 'sourcedir' || $who eq 'diff') {
+	return($Path->{'xref'});
+    } else {
+	return('');
+    }
+}
+
+sub pathname {
+    return url_quote($Path->{'virtf'});
+}
+
+sub cvsentriesexpand {
+    my ($entryrev, $entrybranch);
+    local $,=" | ";
+    my ($entriespath, $entryname) = split m|/(?!.*/)|, $Path->{'realf'};
+    if (open(CVSENTRIES, "$entriespath/CVS/Entries")) {
+        while (<CVSENTRIES>) {
+            next unless m|^/\Q$entryname\E/([^/]*)/[^/]*/[^/]*/(.*)|;
+            ($entryrev,$entrybranch)=($1,$2);
+            $entrybranch =~ s/^T//;
+            $entrybranch ||= 'HEAD';
+        }
+        close(CVSENTRIES);
+    }
+    return ($entryrev, $entrybranch);
+}
+
+sub cvstagexpand {
+    my $entrybranch;
+    if (open(CVSTAG, " $Path->{'real'}/CVS/Tag")) {
+        while (<CVSTAG>) {
+            next unless m|^T(.*)$|;
+            $entrybranch = $1;
+        }
+        close(CVSTAG);
+    }
+    return $entrybranch || 'HEAD';
+}
+
+sub cvsversionexpand {
+    if ($who eq 'source') {
+        my ($entryrev,undef) = cvsentriesexpand();
+        return $entryrev;
+    }
+    if ($who eq 'sourcedir') {
+        return cvstagexpand();
+    }
+    return('');
+}
+
+sub cvsbranchexpand {
+    if ($who eq 'source') {
+        my (undef,$entrybranch) = cvsentriesexpand();
+        return $entrybranch;
+    }
+    if ($who eq 'sourcedir') {
+       return cvstagexpand();
+    }
+    return('');
+}
+
+sub pathname {
+    my $prefix = '';
+    $prefix = '/' . $Conf->prefix if defined $Conf->prefix;
+    return url_quote ($prefix . $Path->{'virtf'});
+}
+
+sub urlpath {
+    return $Path->{'virtf'};
+}
+
+sub pathname_unquoted {
+    return urlpath();
+}
+
+sub filename {
+    return url_quote ($Path->{'file'});
+}
+
+sub virtfold {
+    return url_quote ($Path->{'svnvirt'});
+}
+
+sub virttree {
+    return url_quote ($Path->{'svntree'});
+}
+
+sub treename {
+    return $Conf->{'treename'};
+}
+
+sub bonsaicvsroot {
+    return $Conf->{'bonsaicvsroot'};
+}
+
+sub titleexpand {
+    if ($who eq 'source' || $who eq 'sourcedir' || $who eq 'diff') {
+        return(&treename.' '.$Conf->sourcerootname.$Path->{'virtf'});
+
+    } elsif ($who eq 'ident') {
+        my $i = $HTTP->{'param'}->{'i'};
+        return(&treename.' identifier search'.
+               ($i ? " \"$i\"" : ''));
+
+    } elsif ($who eq 'search') {
+        my $s = $HTTP->{'param'}->{'string'};
+        $s =~ tr/+/ /;
+        $s =~ s/%(\w\w)/chr(hex $1)/ge;
+        $s =~ s/&/&amp;/g;
+        $s =~ s/</&lt;/g;
+        $s =~ s/>/&gt;/g;
+
+
+        return(&treename.' freetext search'.
+               ($s ? " \"$s\"" : ''));
+
+    } elsif ($who eq 'find') {
+        my $s = $HTTP->{'param'}->{'string'};
+        return(&treename.' file search'.
+               ($s ? " \"$s\"" : ''));
+    }
+}
+
+
+sub thisurl {
+    my $url = $HTTP->{'this_url'};
+    $url =~ s/\?$//;
+    $url =~ s/([\&\;\=])/sprintf('%%%02x',(unpack('c',$1)))/ge;
+    return($url);
+}
+
+
+sub baseurl {
+    return($Conf->baseurl);
+}
+
+sub rooturl {
+    my $root = $Conf->baseurl;
+    $root = $1 if $root =~ m{^(.*[^/])/[^/]*$};
+    return $root;
+}
+
+sub stylesheet {
+    my $alt = shift;
+    my $pre = "alt$alt-" if defined $alt;
+    my $kind;
+    $kind = 'style' if -f ('style/' . $pre . "style.css");
+    my $ext;
+    if ($Path->{'file'}) {
+        $ext = $1 if $Path->{'file'} =~ /\.(\w+)$/;
+    } else {
+        $ext = 'dir' unless $Path->{'file'};
+    }
+    $kind = $ext if -f ("style/$pre$ext.css");
+    return '' unless $kind;
+    return "$pre$kind.css";
+}
+
+sub stylesheets {
+    my $stylesheet;
+    my $baseurl = baseurl();
+    $stylesheet = stylesheet();
+    my $type = 'stylesheet';
+    my $style = 'Screen Look';
+    my $index = 0 ;
+    my $stylesheets;
+    while ($stylesheet) {
+        $stylesheets .= "<link rel='$type' title='$title' href='$baseurl/style/$stylesheet' type='text/css'>\n" if $stylesheet;
+        $type = 'alternate stylesheet';
+        return $stylesheets unless $stylesheet = stylesheet(++$index);
+        $title = "Alt-$index";
+    }
+}
+
+sub dotdoturl {
+    my $url = $Conf->baseurl;
+    $url =~ s@/$@@;
+    $url =~ s@/[^/]*$@@;
+    return($url);
+}
+
+# This one isn't too bad either.  We just expand the "modes" template
+# by filling in all the relevant values in the nested "modelink"
+# template.
+sub modeexpand {
+    my $templ = shift;
+    my $modex = '';
+    my @mlist = ();
+    local $mode;
+    
+    if ($who eq 'source' || $who eq 'sourcedir') {
+        push(@mlist, "<b><i>source navigation</i></b>");
+    } else {
+        push(@mlist, &fileref("source navigation", $Path->{'virtf'}));
+    }
+    
+    if ($who eq 'diff') {
+        push(@mlist, "<b><i>diff markup</i></b>");
+        
+    } elsif (($who eq 'source' || $who eq 'sourcedir') && $Path->{'file'}) {
+        push(@mlist, &diffref("diff markup", $Path->{'virtf'}));
+    }
+    
+    if ($who eq 'ident') {
+        push(@mlist, "<b><i>identifier search</i></b>");
+    } else {
+        push(@mlist, &idref(undef,"identifier search", ""));
+    }
+
+    if ($who eq 'search') {
+        push(@mlist, "<b><i>freetext search</i></b>");
+    } else {
+        push(@mlist, "<a href=\"$Conf->{virtroot}/search".
+             &urlargs."\">freetext search</a>");
+    }
+    
+    if ($who eq 'find') {
+        push(@mlist, "<b><i>file search</i></b>");
+    } else {
+        push(@mlist, "<a href=\"$Conf->{virtroot}/find".
+             &urlargs."\">file search</a>");
+    }
+    
+    foreach $mode (@mlist) {
+        $modex .= &expandtemplate($templ,
+                                  ('modelink', sub { return($mode) }));
+    }
+    
+    return($modex);
+}
+
+# This is where it gets a bit tricky.  varexpand expands the
+# "variables" template using varname and varlinks, the latter in turn
+# expands the nested "varlinks" template using varval.
+sub varlinks {
+    my $templ = shift;
+    my $vlex = '';
+    my ($val, $oldval);
+    local $vallink;
+    
+    $oldval = $Conf->variable($var);
+    foreach $val ($Conf->varrange($var)) {
+	if ($val eq $oldval) {
+	    $vallink = "<b><i>$val</i></b>";
+	} else {
+	    if ($who eq 'source' || $who eq 'sourcedir') {
+		$vallink = &fileref($val, 
+				    $Conf->mappath($Path->{'virtf'},
+						   "$var=$val"),
+				    0,
+				    "$var=$val");
+
+	    } elsif ($who eq 'diff') {
+		$vallink = &diffref($val, $Path->{'virtf'}, "$var=$val");
+		
+	    } elsif ($who eq 'ident') {
+		$vallink = &idref($val, $identifier, undef, "$var=$val");
+		
+	    } elsif ($who eq 'search') {
+		$vallink = "<a href=\"$Conf->{virtroot}/search".
+		    &urlargs("$var=$val",
+			     "string=".$HTTP->{'param'}->{'string'}).
+				 "\">$val</a>";
+		
+	    } elsif ($who eq 'find') {
+		$vallink = "<a href=\"$Conf->{virtroot}/find".
+		    &urlargs("$var=$val",
+			     "string=".$HTTP->{'param'}->{'string'}).
+				 "\">$val</a>";
+	    }
+	}
+	$vlex .= &expandtemplate($templ,
+				 ('varvalue', sub { return($vallink) }));
+
+    }
+    return($vlex);
+}
+
+
+sub varexpand {
+    my $templ = shift;
+    my $varex = '';
+    local $var;
+    
+    foreach $var ($Conf->allvariables) {
+        $varex .= &expandtemplate($templ,
+                                  ('varname',  sub { 
+                                      return($Conf->vardescription($var))}),
+                                  ('varlinks', \&varlinks));
+    }
+    return($varex);
+}
+
+sub makeheader {
+    local $who = shift;
+    $template = undef;
+    my $def_templ = "<html><title>(".&treename.")</title><body>\n<hr>\n";
+
+    if ($who eq "sourcedir" && $Conf->sourcedirhead) {
+	if (!open(TEMPL, $Conf->sourcedirhead)) {
+	    &warning("Template ".$Conf->sourcedirhead." does not exist.", 'sourcedirhead');
+	    $template = $def_templ;
+	}
+    } elsif (($who eq "source" || $who eq 'sourcedir') && $Conf->sourcehead) {
+	if (!open(TEMPL, $Conf->sourcehead)) {
+	    &warning("Template ".$Conf->sourcehead." does not exist.", 'sourcehead');
+	    $template = $def_templ;
+	}
+    } elsif ($who eq "find" && $Conf->findhead) {
+	if (!open(TEMPL, $Conf->findhead)) {
+	    &warning("Template ".$Conf->findhead." does not exist.", 'findhead');
+	    $template = $def_templ;
+	}
+    } elsif ($who eq "ident" && $Conf->identhead) {
+	if (!open(TEMPL, $Conf->identhead)) {
+	    &warning("Template ".$Conf->identhead." does not exist.", 'identhead');
+	    $template = $def_templ;
+	}
+    } elsif ($who eq "search" && $Conf->searchhead) {
+	if (!open(TEMPL, $Conf->searchhead)) {
+	    &warning("Template ".$Conf->searchhead." does not exist.", 'searchhead');
+	    $template = $def_templ;
+	}
+    } elsif ($Conf->htmlhead) {
+	if (!open(TEMPL, $Conf->htmlhead)) {
+	    &warning("Template ".$Conf->htmlhead." does not exist.", 'htmlhead');
+	    $template = $def_templ;
+	}
+    }
+
+    if (!$template) {
+	$save = $/; undef($/);
+	$template = <TEMPL>;
+	$/ = $save;
+	close(TEMPL);
+    }
+    
+    print(
+#"<!doctype html public \"-//W3C//DTD HTML 3.2//EN\">\n",
+#	  "<html>\n",
+#	  "<head>\n",
+#	  "<title>",$Conf->sourcerootname," Cross Reference</title>\n",
+#	  "<base href=\"",$Conf->baseurl,"\">\n",
+#	  "</head>\n",
+
+    	  &bigexpandtemplate($template)
+     );
+}
+
+sub bigexpandtemplate
+{
+    my $template = shift;
+    $template = &Local::localexpandtemplate($template);
+    return expandtemplate($template,
+			  ('title',		\&titleexpand),
+			  ('banner',		\&bannerexpand),
+			  ('baseurl',		\&baseurl),
+			  ('stylesheet',	\&stylesheet),
+			  ('stylesheets',	\&stylesheets),
+			  ('dotdoturl',		\&dotdoturl),
+			  ('thisurl',		\&thisurl),
+			  ('pathname',		\&pathname),
+			  ('filename',          \&filename),
+			  ('virtfold',          \&virtfold),
+			  ('virttree',          \&virttree),
+			  ('urlpath',		\&urlpath),
+			  ('treename',		\&treename),
+    			  ('modes',		\&modeexpand),
+    			  ('bonsaicvsroot',	\&bonsaicvsroot),
+    			  ('cvsversion',	\&cvsversionexpand),
+    			  ('cvsbranch',		\&cvsbranchexpand),
+    			  ('variables',		\&varexpand));
+}
+
+sub blamerefs {
+    my ($pathname, $lines) = (@_);
+
+    $who = 'source';
+    fixpaths($pathname);
+    my $template = "";
+    if ($Conf->identref) {
+        unless (open(TEMPL, $Conf->identref)) {
+            &warning("Template ".$Conf->identref." does not exist.");
+        } else {
+            local $/;
+            $template = <TEMPL>;
+            close(TEMPL);
+        }
+    }
+
+    return (bigexpandtemplate(&expandtemplate($template,
+                           ('fpos',     sub {return($lines)})
+                           )));
+}
+
+sub makefooter {
+    local $who = shift;
+    $template = undef;
+    my $def_templ = "<hr>\n</body>\n";
+
+    if ($who eq "sourcedir" && $Conf->sourcedirtail) {
+	if (!open(TEMPL, $Conf->sourcedirtail)) {
+	    &warning("Template ".$Conf->sourcedirtail." does not exist.", 'sourcedirtail');
+	    $template = $def_templ;
+	}
+    } elsif (($who eq "source" || $who eq 'sourcedir') && $Conf->sourcetail) {
+	if (!open(TEMPL, $Conf->sourcetail)) {
+	    &warning("Template ".$Conf->sourcetail." does not exist.", 'sourcetail');
+	    $template = $def_templ;
+	}
+    } elsif ($who eq "find" && $Conf->findtail) {
+	if (!open(TEMPL, $Conf->findtail)) {
+	    &warning("Template ".$Conf->findtail." does not exist.", 'findtail');
+	    $template = $def_templ;
+	}
+    } elsif ($who eq "ident" && $Conf->identtail) {
+	if (!open(TEMPL, $Conf->identtail)) {
+	    &warning("Template ".$Conf->identtail." does not exist.", 'identtail');
+	    $template = $def_templ;
+	}
+    } elsif ($who eq "search" && $Conf->searchtail) {
+	if (!open(TEMPL, $Conf->searchtail)) {
+	    &warning("Template ".$Conf->searchtail." does not exist.", 'searchtail');
+	    $template = $def_templ;
+	}
+    } elsif ($Conf->htmltail) {
+	if (!open(TEMPL, $Conf->htmltail)) {
+	    &warning("Template ".$Conf->htmltail." does not exist.", 'htmltail');
+	    $template = $def_templ;
+	}
+    }
+
+    if (!$template) {
+	$save = $/; undef($/);
+	$template = <TEMPL>;
+	$/ = $save;
+	close(TEMPL);
+    }
+    
+    print(&expandtemplate($template,
+			  ('banner',	\&bannerexpand),
+			  ('thisurl',	\&thisurl),
+    			  ('modes',	\&modeexpand),
+    			  ('variables',	\&varexpand),
+    			  ('baseurl',	\&baseurl),
+			  ('dotdoturl',	\&dotdoturl),
+                         ),
+	  "</html>\n");
+}
+
+sub url_quote {
+    my($toencode) = (@_);
+# don't escape / 
+    $toencode=~s|([^a-zA-Z0-9_/\-.])|uc sprintf("%%%02x",ord($1))|eg;
+    return $toencode;
+}
+
+1;
