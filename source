@@ -358,26 +358,38 @@ my $body = <SRCFILE>;
                 print(markupstring($string, $Path->{'virt'}));
 		print("</pre>");
 	    } else {
-                if (($file =~ /nsI\w*\.idl$/)) {
+                if (-e "$Path->{'root'}/client.mk" && ($file =~ /\.idl$/)) {
                   my $base = basename($file, ".idl"); 
                   my $dir = $Path->{'virt'};
                   $dir =~ s#^/([^/]+)(.*)#$1#;
-                  my $doxRoot = "http://unstable.elemental.com/mozilla/build/latest/mozilla/" . $dir . "/dox/";
-                  print("<p>Inheritance diagram for " . $base . ":</P>\n");
-                  print("<p align=\"center\">\n");
-                  print("<img src=\"" . $doxRoot . "interface" . $base . "__inherit__graph.gif\"");
-		  print(" align=\"center\" border=\"0\" alt=\"Inheritance graph\">\n");
-                  print("</p>\n");
-                  print("<p>Collaboration diagram for " . $base . ":</p>\n");
-                  print("<p align=\"center\">\n");
-                  print("<Iimg src=\"" . $doxRoot . "interface" . $base . "__coll__graph.gif\"");
-		  print(" align=\"center\" border=\"0\" alt=\"Collaboration graph\">\n");
-                  print("</p>\n");
-                  print("<p align=\"center\">\n");
-                  print("[ <a href=\"" .$doxRoot . "interface" . $base . ".html\">\n");
-                  print("<i>" . $base . "</i> Interface Reference</a> |");
-                  print(" <a href=\"" . $doxRoot . "graph_legend.htm l\">Graph Legend</a> ]\n");
-                  print("</p>\n");
+                  my $doxRoot = 'http://doxygen.db48x.net/mozilla/html/';
+                  my $doxURL = "${doxRoot}interface${base}";
+
+# safari 1 gives alert() if it finds an <object> for svg and has no plugin
+# ff2 gives a non grown image for <object> for svg, i.e. so badly truncated
+# that no one could possibly want it
+                  print qq#
+<p>Inheritance diagram for $base:</P>
+<p align="center">
+<!--
+  <object data="${doxURL}__inherit__graph.svg" type="image/svg+xml" border="0">
+    <param name="src" value="${doxURL}__inherit__graph.svg">
+-->
+  <a href="${doxURL}__inherit__graph.svg">
+    <img src="${doxURL}__inherit__graph.png" alt="Inheritance graph" border="0">
+  </a>
+</p>
+<p>Collaboration diagram for $base:</p>
+<p align="center">
+  <a href="${doxURL}__coll__graph.svg">
+    <img src="${doxURL}__coll__graph.png" alt="Collaboration graph" border="0">
+  </a>
+</p>
+<p align="center">
+  [ <a href="${doxURL}.html"><i>$base</i> Interface Reference</a> |
+  <a href="${doxRoot}graph_legend.html">Graph Legend</a> ]
+</p>
+#;
                 }
 		print("<pre lang='en'>");
                &markupfile(\*SRCFILE, $Path, $file,
