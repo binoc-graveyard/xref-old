@@ -30,8 +30,11 @@ $TREE =~ s{/$}{};
 }
 } while ($TREE && $was_arg);
 
-$lxr_dir = '.';
-open LXRCONF, "< $lxr_dir/lxr.conf";
+my $lxr_dir = '.';
+die "can't find $lxr_dir" unless -d $lxr_dir;
+my $lxr_conf = "$lxr_dir/lxr.conf";
+die "can't find $lxr_conf" unless -f $lxr_conf;
+open LXRCONF, "< $lxr_conf";
 while ($line = <LXRCONF>) {
     $db_dir = "$1/$TREE" if $line =~ /^dbdir:\s*(\S+)/;
     unless ($TREE) {
