@@ -317,8 +317,19 @@ print " files</span></span>
 <span class='status matches_max'>Too many hits, displaying the first $maxhits</span>
 </b></p>
 ";
-	LINE: while (my $line = <GLIMPSE>) {
-	    next if $line =~ m|using working-directory '.*' to locate dictionaries|;
+        $filter =~ s/`/\\`/g;
+        LINE: while (my $line = <GLIMPSE>) {
+            if (!$numlines) {
+                if ($line =~ /^[^:]*:[^:]*pattern too long/) {
+                    print ("Pattern too long. Use a maximum 29 characters. <em>Try moving extra characters to the filter field.</em>\n");
+                    last;
+                }
+                if ($line =~ /^[^:]*:[^:]*pattern '([^']*)' has no characters that were indexed/) {
+                    print ("Pattern does not include any indexed characters. <em>Try adding [a-z] as a regexp.</em>\n");
+                    last;
+                }
+            }
+            next if $line =~ m|using working-directory '.*' to locate dictionaries|;
             next if $search_sensitive && $line !~ /$search_case/;
 	    if (!$filter || $line =~ /$filter/){
                 my ($curr_file, undef, undef) =
@@ -381,8 +392,6 @@ print " files</span></span>
 	if ($retval == 0) {
 	    if ($numlines == 0) {
 		print("No matching files<br>\n");
-	    } elsif ($glimpselines[0] =~ /pattern too long/) {
-                print ("Pattern too long. Use a maximum 29 characters.\n");
 	    } else {
 		if ($numlines > $maxhits) {
                     print("<b>Too many hits, displaying the first $maxhits</b><br>\n");
@@ -407,14 +416,16 @@ $openlist = 0;
 print ('</ul>') if $openlist;
 	    }
 	} elsif ($retval == 1) {
-	    $glimpsebin = $Conf->glimpsebin;
-	    $glimpseresponse = join("<br>",@glimpselines);
-	    $glimpseresponse =~ s/$glimpsebin/Reason/;
-	    $glimpseresponse =~ s/glimpse: error in searching index//;
-	    print("<b>No results found</b><br>\n$glimpseresponse");
-	} else {
-	    print("Unexpected return value $retval from Glimpse\n");
-	}
+            $glimpsebin = $Conf->glimpsebin;
+            $glimpseresponse = join("<br>",@glimpselines);
+            $glimpseresponse =~ s/$glimpsebin/Reason/;
+            $glimpseresponse =~ s/glimpse: error in searching index//;
+            print("<b>No results found</b><br>\n$glimpseresponse");
+        } elsif ($retval == 2) {
+            # searching for '-' triggers this.
+        } else {
+            print("Unexpected return value $retval from Glimpse\n");
+        }
     }
 }
 
