@@ -898,6 +898,7 @@ sub endwebsvn
 my %hgcache = ();
 sub webhghost
 {
+    # needs to read /.hg/hgrc/ [paths] default
     return 'http://hg.mozilla.org';
 }
 
