@@ -149,7 +149,7 @@ my @dtdterm = (
 
 my @shterm = (
   'atom', '\\\\.', '',
-  'comment', 'dnl |#', '$',
+  'comment', 'dnl\b|#', '$',
   'verb', '(?:if|fi|case|esac|in|then|test|else|for|do|done)\\b', '\b',
 #  'string',     '"',            '"',
 #  'string',     "'",            "'",
@@ -724,7 +724,7 @@ sub markupfile {
         open HEAD_HANDLE, $fname;
         my $file_head = <HEAD_HANDLE>;
         @terms = @pterm if $file_head =~ /^#!.*perl/;
-        @terms = @shterm if $file_head =~ /^dnl /;
+        @terms = @shterm if $file_head =~ /^dnl( |$)/;
         close HEAD_HANDLE;
     }
     if (@terms) {
