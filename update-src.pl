@@ -91,6 +91,10 @@ for ($TREE) {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P -rMozillaSourceClassic_19981026_BRANCH MozillaSource $STDERRTOSTDOUT`;
         last; 
     };
+    /^ef$/ && do { 
+        print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/ef mozilla/nsprpub $STDERRTOSTDOUT`;
+        last;
+    };
     /^js$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/js mozilla/js2 mozilla/nsprpub $STDERRTOSTDOUT`;
         last;
@@ -109,8 +113,12 @@ for ($TREE) {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/webtools/bugzilla $STDERRTOSTDOUT`;
         last;
     };
-    /^(l10n|l10n-(?:mozilla1\.8|aviarybranch|mozilla1\.8\.0))$/ && do {
-        print LOG `$TIME $CVS $CVSQUIETFLAGS -d ':pserver:anonymous\@cvs-mirror.mozilla.org:/l10n' $CVSUP -dP $STDERRTOSTDOUT`;
+    /^update1.0$/ && do {
+        print LOG `$TIME $CVSCOMMAND $CVSCO -P -r MOZILLA_UPDATE_1_0_BRANCH mozilla/webtools/update $STDERRTOSTDOUT`;
+        last;
+    };
+    /^grendel$/ && do {
+        print LOG `cd mozilla; $TIME $CVSCOMMAND $CVSUP-d grendel $STDERRTOSTDOUT`;
         last;
     };
     /^mailnews$/ && do {
@@ -136,26 +144,25 @@ for ($TREE) {
         }
         last;
     };
+    /^mozillalabs-central$/ && do {
+        my @dirs = <$src_dir/*>;
+        foreach my $dir (@dirs) {
+            print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
+        }
+        last;
+    };
     /^nspr$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P NSPR $STDERRTOSTDOUT`;
         last;
     };
-    /^(?:seamonkey|(?:aviary(?:101)?|reflow)branch|mozilla1.*)$/ && do {
+    /^(?:seamonkey|(?:aviary|reflow)branch|mozilla1.*)$/ && do {
         print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=all $STDERRTOSTDOUT`;
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
         print LOG `cd mozilla; $TIME $CVSCOMMAND $CVSUP-d tools` if /^seamonkey$/;
         last;
     };
-    /^firefox.*$/ && do {
-        print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=browser $STDERRTOSTDOUT`;
-        last;
-    };
-    /^(?:(?:bug|mo)zilla.*-.*)$/ && do {
+    /^(?:netbeans|openoffice|gnome|eclipse|(?:bug|mo)zilla.*-.*|devmo.*|)$/ && do {
         print LOG `cd $src_dir; $TIME $CVSCOMMAND $CVSUP-d * $STDERRTOSTDOUT`;
-        last;
-    };
-    /^fuel$/ && do {
-        print LOG `$TIME $CVSCOMMAND $CVSCO -P -d fuel -rFUEL_DEVEL_BRANCH mozilla/browser/fuel $STDERRTOSTDOUT`;
         last;
     };
     /^(?:.*)-central$/ && do {

@@ -27,3 +27,4 @@ deny from 65.55.210.
 DirectoryIndex index.cgi
 Options +ExecCGI +FollowSymlinks
 RewriteEngine On
+RewriteRule ^seamonkey(.*)$ http://mxr.mozilla.org/seamonkey$1 [R=301,L]
