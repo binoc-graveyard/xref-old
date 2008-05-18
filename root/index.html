@@ -1,6 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+ <link rel="icon" href="/mxr.png" type="image/png">
  <title>Mozilla Cross-Reference</title>
 <style type="text/css">
 <!--
@@ -70,153 +71,96 @@ dl.rootlist dd {
       <dl class="rootlist">
 
       <dt>
-         <a href="mozilla/">Mozilla</a>
+         <a href="mozilla-central/">Mozilla Central</a>
       </dt>
       <dd>
-          This contains the entire current CVS repository.
+          This contains the main mercurial (hg) repository for Gecko, XULRunner, and Firefox, the main line of development for releases after Gecko 1.9.0 / Firefox 3.0.
+      </dd>
+
+      <dt>
+         <a href="mozilla/">Mozilla CVS</a>
+      </dt>
+      <dd>
+          This contains the entire current CVS repository.  For Gecko, XULRunner, and Firefox, CVS trunk is no longer the trunk, and is instead used for Gecko 1.9 / Firefox 3 and the 1.9.0.* / 3.0.* security releases.
       </dd>
 
       <dt>
          <a href="seamonkey/">SeaMonkey</a> / <a href="l10n/">l10n</a>
       </dt>
       <dd>
-          This module is SeaMonkeyAll, the Mozilla browser project.
+          This the code in CVS for Gecko, XULRunner, Firefox, Thunderbird, Calendar, Camino, and SeaMonkey.  For Gecko, XULRunner, and Firefox, CVS trunk is only used for Gecko 1.9 / Firefox 3 and the 1.9.0.* / 3.0.* security releases.
       </dd>
 
       <dt>
-         <a href="aviarybranch/">Aviary Branch</a> / <a href="l10n-aviarybranch">l10n</a>
+         <a href="firefox/">Firefox 3</a>
+      </dt>
+      <dd class="note">
+          The source specific to the Firefox 3 web browser.  Also available is the
+          <a href="firefox2/">Firefox 2.0 Branch</a>.
+      </dd>
+
+      <dt>
+         <a href="mailnews/">Mail/News</a>
+      </dt>
+      <dd class="note">
+          This contains the mail and news code on the trunk, including that
+          shared by both Seamonkey and Thunderbird (mozilla/mailnews/) as well
+          as that which is Thunderbird-specific (mozilla/mail/).
+      </dd>
+
+      <dt>
+         <a href="mozilla1.8/">Mozilla 1.8</a> / <a href="l10n-mozilla1.8/">l10n</a>
+      </dt>
+      <dd class="note">
+          This is the Mozilla 1.8 branch.  This module also hosts Aviary's 1.5 Branch (e.g. Firefox 2.0), for Mozilla toolkit derived projects.
+      </dd>
+
+      <dt>
+         <a href="mozilla1.8.0/">Mozilla 1.8.0</a> / <a href="l10n-mozilla1.8.0/">l10n</a>
+      </dt>
+      <dd class="note">
+          This is the Mozilla 1.8.0 branch.  This is for security releases products released from Mozilla 1.8 Release (e.g. Firefox 1.5).
+      </dd>
+
+      <dt>
+         <a href="aviarybranch/">Aviary Branch</a> / <a href="l10n-aviarybranch/">l10n</a>
       </dt>
       <dd>
           This module is Aviary's 1.0.1 Branch, Mozilla toolkit derived projects.
       </dd>
 
-      <DT>
-         <FONT SIZE="+1"><A HREF="mozilla1.0/"><B>Mozilla 1.0</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the Mozilla 1.0 release.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="mozilla1.0.x/"><B>Mozilla 1.0.x</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the Mozilla 1.0 branch.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="mozilla1.4.x/"><B>Mozilla 1.4.x</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the Mozilla 1.4 branch.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="mozilla1.7.x/"><B>Mozilla 1.7.x</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the Mozilla 1.7 branch.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="mozilla1.8.x/"><B>Mozilla 1.8.x</B></A> / <A HREF="l10n-mozilla1.8.x/"><B>l10n</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the Mozilla 1.8 branch.  This module also hosts Aviary's 1.5 Branch (e.g. Firefox 2.0), for Mozilla toolkit derived projects.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="mozilla1.8.0.x/"><B>Mozilla 1.8.0.x</B></A> / <A HREF="l10n-mozilla1.8.0.x/"><B>l10n</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the Mozilla 1.8.0 branch.  This is for security releases products released from Mozilla 1.8 Release (e.g. Firefox 1.5).
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="m10/"><B>M10</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the source of the M10 release and is provided here for use
-          by the
-          <A HREF="http://www.mozillazine.org/talkback.html?article=858">
-          design patterns</A> contest.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="classic/"><B>Classic</B></A></FONT>
-      </DT>
-      <DD class="note">
+      <dt>
+         <a href="classic/">Classic</a>
+      </dt>
+      <dd class="note">
           This is Mozilla Classic. It's a snapshot of the MozillaSource
           module from Oct 26, 1998 just before the change was made to xpfe.
           This is here for reference. No work is done on this branch.
-      </DD>
+      </dd>
 
-      <DT>
-         <FONT SIZE="+1"><A HREF="nspr/"><B>NSPR</B></A></FONT>
-      </DT>
-      <DD class="note">
+      <dt>
+         <a href="nspr/">NSPR</a>
+      </dt>
+      <dd class="note">
           This module is 
-          <A HREF="http://www.mozilla.org/projects/nspr/reference/html/index.html">NSPR</A>, 
+          <a href="http://www.mozilla.org/projects/nspr/reference/html/index.html">NSPR</a>, 
           a cross platform library for operating system facilities 
           including threads, I/O, timing and memory management.
-      </DD>
+      </dd>
 
-      <DT>
-         <FONT SIZE="+1"><A HREF="security/"><B>Security</B></A></FONT>
-      </DT>
-      <DD class="note">
+      <dt>
+         <a href="security/">Security</a>
+      </dt>
+      <dd class="note">
          This module contains code related to 
          <a href="http://www.mozilla.org/projects/security/">Open Source PKI</a>
          including NSS.
-      </DD>
+      </dd>
 
-      <DT>
-         <FONT SIZE="+1"><A HREF="grendel/"><B>Grendel</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This module is Grendel, a mail reader written in java.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="ef/"><B>Electrical Fire</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is /mozilla/ef, a multi-platform Just&#8209;In&#8209;Time
-          Java compiler.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="songbird/"><B>Songbird</B></A></FONT>
-      </DT>
-      <DD>
-         <FONT SIZE="-1">
-          This contains the head for <a href="http://www.songbirdnest.com/">Songbird</a>.
-          (This includes integration with trac.)
-         </FONT>
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="songbird-all/"><B>Songbird (all)</B></A></FONT>
-      </DT>
-      <DD>
-         <FONT SIZE="-1">
-          This contains the entire source for <a href="http://www.songbirdnest.com/">Songbird</a>.
-          (This includes integration with trac.)
-         </FONT>
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="gcc-4.0.2/"><B>GCC 4.0.2</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This contains the entire <a href="http://gcc.gnu.org/">gcc</a>
-          source for 4.0.2. In particular, it has G++.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="js/"><B>JavaScript</B></A></FONT>
-      </DT>
-      <DD class="note">
+      <dt>
+         <a href="js/">JavaScript</a>
+      </dt>
+      <dd class="note">
           This is Mozilla JavaScript. It includes
           <a href="js/source/js/src">SpiderMonkey</a>,
           <a href="js/source/js/rhino">Rhino</a>,
@@ -224,118 +168,74 @@ dl.rootlist dd {
           as well as
           <a href="js/source/js/jsd">debuggers</a> and
           <a href="js/source/js/tests">test suites</a>.
-      </DD>
+      </dd>
 
-      <DT>
-         <FONT SIZE="+1"><A HREF="webtools/"><B>Webtools</B></A></FONT>
-      </DT>
-      <DD class="note">
+      <dt>
+         <a href="webtools/">Webtools</a>
+      </dt>
+      <dd class="note">
           These are the Mozilla Webtools. They include
           <a href="webtools/source/bugzilla">Bugzilla</a>,
           <a href="webtools/source/bonsai">Bonsai</a>,
           <a href="webtools/source/tinderbox">Tinderbox</a>
           (<a href="webtools/source/tinderbox2">2</a> and
           <a href="webtools/source/tinderbox3">3</a>),
-          <a href="webtools/source/lxr">MXR</a>,
+          <a href="webtools/source/lxr">LXR</a>,
           <a href="webtools/source/mozbot">Mozbot</a>.
-      </DD>
+      </dd>
 
-      <DT>
-         <FONT SIZE="+1"><A HREF="bugzilla/"><B>Bugzilla</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is <a href="http://bugzilla.org/">Bugzilla</A>
+      <dt>
+         <a href="bugzilla/">Bugzilla</a>
+      </dt>
+      <dd class="note">
+          This is <a href="http://www.bugzilla.org/">Bugzilla</a>
           <a href="http://www.bugzilla.org/docs/tip/html/">tip</a>.
-      </DD>
+      </dd>
 
-      <DT>
-         <FONT SIZE="+1"><A HREF="bugzilla3.0.x/"><B>Bugzilla3.0.x</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is <a href="http://bugzilla.org/">Bugzilla</a>
-          <a href="http://www.bugzilla.org/docs/3.0/html/">3.0.x</a>.
-      </DD>
+      <dt>
+         <a href="bugzilla3.0/">Bugzilla3.0</a>
+      </dt>
+      <dd class="note">
+          This is <a href="http://www.bugzilla.org/">Bugzilla</a>
+          <a href="http://www.bugzilla.org/docs/3.0/html/">3.0</a>.
+      </dd>
 
-      <DT>
-         <FONT SIZE="+1"><A HREF="bugzilla2.22.x/"><B>Bugzilla2.22.x</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is <a href="http://bugzilla.org/">Bugzilla</a>
-          <a href="http://www.bugzilla.org/docs/2.22/html/">2.22.x</a>.
-      </DD>
+      <dt>
+         <a href="bugzilla2.22/">Bugzilla2.22</a>
+      </dt>
+      <dd class="note">
+          This is <a href="http://www.bugzilla.org/">Bugzilla</a>
+          <a href="http://www.bugzilla.org/docs/2.22/html/">2.22</a>.
+      </dd>
 
-      <DT>
-         <FONT SIZE="+1"><A HREF="bugzilla2.20.x/"><B>Bugzilla2.20.x</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is <a href="http://bugzilla.org/">Bugzilla</a>
-          <a href="http://www.bugzilla.org/docs/2.20/html/">2.20.x</a>.
-      </DD>
+      <dt>
+         <a href="bugzilla2.20/">Bugzilla2.20</a>
+      </dt>
+      <dd class="note">
+          This is <a href="http://www.bugzilla.org/">Bugzilla</a>
+          <a href="http://www.bugzilla.org/docs/2.20/html/">2.20</a>.
+      </dd>
 
-      <DT>
-         <FONT SIZE="+1"><A HREF="bugzilla2.18.x/"><B>Bugzilla2.18.x</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is <a href="http://bugzilla.org/">Bugzilla</a>
-          <a href="http://www.bugzilla.org/docs/2.18/html/">2.18.x</a>.
-      </DD>
+      <dt>
+         <a href="addons/">addons</a>
+      </dt>
+      <dd class="note">
+          This is the <a href="https://addons.mozilla.org/">addons.mozilla.org</a> website.
+      </dd>
 
-      <DT>
-         <FONT SIZE="+1"><A HREF="bugzilla2.16.x/"><B>Bugzilla2.16.x</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is <a href="http://bugzilla.org/">Bugzilla</a>
-          <a href="http://www.bugzilla.org/docs/2.16/html/">2.16.x</a>.
-      </DD>
+      <dt>
+         <a href="mozilla-org/">mozilla-org</a>
+      </dt>
+      <dd class="note">
+          This is the <a href="http://www.mozilla.org/">www.mozilla.org</a> website.
+      </dd>
 
-      <DT>
-         <FONT SIZE="+1"><A HREF="update1.0/"><B>Update1.0</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the MOZILLA_UPDATE_1_0_BRANCH of the <a href="http://update.mozilla.org">Update webtool</a>.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="mozilla-org/"><B>mozilla-org</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the <a href="http://mozilla.org">mozilla.org</a> website.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="mozillafoundation-org/"><B>mozillafoundation-org</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the <a href="http://mozillafoundation.org">mozillafoundation.org</a> website.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="mozilla-com/"><B>mozilla-com</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the <a href="http://mozilla.com">mozilla.com</a> website.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="spreadfirefox/"><B>spreadfirefox</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the <a href="http://spreadfirefox.com">spreadfirefox.com</a> website.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="devmo/"><B>devmo</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the <a href="http://developer.mozilla.org">developer.mozilla.org</a> website.
-      </DD>
-
-      <DT>
-         <FONT SIZE="+1"><A HREF="devmowiki/"><B>devmowiki</B></A></FONT>
-      </DT>
-      <DD class="note">
-          This is the <a href="http://developer.mozilla.org/wiki">developer.mozilla.org/wiki</a> website.
-      </DD>
+      <dt>
+         <a href="spreadfirefox/">spreadfirefox</a>
+      </dt>
+      <dd class="note">
+          This is the <a href="http://www.spreadfirefox.com">www.spreadfirefox.com</a> website.
+      </dd>
 
       </dl>
 
