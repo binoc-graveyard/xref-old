@@ -1,0 +1,7 @@
+@import url(style.css);
+.c { /* comment */
+ font-weight: bold;
+}
+.s { /* string */
+ font-weight: bold;
+}

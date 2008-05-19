@@ -1,0 +1,5 @@
+interface testInterface {
+  readonly attribute boolean readableFoo;
+  attribute boolean writableBar;
+  void longMethod();
+}
