@@ -1,0 +1,32 @@
+.c { /* comment */
+ font-style: italic;
+ color: dimgrey;
+}
+.v { /* verb */
+ color: darkred;
+}
+.s { /* string */
+ color: purple;
+}
+.i { /* include */
+ color: blue;
+}
+ul {
+ margin: 0px 0px 0px 1em;
+}
+.l { /* line */
+ font-style: normal;
+ font-weight: normal;
+ text-decoration: none;
+ color: gray;
+}
+img.icon {
+ max-width: 128px;
+ margin: 2px;
+}
+img.icon:hover {
+ float: right;
+ max-width: inherit;
+ border: 1px solid black;
+ margin: 1px;
+}

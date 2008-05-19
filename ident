@@ -1,0 +1,330 @@
+#!/usr/bin/perl
+# $Id: ident,v 1.8 2006/12/07 04:59:38 reed%reedloden.com Exp $
+
+# ident --	Look up identifiers
+#
+#	Arne Georg Gleditsch <argggh@ifi.uio.no>
+#	Per Kristian Gjermshus <pergj@ifi.uio.no>
+#
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+######################################################################
+
+use lib 'lib';
+use Local;
+use LXR::Common;
+use LXR::Config;
+use DB_File;
+
+@tyy= (('M', 'preprocessor macro'),
+       ('F', 'function'),
+       ('I', 'interface'),
+       ('C', 'class'),			# C++
+       ('T', 'type'),
+       ('S', 'struct type'),
+       ('E', 'enum type'),
+       ('U', 'union type'),
+       ('f', 'function prototype'),
+       ('c', '(forwarded) class'),	# C++
+       ('V', 'variable'),
+       ('R', 'reference'),
+      );
+%ty = @tyy;
+
+sub list_links
+{
+  my ($t, $fnam, $concise, $lines) = @_;
+  @fpos = sort { $a <=> $b } split(/,/, $lines);
+  if ($concise && /:/ !~ $lines) {
+    print("<li>", &fileref("$fnam", "/$fnam"),
+          ", ",$#fpos+1,' time'.($#fpos?'s':'')."\n");
+  } else {
+    print("<li>". &fileref("$fnam", "/$fnam"));
+    unless ($concise) {
+      my $blamelines = $lines;
+      $blamelines =~ s/:[^,]*//g;
+      print(&blamerefs($fnam, $blamelines));
+    }
+    print("\n <ul>");
+    foreach (@fpos) {
+      my ($line, @clss) = split(/:/, $_);
+      print("<li>", &fileref("line $line",
+            "/$fnam", $line));
+      if (@clss) {
+        if ($t eq 'F' || $t eq 'f') {
+          print(", as member of ");
+          if ($xref{$clss[0]}) {
+            print(&idref("class $clss[0]", $clss[0]));
+          } else {
+            print("class $clss[0]");
+          }
+        } elsif ($t eq 'C') {
+          local $,;
+          print(", inheriting <ul>\n");
+          foreach (@clss) {
+            if ($,) {
+              print $,;
+            } else {
+              $,=',';
+            }
+            print("<li>");
+            if ($xref{$_}) {
+              print("class ".&idref($_, $_));
+            } else {
+              print("class <A TITLE='unindexed fixme'>$_</A>");
+            }
+          }
+          print("  </ul>");
+        }
+      }
+      print("\n");
+    }
+    print(" </ul>\n");
+  }
+}
+
+sub ident {
+    my $concise = 0;
+
+    print('<P ALIGN=CENTER>
+Type the full name of an identifier
+(a function name, variable name, typedef, etc.)
+<BR>to summarize. Matches are <u>case-sensitive</u>.');
+print qq%
+<script>
+function changetarget() {
+ if (document.getElementById) {
+  var form = document.getElementById('ident');
+  var target = document.getElementById('tree');
+  form.action='../'+target.value+'/ident';
+ }
+}
+</script>
+%;
+
+    print('<form id=ident name=ident method=get action="ident">
+');
+
+    foreach ($Conf->allvariables) {
+        if ($Conf->variable($_) ne $Conf->vardefault($_)) {
+            print("<input type=hidden name=\"",$_, "\" ",
+                  "value=\"", $Conf->variable($_), "\">\n");
+        }
+    }
+    
+    print('<b>Identifier: </b><input type=text name="i"
+value="'.$identifier.'" size=50>
+<input type=submit value="Find">
+');
+    print(qq{
+using tree:
+<select name='tree' id='tree' onchange='changetarget()'>
+});
+my @treelist = @{$Conf->{'trees'}};
+foreach my $othertree (@treelist) {
+my $default=$othertree eq $Conf->{'treename'} ? ' selected=1' : '';
+print "<option$default value='$othertree'>$othertree</option>
+";
+}
+print (qq{</select>});
+
+
+    my $value = $filter;
+    $value =~ s/&/&amp;/g;
+    $value =~ s/"/&quot;/g;
+    $value =~ s/</&lt;/g;
+    $value =~ s/>/&gt;/g;
+    print('<br>Limit output to pattern: <input type=text name="filter" value="'.
+            $value.'" size=30>');
+
+    print('<br><input type=checkbox value="1" ');
+    print('checked="checked" ') if $scriptidly == 1;
+    print('name=scriptidly>Match C++, JS, and IDL variants');
+
+    print("</form>\n");
+    
+    if ($identifier) {
+	tie(%xref, "DB_File", $Conf->dbdir."/xref", 
+	    O_RDONLY, undef, $DB_HASH) || 
+		&fatal('No cross reference database is available for "'.$Conf->{'treename'}.'" please complain to the webmaster [cite: xref]');
+
+	@refs = split(/\t/,$xref{$identifier});
+        my $searchId = $identifier;
+        my $searchIdFilter;
+        if ($scriptidly) {
+            my $genident = $identifier;
+            my ($identtype, $ufirst, $lfirst);
+            if ($genident =~ s/^([GSgs]et)([A-Z])//) {
+                $identtype = $1;
+                $ufirst = $2;
+                $lfirst = lc $ufirst;
+                $searchIdFilter = "([GSgs]et|\\b)[$ufirst$lfirst]$genident";
+                $searchId = "$lfirst$genident";
+            } else {
+                $genident =~ s/^([a-z])//i;
+                $ufirst = uc $1;
+                $lfirst = lc $ufirst;
+                $searchIdFilter = "[$ufirst$lfirst]$genident";
+            }
+            my @flavors = (
+                "get$ufirst$genident",
+                "set$ufirst$genident",
+                "Get$ufirst$genident",
+                "Set$ufirst$genident",
+                "$ufirst$genident",
+                "$lfirst$genident",
+            );
+            @refs = ();
+            foreach my $flavor (@flavors) {
+                next if defined $identtype && $flavor =~ /^([GSgs]et)/ && $identtype !~ /$1/i;
+                push @refs, split(/\t/,$xref{$flavor});
+            }
+        } else {
+            $searchIdFilter = "\\b$identifier";
+        }
+my $identifier = $identifier;
+$identifier =~ s/&/&amp;/g;
+$identifier =~ s/>/&gt;/g;
+$identifier =~ s/</&lt;/g;
+$identifier =~ s/"/&quot;/g;
+        print("<h1>$identifier</h1>\n");
+my @tail = ();
+push @tail, "string=$searchId" if $searchId ne '';
+push @tail, "find=$filter" if $filter ne '';
+push @tail, "filter=$searchIdFilter" if $searchIdFilter ne '';
+my $tail = $#tail >= 0 ? '?' . join "&", @tail : '';
+$tail =~ s/&/&amp;/g;
+$tail =~ s/>/&gt;/g;
+$tail =~ s/</&lt;/g;
+$tail =~ s/"/&quot;/g;
+
+        print("<p><i>If you can't find what you're looking for, you can always <a href=search".$tail.
+">search</a> for it.</i></p>");
+
+        my %f = {};
+	if (@refs) {
+	    tie(%fileidx, "DB_File", $Conf->dbdir."/fileidx", 
+		O_RDONLY, undef, $DB_HASH) || 
+		    &fatal('Cross reference database is missing its file list for "'.$Conf->{'treename'}.'" please complain to the webmaster [cite: fileidx]');
+
+            my %normal_refh = {}, %fancy_refs = {};
+            my %big_map = {};
+            foreach $t (keys(%ty)) {
+                $big_map{$t} = {};
+            }
+            my %local_map;
+            foreach my $ref (@refs) {
+                if ($ref =~ /^(.)(.*?):(.*?)(?:|:(.*?))$/) {
+my ($refkind, $reffnum, $refline, $classes) = ($1, $2, $3, $4);
+                    next if defined $filter && $fileidx{$reffnum} !~ /$filter/;
+                    foreach my $lineref (split(/,/, $refline)) {
+                        my $append = (defined $classes)
+                                   ? "$lineref:$classes"
+                                   : $lineref;
+
+                        if ($big_map{$refkind}{$reffnum}) {
+                            $big_map{$refkind}{$reffnum} = $big_map{$refkind}{$reffnum} . ",$append";
+                        } else {
+                            $big_map{$refkind}{$reffnum} = $append;
+                        }
+
+                        my $miniref = "$reffnum:$lineref";
+                        if ($refkind ne 'R' && $ty{$refkind}) {
+                            delete $normal_refh{$miniref};
+                            $fancy_refs{$miniref} = $refkind;
+                            $f{$refkind} .= "$miniref\t";
+                        } else {
+                            $normal_refh{$miniref} = $refkind unless defined $fancy_refs{$miniref};
+                        }
+                    }
+                }
+            }
+
+            foreach $t (@tyy) {
+                next unless ($f{$t});
+                print("Defined as a $ty{$t} in:<ul>\n");
+
+                my %kind_map = %{$big_map{$t}};
+                foreach $fnum (sort { $a <=> $b } keys %kind_map) {
+                    my $fnam = $fileidx{$fnum};
+                    foreach my $filelist ($kind_map{$fnum}) {
+                        list_links($t, $fnam, $concise, $filelist);
+                    }
+                }
+                print("</ul>");
+            }
+
+            my @normal_refs = keys %normal_refh;
+            %normal_refh = ();
+            foreach (@normal_refs) {
+                if (/^(.+):([\d,]+)/) {
+                    if (defined $normal_refh{$1}) {
+                        $normal_refh{$1} .= ",$2";
+                    } else {
+                        $normal_refh{$1} = $2; 
+                    }
+                }
+            } 
+            @normal_refs = ();
+            my $ref_count = scalar(@normal_refs);
+            print('Referenced '.($ref_count > 1 ? "(in $ref_count files total)" : '')."in:\n",
+                  "<ul>\n");
+            foreach (sort { $a <=> $b } keys %normal_refh) {
+                list_links($t, $fileidx{$_}, $concise, $normal_refh{$_});
+            }
+            print("</ul>\n");
+            untie(%fileidx);
+
+        } else {
+            print("<br><b>Not used</b>");
+        }
+
+        untie(%xref);
+    }
+}
+
+($Conf, $HTTP, $Path, $head) = &init;
+
+$identifier = $HTTP->{'param'}->{'i'};
+$identifier =~ s/"/\&quot;/g;
+$filter = $HTTP->{'param'}->{'filter'};
+if ($identifier && !$filter && $identifier =~ /^(.*)::(.*)$/) {
+    ($filter, $identifier) = ($1, $2);
+}
+$scriptidly = $HTTP->{'param'}->{'scriptidly'};
+$scriptidly = $scriptidly =~ /1|yes/ ? 1 : 0 if defined $scriptidly;
+my $tree = $HTTP->{'param'}->{'tree'};
+if ($tree && ($tree ne $Conf->{'treename'})) {
+    my @treelist = @{$Conf->{'trees'}};
+    foreach my $othertree (@treelist) {
+        next unless $othertree eq $tree;
+my @tail = ();
+push @tail, "i=$identifier" if $identifier ne '';
+push @tail, "filter=$filter" if $filter ne '';
+push @tail, "scriptidly=$scriptidly" if $scriptidly ne '';
+my $tail = $#tail >= 0 ? '?' . join "&", @tail : '';
+$head .= "Refresh: 0; url=../$tree/ident$tail
+";
+    }
+}
+print "$head
+";
+
+&makeheader('ident');
+&ident;
+&makefooter('ident');
+
+1;
