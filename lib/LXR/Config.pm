@@ -209,6 +209,8 @@ sub _initialize {
 		     $dir eq 'sourcetail' ||
 		     $dir eq 'sourcedirhead' ||
 		     $dir eq 'sourcedirtail' ||
+		     $dir eq 'diffhead' ||
+		     $dir eq 'difftail' ||
 		     $dir eq 'findhead' ||
 		     $dir eq 'findtail' ||
 		     $dir eq 'identhead' ||
@@ -345,6 +347,16 @@ sub htmlhead {
 sub htmltail {
     my $self = shift;
     return($self->varexpand($self->{'htmltail'}));
+}
+
+sub diffhead {
+    my $self = shift;
+    return($self->varexpand($self->{'diffhead'}));
+}
+
+sub difftail {
+    my $self = shift;
+    return($self->varexpand($self->{'difftail'}));
 }
 
 sub sourcehead {

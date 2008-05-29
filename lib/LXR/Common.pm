@@ -1556,6 +1556,11 @@ sub makeheader {
 	    &warning("Template ".$Conf->searchhead." does not exist.", 'searchhead');
 	    $template = $def_templ;
 	}
+    } elsif ($who eq "diff" && $Conf->diffhead) {
+	if (!open(TEMPL, $Conf->diffhead)) {
+	    &warning("Template ".$Conf->diffhead." does not exist.", 'diffhead');
+	    $template = $def_templ;
+	}
     } elsif ($Conf->htmlhead) {
 	if (!open(TEMPL, $Conf->htmlhead)) {
 	    &warning("Template ".$Conf->htmlhead." does not exist.", 'htmlhead');
@@ -1658,6 +1663,11 @@ sub makefooter {
 	    &warning("Template ".$Conf->searchtail." does not exist.", 'searchtail');
 	    $template = $def_templ;
 	}
+    } elsif ($who eq "diff" && $Conf->difftail) {
+        if (!open(TEMPL, $Conf->difftail)) {
+            &warning("Template ".$Conf->difftail." does not exist.", 'difftail');
+            $template = $def_templ;
+        }
     } elsif ($Conf->htmltail) {
 	if (!open(TEMPL, $Conf->htmltail)) {
 	    &warning("Template ".$Conf->htmltail." does not exist.", 'htmltail');
