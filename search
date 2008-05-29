@@ -187,6 +187,7 @@ $value =~ s/>/&gt;/g;
 \.c
 \.h$
 \..$
+\.[chj]
 \.x.l
 \.idl$
 \.css
