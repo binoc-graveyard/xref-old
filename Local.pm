@@ -710,16 +710,12 @@ sub convertwhitespace {
 
 sub beginskip
 {
-    return '
-<!--
-';
+    return '<![MXR[';
 }
 
 sub endskip
 {
-    return '
--->
-';
+    return ']]>';
 }
 
 sub isForce {

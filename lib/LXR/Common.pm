@@ -1222,6 +1222,7 @@ sub expandtemplate {
 
     $templ =~ s/\01/\{/gs;
     $templ =~ s/\02/\}/gs;
+    $templ =~ s/<!\[MXR\[.*?\]\]>//gs;
     return($templ);
 }
 
