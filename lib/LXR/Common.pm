@@ -688,10 +688,11 @@ sub get_mime_type {
 }
 
 sub markupfile {
-    my ($INFILE, $Path, $fname, $outfun) = @_;
+    my ($INFILE, $Path, $fname, $outfun, $force) = @_;
     my $virtp = $Path->{'virt'};
     my @terms;
     my $filenum;
+    $force = 0 unless defined $force;
 
     $line = 1;
 
@@ -904,7 +905,7 @@ sub markupfile {
 	    $is_binary = 0;
 	}
 
-	if ( $is_binary ) {
+	if ( $is_binary && !$force ) {
 
 	    &$outfun("</pre>");
 	    &$outfun("<ul><b>Binary File: ");
@@ -946,6 +947,7 @@ sub fixpaths {
     $virtf =~ s#//+#/#g;
     
     my ($virt, $file) = $virtf =~ m#^(.*/)([^/]*)$#;
+
     ($Path->{'virtf'}, $Path->{'virt'}, $Path->{'file'}) = ($virtf, $virt, $file);
 
     my $real = $Path->{'real'} = $Path->{'root'}.$virt;

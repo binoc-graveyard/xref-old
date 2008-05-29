@@ -32,6 +32,10 @@ use DB_File;
 
 sub htmlsub {
     my ($s, $l) = @_;
+    my $x = $s;
+    while ($x =~ s#<style>(.*?)</style>##) {
+        $l += length $1;
+    }
     my @s = split(/(<[^>]*>|&[\#\w\d]+;?)/, $s);
     $s = '';
     
@@ -113,6 +117,11 @@ You can
 print "also " if (scalar @similartrees > 1);
 print qq{
 compare against a different file: <input name=file2 size=60 value="$file2">
+<br>
+Ignore whitespace changes:
+<input type=checkbox name='diffw' id='diffw' value='1'};
+print " checked=1" if $diffw;
+print qq{>
 
 <hr>
 <input type=submit>
@@ -148,58 +157,88 @@ compare against a different file: <input name=file2 size=60 value="$file2">
         return;
     }
     unless (open(DIFF, "-|")){
-	open(STDERR, ">&STDOUT");
-	exec('diff', '-U0', $origreal, $diffreal);
-	print "*** Diff subprocess died unexpectedly: $!\n";
-	exit;
+        open(STDERR, ">&STDOUT");
+        my @args = ('diff', '-U0');
+        push @args, '-w' if $diffw;
+        push @args, ($origreal, $diffreal);
+        exec @args;
+        print "*** Diff subprocess died unexpectedly: $!\n";
+        exit;
     }
-    
-
+    my $diff = 1;
+    my $diffn = 2;
     while (<DIFF>) {
-	if (($os, $ol, $ns, $nl) = 
-	    /@@ -(\d+)(?:,(\d+)|) \+(\d+)(?:,(\d+)|) @@/) {
-	    $os++ if $ol eq '0';
-	    $ns++ if $nl eq '0';
-	    $ol = 1 unless defined($ol);
-	    $nl = 1 unless defined($nl);
+        if (($os, $ol, $ns, $nl) = 
+            /@@ -(\d+)(?:,(\d+)|) \+(\d+)(?:,(\d+)|) @@/) {
+            # this seems to be a gnu hack
+            $os++ if $ol eq '0' && $nl eq '';
+            $ns++ if $nl eq '0' && $ol eq '';
+            $ol = 1 unless defined($ol);
+            $nl = 1 unless defined($nl);
 
-	    $bo = $os + $ofs;
-	    if ($ol < $nl) {
-		$ofs += $nl - $ol;
+            $bo = $os + $ofs;
+ 
+            # link to the next/previous change ...
+            my ($remove, $change, $additt) = ('&lt;', '!', '&gt;');
+            my ($removep, $changep, $addittp) = ($remove, $change, $additt);
+            my $nextd = "<a name='d$diff' href='#d$diffn'>";
+            my $removen = "$nextd$remove</a>";
+            my $changen = "$nextd$change</a>";
+            my $addittn = "$nextd$additt</a>"; 
+            if ($diff > 1) {
+                my $prevd = "<a href='#d" . ($diff - 1) . "'>";
+                $removep = "$prevd$remove</a>";
+                $changep = "$prevd$change</a>";
+                $addittp = "$prevd$additt</a>";
+            }
+            $diff = $diffn++;
+            $remove = $removep . $removen;
+            $change = $changep . $changen;
+            $additt = $addittp . $addittn;
 
-		$dir = '&gt;&gt;';
-		$ms  = $nl - $ol;
-		$ml  = $ol;
-		$orig{$os+$ol} = $ms;
-	    } else {
-		$dir = '&lt;&lt;';
-		$ms  = $ol - $nl;
-		$ml  = $nl;
-		$new{$ns+$nl} = $ms;
-	    } 
-	    foreach (0..$ml - 1) {
-		$chg{$bo + $_} = '!!';
-	    }
-	    foreach (0..$ms - 1) {
-		$chg{$bo + $ml + $_} = $dir;
-	    }
+            if ($ol < $nl) {
+                $ofs += $nl - $ol;
 
-	}
+                $dir = $additt;
+                $ms  = $nl - $ol;
+                $ml  = $ol;
+                $orig{$os+$ol} = $ms;
+            } else {
+                $dir = $remove;
+                $ms  = $ol - $nl;
+                $ml  = $nl;
+                $new{$ns+$nl} = $ms;
+            } 
+            foreach (0..$ml - 1) {
+                $chg{$bo + $_} = $change;
+            }
+            foreach (0..$ms - 1) {
+                $chg{$bo + $ml + $_} = $dir;
+            }
+        }
     }
     close(DIFF);
 
 
-        my $path = $diffvirt;
-        $path =~ s|([^-a-zA-Z0-9.+\@/_\r\n])|sprintf("%%%02X", ord($1))|ge;
-        $path = qq{<a href="../$diffvar/source$path">$path <i>($diffvar)</i></a>};
+    my ($tree1, $tree2) = ($Conf->{'treename'}, $diffvar);
+    if ($tree1 eq $tree2) {
+        $tree1 = $tree2 = '';
+    } else {
+        $tree1 = " <i>($tree1)</i>";
+        $tree2 = " <i>($tree2)</i>";
+    }
+    my $path = $diffvirt;
+    $path =~ s|([^-a-zA-Z0-9.+\@/_\r\n])|sprintf("%%%02X", ord($1))|ge;
+    $path = qq{<a href="../$diffvar/source$path">$path$tree2</a>};
     print("<h1>Diff markup</h1>\n",
-	  "<h3>Differences between ",
+	  "<h3><a href='#d1'>Differences</a> between ",
 
-	  &fileref("$origvirt <i>(".
-		   $Conf->{'treename'}.")</i>", $origvirt, undef, ""),
+	  &fileref("$origvirt$tree1", $origvirt, undef, ""),
 	  " and ",
           $path,
-	  "</h3><hr>\n");
+	  " (<a href='diff?tree=$diffvar&diffvar=",$Conf->{'treename'},
+          "&file=$diffvirt&file2=$origvirt'>reverse</a>)",
+          "</h3><hr>\n<style>.x, .x > a { color: red; text-decoration: none } </style>");
 
 #	  "<table width=\"100%\" border=0 cellpadding=0><tr><td>",
 #
@@ -215,7 +254,7 @@ compare against a different file: <input name=file2 size=60 value="$file2">
     open(FOO, $origreal);
     $orig = '';
     &markupfile(\*FOO, $Path->{'virt'}, $Path->{'file'}, 
-		sub { $orig .= shift });
+		sub { $orig .= shift }, 1);
     $len = $.+$ofs;
     close(FOO);
 
@@ -224,7 +263,7 @@ compare against a different file: <input name=file2 size=60 value="$file2">
     open(FOO, $diffreal);
     $new = '';
     &markupfile(\*FOO, $Conf->mappath($Path->{'virt'}), $Path->{'file'}, 
-		sub { $new .= shift });
+		sub { $new .= shift }, 1);
     close(FOO);
 
     $Conf->variable($diffvar, $origval);
@@ -237,14 +276,14 @@ compare against a different file: <input name=file2 size=60 value="$file2">
 
     print("<pre>");
     foreach $i (0..$len) {
-	$o = &htmlsub($orig[$i], 50);
-#	$n = &htmlsub($new[$i], 999);
-	$n = $new[$i];
+	$o = &htmlsub($orig[$i], 80);
+	$n = &htmlsub($new[$i], 999);
+#	$n = $new[$i];
 
 #	print("<tr><td><code>$o</code></td>".
 #	      "<td><font color=red> ", $chg{$i+1}, " </font></td>".
 #	      "<td><code>$n</code></td></tr>\n");
-	print("$o <font color=red>", ($chg{$i+1} || "  "), "</font> $n\n");
+	print("$o <span class=x>", ($chg{$i+1} || "  "), "</span> $n\n");
     }
     print("</pre>");
 
@@ -257,6 +296,7 @@ compare against a different file: <input name=file2 size=60 value="$file2">
 my $tree = $HTTP->{'param'}->{'tree'};
 $diffvar = $HTTP->{'param'}->{'diffvar'};
 $diffval = $HTTP->{'param'}->{'diffval'};
+$diffw = $HTTP->{'param'}->{'diffw'} eq '1';
 $file2 = $HTTP->{'param'}->{'file2'};
 if ($file2 ne '') {
   if ($file2 =~ m{^//([^/]+)(/.*|$)}) {
@@ -266,13 +306,13 @@ if ($file2 ne '') {
   }
 }
 
-if (1) {
 if ($file2 ne $HTTP->{'param'}->{'file2'} || $tree) {
 my @tail = ();
 push @tail, "file=".$Path->{'virt'}.$Path->{'file'} if $Path->{'file'} ne '';
 push @tail, "file2=".$file2 if $file2 ne '';
 push @tail, "diffvar=$diffvar" if $diffvar ne '';
 push @tail, "diffval=$diffval" if $diffval ne '';
+push @tail, "diffw=$diffw" if $diffw;
 my $tail = $#tail >= 0 ? '?' . join "&", @tail : '';
 my $newtree = $Conf->{'treename'};
  if ($tree ne $newtree) {
@@ -284,7 +324,6 @@ my $newtree = $Conf->{'treename'};
 $head .= "Refresh: 0; url=../$newtree/diff$tail
 ";
 
-}
 }
 print "$head
 ";
