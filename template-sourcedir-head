@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<META NAME="GENERATOR" CONTENT="lxr-1998-06-10: http://lxr.linux.no">
+<link rel="icon" href="/mxr.png" type="image/png">
+<title>$title</title>
+$stylesheets</head>
+
+<body   bgcolor="#FFFFFF" text="#000000"
+	link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<table class=banner bgcolor="#000000" width="100%" border=0 cellpadding=0 cellspacing=0>
+<tr><td><a class="logo" href="http://www.mozilla.org/"><img
+ src="http://www.mozilla.org/images/mozilla-banner.gif" alt=""
+ border=0 width=600 height=58></a></td></tr></table>
+
+<table class=header border=0 cellpadding=12 cellspacing=0 width="100%">
+ <tr>
+  <td align=left valign=middle>
+   <nobr><font size="+2"><b><a href="$dotdoturl">Mozilla Cross Reference</a></b>
+<i><a href="$baseurl">$treename</a></i>
+</font></nobr>
+   <br><b>$banner</b>
+  </td>
+
+$beginbonsai
+  <td align=right valign=top width="1%">
+   <table border cellpadding=6 cellspacing=0>
+    <tr>
+     <td bgcolor="#FAFAFA">
+      <table border=0 cellpadding=6 cellspacing=0>
+       <tr>
+        <td nowrap align=left>
+         changes to<br>this directory<br>in the last:
+        </td>
+        <td nowrap>
+         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsversion&amp;file=$pathname&amp;date=day">day</a><br>
+         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsversion&amp;file=$pathname&amp;date=week">week</a><br>
+         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsversion&amp;file=$pathname&amp;date=month">month</a><br>
+        </td>
+       </tr>
+      </table>
+     </td>
+    </tr>
+   </table>
+  </td>
+$endbonsai
+
+ </tr>
+</table>
+
+<p>
+<form action="$baseurl/search">
+<input type=hidden name=find value="$urlpath">
+<b>Search for:</b> <input name=string id=string> within this directory
+<input type=submit value="search">
+</form>
+</p>

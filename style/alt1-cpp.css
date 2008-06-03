@@ -1,0 +1,21 @@
+@import url(style.css);
+
+.function {
+border: 1px dotted green;
+}
+
+.class {
+border: 1px dotted yellow;
+}
+
+.union {
+border: 1px dotted purple;
+}
+
+.proto {
+border: 1px dotted black;
+}
+
+.reference {
+border: 1px dotted red;
+}
