@@ -42,6 +42,7 @@ sub treeify {
     #remove the extra space that i stupidly added when parsing lxr.conf
     $self->{'sourceroot'} =~ s/^\s+//;
     $self->{'sourceprefix'} =~ s/^\s+//;
+    $self->{'rewriteurl'} =~ s/^\s+//;
 
     if ($self->{'sourceroot'} =~ /\S\s+\S/) {
         $self->{'oldroot'} = $self->{'sourceroot'};
@@ -63,6 +64,8 @@ if (0) {
         }
         $self->{'treehash'} = \%treehash;
 
+        my %rewritehash = split(/\s+/, $self->{'rewriteurl'});
+
         #To compute which tree we're looking at, grab the second to last
         #component from the script name which will be of the form: 
         # /seamonkey/source
@@ -77,6 +80,9 @@ if (0) {
 
         #set srcrootname to tree name
         $self->{'srcrootname'} = $self->{'treename'};
+
+        #set rewriteurl to tree name
+        $self->{'rewriteurl'} = $rewritehash{$self->{'treename'}};
 
         #append tree name to virtroot
         $self->{'virtroot'} .= "/" . $self->{'treename'} ;
@@ -199,6 +205,7 @@ sub _initialize {
 		     $dir eq 'srcrootname' ||
                      $dir eq 'virtroot' ||
 		     $dir eq 'baseurl' ||
+		     $dir eq 'rewriteurl' ||
 		     $dir eq 'incprefix' ||
 		     $dir eq 'dbdir' ||
 		     $dir eq 'bonsaihome' ||
@@ -222,6 +229,7 @@ sub _initialize {
 		if ($arg =~ /([^\n]+)/) {
 	            if ($dir eq 'sourceroot' ||
                         $dir eq 'sourceprefix' ||
+                        $dir eq 'rewriteurl' ||
                         $dir eq 'alias') {
                         $self->{$dir} .= " " . $1;
                     }else{
@@ -300,6 +308,12 @@ sub treehash {
 sub prefix {
     my $self = shift;
     my $prefix = $self->{'sourceprefix'};
+    return $prefix;
+}
+
+sub rewriteurl {
+    my $self = shift;
+    my $prefix = $self->{'rewriteurl'};
     return $prefix;
 }
 

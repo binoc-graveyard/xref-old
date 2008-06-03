@@ -350,7 +350,7 @@ $head = "Content-Type: image/$kind\r\n\r\n";
                 local $/ = undef;
 my $body = <SRCFILE>;
                 print $body;
-	    } elsif ($file =~ /README$/i) {
+	    } elsif (!$force && $file =~ /README$/i) {
 		print("<pre lang='en'>");
 		while(<SRCFILE>) {
             	    $string = $string . $_;
@@ -424,6 +424,13 @@ unless (defined $Path->{'root'}) {
     $path =~ s{/}{../}g;
     my $prefix = $path || './';
     my $refresh = "Refresh: 0; url=$prefix
+";
+    $head .= "$refresh
+";
+    $exit = 1;
+} elsif (defined $Path->{'rewriteurl'}) {
+    my $path = $ENV{'PATH_INFO'};
+    my $refresh = "Refresh: 0; url=$rewriteurl$path
 ";
     $head .= "$refresh
 ";
