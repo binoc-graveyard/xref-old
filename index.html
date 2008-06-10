@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML>
+<HEAD>
+ <link rel="icon" href="/mxr.png" type="image/png">
+ <title>Mozilla Cross-Reference</title>
+ <style type="text/css">
+<!--
+div {
+text-align: right;
+white-space: nowrap; 
+}
+.note {
+font-size: 70%;
+}
+-->
+</style>
+</HEAD>
+<BODY   BGCOLOR="#FFFFFF" TEXT="#000000"
+	LINK="#0000EE" VLINK="#551A8B" ALINK="#FF0000">
+
+<table bgcolor="#000000" class=banner width="100%" border=0 cellpadding=0 cellspacing=0>
+<tr><td><a id="logo" href="http://www.mozilla.org/"><img
+ src="http://www.mozilla.org/images/mozilla-banner.gif" alt="mozilla.org"
+ border=0 width=600 height=58></a></td></tr></table>
+
+<TABLE BORDER=0 CELLPADDING=0 CELLSPACING=6 WIDTH="100%">
+ <TR>
+  <TD WIDTH="35%" ALIGN=LEFT VALIGN=TOP>
+
+   <TABLE BORDER CELLPADDING=10 CELLSPACING=0 WIDTH="100%" BGCOLOR="#EEEEEE">
+    <TR>
+     <TD>
+
+
+
+      <H2 ALIGN=CENTER><i>$treename</i> Starting Points</H2>
+
+         <FONT SIZE="+1"><A HREF="source/"><B>/$rootname</B></A></FONT>
+<BR>
+         <FONT SIZE="-1">
+          Browse from the root
+          of this tree.
+         </FONT>
+<FORM METHOD=GET ACTION="find">
+<div align="right">
+<br> <b><a href="search">Search for</a>:</b>
+              <input type=text name="text" size=29 value="">
+<select name=kind>
+<option value="text">text
+<option value="regexp">regexp
+<option value="ident">ident
+</select>
+<br> <b><a href="find">File path</a>:</b>
+              <INPUT TYPE=TEXT NAME="string" maxlength="29" VALUE="" SIZE=29>
+<br>
+	      <INPUT TYPE=SUBMIT VALUE="Find">
+</div>
+</FORM>
+<p>
+<a href="../">Pick another root</a> <span class="note">(you can also
+change roots from within the search tools)</span>
+    </TR>
+   </TABLE>
+
+  </TD>
+  <TD WIDTH=8></TD>
+  <TD ALIGN=LEFT VALIGN=TOP>
+
+
+<H1>Using this Cross Reference</H1>
+<P>This is a cross reference designed to display
+source code.
+Sources may be retrieved via <em>cvs</em>, <em>svn</em>, <em>git</em>,
+<em>apt</em>, or through some other process.
+
+<P>It's possible to search through the entire source text (but this
+is very slow, it will work, but it is suggested that you at least
+include some simple file restriction by using the <a
+href="search">search</a> page)
+or to <a href="find">find files</a> whose name matches a pattern;
+or to search for the <a href="ident">definitions</a> of particular
+functions, variables, etc.
+
+<P>The individual files of the source code are formatted on the fly
+and presented with clickable identifiers.  An <I>identifier</I> is a
+macro, typedef, struct, enum, union, function, function prototype or
+variable.  Clicking on them shows you a summary of how and where they
+are used.
+
+<P>The <A HREF="search">free-text search</A> feature is implemented
+using <A HREF="http://webglimpse.net/">Glimpse</A>, so all the
+capabilities of Glimpse are available.  
+<A HREF="search-help.html">Regular expression</A> searches are
+especially useful.
+
+<P>(Don't use a web-crawler to try and download all of these pages;
+the CGIs will feed you several <I>gigabytes</I> worth of generated HTML!)
+
+<P>(That's beyond the nearly <strong>30 gigabytes</strong> worth of
+content that is indexed here.)
+
+<p>
+<!-- this would be a good place for the mxr administrator to include
+  ++ a contact link.
+  -->
+
+<p>Issues with this installation of MXR can be <a href="https://bugzilla.mozilla.org/enter_bug.cgi?product=Webtools&amp;component=LXR">filed in Bugzilla</a>.</p>
+
+<!--
+  ++ / good place
+  -->
+
+  </TD>
+ </TR>
+</TABLE>
+
+<P>
