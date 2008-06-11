@@ -113,6 +113,39 @@ ln -s . webtools
 Currently root/index.html is not automatically generated,
 it could and should be.
 
+Files you will need to change manually:
+ Local.pm
+ update-src.pl
+  - add pull/checkout rules for each tree
+ root/index.html
+  - advertise your roots with this file which is the user facing root
+    of the mxr install
+
+Files you can customize:
+ template-*
+  - these files are used to piece together the output from
+   * find
+   * search
+   * ident
+   * source
+   * diff
+ index.html
+  * this is the root of a tree
+
+Scripts you will want to run from a cron job (in order)
+ ./update-src.pl -cron treename &&
+ ./update-search.pl -cron treename &&
+ ./update-xref.pl -cron treename
+
+The easiest way to add a tree to your new (or growing) mxr:
+ ./add-root.pl treename /path/to/tree/root treeprefix
+e.g.:
+ ./add-root.pl bugzilla /data/mxr/bugzilla/webtools/bugzilla mozilla/webtools/bugzilla
+
+the result:
+ sourceroot: bugzilla /var/www/html/mxr/lxr-root/lxr-data/bugzilla/mozilla/webtools/bugzilla
+ sourceprefix: bugzilla mozilla/webtools/bugzilla
+
 The lxr.conf file:
 
  LXR does not care much about your directory structure, all relevant
