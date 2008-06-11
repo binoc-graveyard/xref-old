@@ -129,10 +129,6 @@ for ($TREE) {
         print LOG `$TIME $SVNCOMMAND $SVNUP svn.mozilla.org $STDERRTOSTDOUT`;
         last;
     };
-    /^mozilla-central$/ && do {
-        print LOG `cd $src_dir; $TIME python2.4 ./client.py checkout $STDERRTOSTDOUT`;
-        last;
-    };
     /^mozillausers-central$/ && do {
         my @dirs = <$src_dir/*/*>;
         foreach my $dir (@dirs) {
@@ -150,6 +146,10 @@ for ($TREE) {
         print LOG `cd mozilla; $TIME $CVSCOMMAND $CVSUP-d tools` if /^seamonkey$/;
         last;
     };
+    /^(?:.*)-(central|tracing)$/ && do {
+        print LOG `cd $src_dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
+        last;
+    };
     /^firefox.*$/ && do {
         print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=browser $STDERRTOSTDOUT`;
         last;
@@ -162,8 +162,8 @@ for ($TREE) {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P -d fuel -rFUEL_DEVEL_BRANCH mozilla/browser/fuel $STDERRTOSTDOUT`;
         last;
     };
-    /^(?:.*)-central$/ && do {
-        print LOG `cd $src_dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
+    /^(?:.*)-bzr$/ && do {
+        print LOG `cd $src_dir; $TIME $BZRCOMMAND $BZRUPDATE $STDERRTOSTDOUT`;
         last;
     };
     warn "unrecognized tree. fixme!";
