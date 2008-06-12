@@ -162,10 +162,6 @@ for ($TREE) {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P -d fuel -rFUEL_DEVEL_BRANCH mozilla/browser/fuel $STDERRTOSTDOUT`;
         last;
     };
-    /^(?:.*)-bzr$/ && do {
-        print LOG `cd $src_dir; $TIME $BZRCOMMAND $BZRUPDATE $STDERRTOSTDOUT`;
-        last;
-    };
     warn "unrecognized tree. fixme!";
 }
 
