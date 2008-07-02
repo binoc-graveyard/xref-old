@@ -787,7 +787,10 @@ sub localexpandtemplate
                           ('endwebsvn',         \&endwebsvn),
                           ('webhghost',         \&webhghost),
                           ('beginwebhg',        \&beginwebhg),
-                          ('endwebhg',          \&endwebhg)
+                          ('endwebhg',          \&endwebhg),
+                          ('loggerheadhost',        \&loggerheadhost),
+                          ('beginloggerhead',       \&beginwebzr),
+                          ('endloggerhead',         \&endloggerhead)
 );
 };
 
@@ -955,4 +958,41 @@ sub endwebhg
     return '';
 }
 
+sub loggerheadhost
+{
+    my $bzrbranch = $Path->{'real'}.'/.bzr/branch';
+    my $bzr_not_found = 'http://error.bzr-not-found.tld';
+    return $bzr_not_found unless -d $bzrbranch;
+    my ($bzrroot, $bzrrootfile);
+    if (-f "$bzrbranch/bound") {
+        $bzrrootfile = "$bzrbranch/bound";
+        return $bzr_not_found unless open(BZRROOT,'<',$bzrrootfile);
+        $bzrroot = <BZRROOT>;
+        close(BZRROOT);
+    } elsif (-f "$bzrbranch/branch.conf") {
+        $bzrrootfile = "$bzrbranch/branch.conf";
+        return $bzr_not_found unless open(BZRROOT,'<',$bzrrootfile);
+        my $location;
+        while ($location = <BZRROOT>) {
+#-parent_location = http://dm-bugstage01.mozilla.org/bmo/3.0/
+#+bound_location = http://dm-bugstage01.mozilla.org/bmo/3.0/
+#+bound = True
+            next unless $location =~ /^\s*(?:parent|bound)_location\s*=\s*(\S+)/;
+            $bzrroot = $location;
+            last;
+        }
+        close(BZRROOT);
+    }
+    return $bzrroot || $bzr_not_found;
+}
+
+sub beginloggerhead
+{
+    return &beginskip;
+}
+
+sub endloggerhead
+{
+    return &endskip;
+}
 1;
