@@ -28,25 +28,25 @@ $stylesheets</head>
     <TR>
      <TD NOWRAP BGCOLOR="#FAFAFA">
 $beginbonsai
-      <A HREF="$bonsaihost/cvslog.cgi?file=$pathname&amp;rev=$cvsbranch&amp;mark=$cvsversion">CVS Log</A><BR>
-      <A HREF="$bonsaihost/cvsblame.cgi?file=$pathname&amp;rev=$cvsversion">CVS Blame</A><BR>
-      <A HREF="$bonsaihost/cvsgraph.cgi?file=$pathname&amp;rev=$cvsversion">CVS Graph</A><BR>
+      <A HREF="$bonsaihost/cvslog.cgi?file=$cvspath/$filename&amp;rev=$cvsbranch&amp;mark=$cvsversion">CVS Log</A><BR>
+      <A HREF="$bonsaihost/cvsblame.cgi?file=$cvspath/$filename&amp;rev=$cvsversion">CVS Blame</A><BR>
+      <A HREF="$bonsaihost/cvsgraph.cgi?file=$cvspath/$filename&amp;rev=$cvsversion">CVS Graph</A><BR>
 $endbonsai
 $begintrac
-      <A HREF="$trachost/$virttree/log/$virtfold/$filename">Trac Log</A><BR>
-      <A HREF="$trachost/$virttree/browser/$virtfold/$filename">Trac View</A><BR>
+      <A HREF="$trachost/$virttree/log$virtfold/$filename">Trac Log</A><BR>
+      <A HREF="$trachost/$virttree/browser$virtfold/$filename">Trac View</A><BR>
 $endtrac
 $beginviewvc
-<A HREF="$viewvchost/$virtfold/$filename$viewvctail">VC Log</A><BR>
-<A HREF="$viewvchost/$virtfold/$filename$viewvctail&view=annotate">VC Blame</A><BR>
+<A HREF="$viewvchost$virtfold/$filename$viewvctail">VC Log</A><BR>
+<A HREF="$viewvchost$virtfold/$filename$viewvctail&view=annotate">VC Blame</A><BR>
 $endviewvc
 $beginwebsvn
-<A HREF="$websvnhost/log.php?repname=$virttree&amp;path=/$virtfold/$filename&amp;rev=$cvsversion">SVN Log</A><BR>
-<A HREF="$websvnhost/blame.php?repname=$virttree&amp;path=/$virtfold/$filename&amp;rev=$cvsversion">SVN Blame</A><BR>
+<A HREF="$websvnhost/log.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Log</A><BR>
+<A HREF="$websvnhost/blame.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Blame</A><BR>
 $endwebsvn
 $beginwebhg
-<A HREF="$webhghost/$treename/?log/tip$urlpath">HG Log</A><BR>
-<A HREF="$webhghost/$treename/?annotate/tip$urlpath">HG Blame</A><BR>
+<A HREF="$webhghost/?log/$hgbranch$hgpath">HG Log</A><BR>
+<A HREF="$webhghost/?annotate/$hgversion$hgpath">HG Blame</A><BR>
 $endwebhg
       <A HREF="$baseurl/diff?file=$urlpath">Diff file</A><BR>
       <A HREF="$thisurl?raw=1">Raw file</A><BR>
