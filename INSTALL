@@ -146,6 +146,23 @@ the result:
  sourceroot: bugzilla /var/www/html/mxr/lxr-root/lxr-data/bugzilla/mozilla/webtools/bugzilla
  sourceprefix: bugzilla mozilla/webtools/bugzilla
 
+Sometimes you may want to change the location of your trees,
+without having to rerun the indexer (which can be prohibitively
+expensive). The most common case for this is when you're
+importing a tree from another file system and the paths don't match.
+
+The easiest way to move a tree on your file system:
+ mv /path/to/tree/root /newpath/to/tree/root
+ ./update-root.pl treename /newpath/to/tree/root
+
+The more common variant:
+ [origin mxr-data] $ rsync tree/root host:/newpath/to/tree/root
+ [host mxr] ./add-root.pl treename /path/to/tree/root
+ [host mxr] ./update-root.pl treename /newpath/to/tree/root
+The argument to add-root isn't a valid path on host, but that's
+ok, it's only necessary so that update-root.pl can understand
+how to change the path to match the new file system layout.
+
 The lxr.conf file:
 
  LXR does not care much about your directory structure, all relevant
