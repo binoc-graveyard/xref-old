@@ -14,7 +14,7 @@ $stylesheets<title>$title</title>
  src="http://www.mozilla.org/images/mozilla-banner.gif" alt=""
  border=0 width=600 height=58></a></td></tr></table>
 <p class=header>
-<font size="+2"><b><a href="$dotdoturl">Mozilla Cross Reference</a></b>
+<font size="+2"><b><a href="$dotdoturl">Mozilla Cross-Reference</a></b>
 <i><a href="$baseurl">$treename</a></i>
 </font>
 <p>
