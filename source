@@ -296,7 +296,7 @@ sub isImage {
     return 0 if $force;
     my ($file, $ignoreAccept) = @_;
     return 0 unless $ignoreAccept || $ENV{HTTP_ACCEPT} !~ 'text/html';
-    return $file =~ /\.([jmp][pnm]e?g|gif)$/;
+    return $file =~ /\.([jmp][pnm]e?g|gif|ico)$/i;
 }
 
 sub noWrap {
