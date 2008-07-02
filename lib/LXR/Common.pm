@@ -1274,6 +1274,16 @@ sub cvstagexpand {
     return $entrybranch || 'HEAD';
 }
 
+sub cvspath {
+    my ($entriespath, $entryname) = split m|/(?!.*/)|, $Path->{'realf'};
+    return '' unless open (CVSREPO, "<$entriespath/CVS/Repository");
+    my $repopath = <CVSREPO>;
+    $repopath =~ s/\s+//g;
+    $repopath = '' if $repopath =~ m{^/};
+    close(CVSREPO);
+    return $repopath;
+}
+
 sub cvsversionexpand {
     if ($who eq 'source') {
         my ($entryrev,undef) = cvsentriesexpand();
@@ -1609,6 +1619,7 @@ sub bigexpandtemplate
 			  ('treename',		\&treename),
     			  ('modes',		\&modeexpand),
     			  ('bonsaicvsroot',	\&bonsaicvsroot),
+			  ('cvspath',		\&cvspath),
     			  ('cvsversion',	\&cvsversionexpand),
     			  ('cvsbranch',		\&cvsbranchexpand),
     			  ('variables',		\&varexpand));
