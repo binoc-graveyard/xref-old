@@ -29,6 +29,10 @@ my $HGCOMMAND = 'hg ';
 my $HGUPDATE = 'pull -u ';
 my $EACHONE = 'xargs -n1 ';
 
+my $BZRCOMMAND = 'bzr ';
+my $BZRUPDATE = 'update -q';
+$BZRUPDATE = 'update';
+
 my $TREE;
 my $was_arg;
 do {
@@ -160,6 +164,10 @@ for ($TREE) {
     };
     /^fuel$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P -d fuel -rFUEL_DEVEL_BRANCH mozilla/browser/fuel $STDERRTOSTDOUT`;
+        last;
+    };
+    /^(?:.*)-bzr$/ && do {
+        print LOG `cd $src_dir; $TIME $BZRCOMMAND $BZRUPDATE $STDERRTOSTDOUT`;
         last;
     };
     /^(.*)$/ && <$src_dir/*/CVS> && do {
