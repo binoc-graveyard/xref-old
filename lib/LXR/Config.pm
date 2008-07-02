@@ -23,9 +23,18 @@ my %aliases;
 sub resolvealias {
     my ($orig, $xp) = @_;
     my $real = $orig;
+    my %seen = ();
     while (defined $aliases{$real}) {
-        return ${$xp}{$real} if (defined $xp && defined ${$xp}{$real});
+        if (defined $xp) {
+            return ${$xp}{$real} if (defined ${$xp}{$real});
+        }
+        # detect alias loops
+        if ($seen{$aliases{$real}}) {
+            warn "alias loops: $real <=> " . $aliases{$real};
+            return $real;
+        }
         $real = $aliases{$real};
+        $seen{$real} = 1;
     }
     return $real;
 }
