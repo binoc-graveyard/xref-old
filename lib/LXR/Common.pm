@@ -1025,6 +1025,9 @@ sub fixpaths {
         close SVN;
       }
     }
+    if ($Path->{'svnvirt'} && $Path->{'svnvirt'} !~ m{^/}) {
+      $Path->{'svnvirt'} = '/' . $Path->{'svnvirt'};
+    }
 
     @pathelem = $Path->{'virtf'} =~ /([^\/]+$|[^\/]+\/)/g;
     
