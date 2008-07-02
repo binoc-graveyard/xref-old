@@ -894,56 +894,44 @@ sub endwebsvn
     return '';
 }
 
-my %hgcache = ();
 sub webhghost
 {
-    # needs to read /.hg/hgrc/ [paths] default
-    return 'http://hg.mozilla.org';
-}
-
-sub checkhg
-{
-  my ($virt, $real) = ($Path->{'virt'}, $Path->{'real'});
-  $real =~ s{/$}{};
-  $virt =~ s{^/}{};
-  my @dirs;# = split m%/%, $virt;
-  while (!defined $hgcache{$real} && $real) {
-print "<!-- check for .hg in $real -->
-";
-    if (-d $real.'/.hg') {
-print "<!-- found .hg -->
-";
-      $hgcache{$real} = '0 '.$real . '/.hg/store/data';
-      last;
+    my $hg_not_found = 'http://error.hg-not-found.tld';
+    my ($virt, $real) = ($Path->{'virt'}, $Path->{'real'});
+    my $path = checkhg($virt, $real);
+    return $hg_not_found unless $path =~ /^(\d+)/;
+    my $i = $1;
+    while ($i--) {
+      $virt =~ s{/[^/]+/?$}{};
+      $real =~ s{/[^/]+/?$}{};
     }
-    $real =~ s{/([^/]*)$}{};
-    unshift @dirs, $1;
-  }
-  if (defined $hgcache{$real}) {
-    my $hgpath = $hgcache{$real};
-    my $ll = 0 + $hgpath;
-    $hgpath =~ s/^\d+ //;
-print "<!-- $ll @ $hgpath -->
-";
-      $ll = 0 + $hgcache{$real};
-print "<!-- hgcache{$real} [$#dirs,$ll]= ".$hgcache{$real}."
-$hgpath -->
-";
-      while ($#dirs >= 0) {
-        my $dir = '/' . (shift @dirs);
-        $real .= $dir;
-        $dir =~ s/([A-Z])/_$1/g;
-        $dir = lc $dir;
-        $hgpath .= $dir;
-        ++$ll;
-        $hgcache{$real} = -d $hgpath ? "$ll ". $hgpath : "0";
-print "<!-- ann $real [$hgpath]: ".$hgcache{$real}." -->
-";
+    my $hgpath = checkhg($virt, $real);
+    return $hg_not_found unless $hgpath =~ m{^0 (\S+)/store/data$};
+    my $hgrc = "$1/hgrc";
+    return $hg_not_found unless open (HGRC, "<$hgrc");
+    my $line;
+    my $scanstate = 0;
+    my $hgroot;
+#[paths]
+#default = http://hg.mozilla.org/mozilla-central
+    while ($line = <HGRC>) {
+      if ($scanstate == 0) {
+        $scanstate = 1 if $line =~ /^\[paths\]/;
+      } elsif ($scanstate == 1) {
+        if ($line =~ /^\s*\[([^]])*\]/) {
+          if ($1 ne 'paths') {
+            $scanstate = 0;
+            next;
+          }
+        }
+        if ($line =~ /^\s*default\s*=\s*(\S+)/) {
+          $hgroot = $1;
+          last;
+        }
       }
-  }
-  $real = $Path->{'real'};
-  $real =~ s{/$}{};
-  return $hgcache{$real};
+    }
+    close HGRC;
+    return $hgroot || $hg_not_found;
 }
 
 sub beginwebhg

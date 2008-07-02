@@ -12,6 +12,7 @@ require Exporter;
 	     &fileref &idref &htmlquote &freetextmarkup &markupfile
 	     &markspecials &statustextmarkup &markupstring
 	     markupstring2
+             &checkhg
 	     &init &glimpse_init &makeheader &makefooter &expandtemplate
              &bigexpandtemplate, &blamerefs
 );
@@ -1309,6 +1310,68 @@ sub cvsbranchexpand {
     return('');
 }
 
+sub hgpathexpand {
+    return substr($Path->{'realf'}, length $Path->{'hgroot'});
+}
+
+sub hgdehex {
+  my $data = shift;
+  return '' if $data =~ /^\0*$/;
+  return '' unless $data;
+  $data =~ s/(.)/sprintf("%02x",(ord($1)))/ge;
+  return $data;
+}
+
+sub hgversionexpand {
+  return 'tip' unless -d $Path->{'hgroot'};
+  # branch cache is a cache it might not be there
+  # if it isn't, we simply offer tip
+  # something better may be implemented eventually.
+  if (open(HGCACHE, '<', $Path->{'hgroot'}. '/.hg/branch.cache')) {
+    my (%branches, %versions, $line, $ver, $branch, $sig);
+    while ($line = <HGCACHE>) {
+      if ($line =~ /^([0-9a-f]{40}) (\S+)/) {
+        $versions{$2} = $1;
+        $branches{$1} ||= $2;
+        $sig ||= $1;
+      }
+    }
+    close HGCACHE;
+  } elsif (open(HGSTATE, '<', $Path->{'hgroot'}. '/.hg/dirstate')) {
+    my ($parent1, $parent2);
+    read (HGSTATE, $parent1, 20);
+    read (HGSTATE, $parent2, 20);
+    close HGSTATE;
+    $branch = $sig = hgdehex($parent1).hgdehex($parent2);
+  }
+  return $sig || 'tip';
+}
+
+sub hgbranchexpand {
+  return 'tip' unless -d $Path->{'hgroot'};
+  # branch cache is a cache it might not be there
+  # if it isn't, we simply offer tip
+  # something better may be implemented eventually.
+  if (open(HGCACHE, '<', $Path->{'hgroot'}. '/.hg/branch.cache')) {
+    my (%branches, %versions, $line, $ver, $branch, $sig);
+    while ($line = <HGCACHE>) {
+      if ($line =~ /^([0-9a-f]{40}) (\S+)/) {
+        $versions{$2} = $1;
+        $branches{$1} ||= $2;
+        $sig ||= $1;
+      }
+    }
+    close HGCACHE;
+  } elsif (open(HGSTATE, '<', $Path->{'hgroot'}. '/.hg/dirstate')) {
+    my ($parent1, $parent2);
+    read (HGSTATE, $parent1, 20);
+    read (HGSTATE, $parent2, 20);
+    close HGSTATE;
+    $branch = $sig = hgdehex($parent1).hgdehex($parent2);
+  }
+  return $branch || 'tip';
+}
+
 sub pathname {
     my $prefix = '';
     $prefix = '/' . $Conf->prefix if defined $Conf->prefix;
@@ -1625,6 +1688,9 @@ sub bigexpandtemplate
 			  ('cvspath',		\&cvspath),
     			  ('cvsversion',	\&cvsversionexpand),
     			  ('cvsbranch',		\&cvsbranchexpand),
+			  ('hgpath',		\&hgpathexpand),
+			  ('hgversion',         \&hgversionexpand),
+			  ('hgbranch',          \&hgbranchexpand),
     			  ('variables',		\&varexpand));
 }
 
@@ -1714,6 +1780,55 @@ sub url_quote {
 # don't escape / 
     $toencode=~s|([^a-zA-Z0-9_/\-.])|uc sprintf("%%%02x",ord($1))|eg;
     return $toencode;
+}
+
+my %hgcache = ();
+
+sub checkhg
+{
+  my ($virt, $oreal) = @_;
+  my $real = $oreal;
+  $real =~ s{/$}{};
+  $virt =~ s{^/}{};
+  my @dirs;# = split m%/%, $virt;
+  while (!defined $hgcache{$real} && $real) {
+print "<!-- check for .hg in $real -->
+";
+    if (-d $real.'/.hg') {
+print "<!-- found .hg -->
+";
+      $hgcache{$real} = '0 '.$real . '/.hg/store/data';
+      $Path->{'hgroot'} = $real;
+      last;
+    }
+    $real =~ s{/([^/]*)$}{};
+    unshift @dirs, $1;
+  }
+  if (defined $hgcache{$real}) {
+    my $hgpath = $hgcache{$real};
+    my $ll = 0 + $hgpath;
+    $hgpath =~ s/^\d+ //;
+print "<!-- $ll @ $hgpath -->
+";
+      $ll = 0 + $hgcache{$real};
+print "<!-- hgcache{$real} [$#dirs,$ll]= ".$hgcache{$real}."
+$hgpath -->
+";
+      while ($#dirs >= 0) {
+        my $dir = '/' . (shift @dirs);
+        $real .= $dir;
+        $dir =~ s/([A-Z])/_$1/g;
+        $dir = lc $dir;
+        $hgpath .= $dir;
+        ++$ll;
+        $hgcache{$real} = -d $hgpath ? "$ll ". $hgpath : "0";
+print "<!-- ann $real [$hgpath]: ".$hgcache{$real}." -->
+";
+      }
+  }
+  $real = $oreal;
+  $real =~ s{/$}{};
+  return $hgcache{$real};
 }
 
 1;
