@@ -661,7 +661,7 @@ sub findident {
 
 	print(STDERR 
 	      "(Pass 1 C/C++) $f (",length($contents),
-              "), file $curfnum of ",$#f+1,"...\n");
+              "), file $curfnum of ",$#f+1,"...");
 
 	# Remove comments.
 	$contents =~ s/\/\*(.*?)\*\//&wash($1)/ges;
