@@ -1,0 +1,324 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <link rel="icon" href="/mxr.png" type="image/png">
+ <title>Mozilla Cross-Reference</title>
+<style type="text/css">
+<!--
+body {
+	background-color: #fff;
+	color: #000;
+}
+a { color: #00e; }
+a:visited { color: #551a8b; }
+a:hover { color: #f00; }
+.banner {
+	background-color: #000;
+	width: 100%;
+	border: 0px;
+}
+.banner td {
+	padding: 0px;
+	margin: 0px;
+}
+.contentarea {
+	border: 0px;
+}
+.note {
+	font-size: 70%;
+}
+table.rootlist {
+	border: 1px solid black;
+	width: 100%;
+	background-color: #eee;
+}
+table.rootlist td {
+	padding: 10px;
+}
+table.rootlist h2 {
+	text-align: center;
+}
+dl.rootlist dt {
+	font-size: 120%;
+}
+dl.rootlist dt a {
+	font-weight: bold;
+}
+dl.rootlist dd {
+	font-size: 70%;
+	margin-bottom: 1em;
+}
+-->
+</style>
+</head>
+<body>
+<table class="banner">
+<tr><td><a href="http://www.mozilla.org/"><img
+ src="http://www.mozilla.org/images/mozilla-banner.gif" alt=""
+ border="0" width="600" height="58"></a></td></tr>
+</table>
+
+<table class="contentarea">
+ <tr>
+  <td width="35%" align="left" valign="top">
+
+   <table class="rootlist">
+    <tr>
+     <td>
+
+      <h2>Starting Points:</h2>
+
+      <dl class="rootlist">
+
+      <dt>
+         <a href="mozilla-central/">Mozilla Central</a>
+      </dt>
+      <dd>
+          This contains the main mercurial (hg) repository for Gecko, XULRunner, and Firefox, the main line of development for releases after Gecko 1.9.0 / Firefox 3.0.
+      </dd>
+
+      <dt>
+         <a href="mozilla/">Mozilla CVS</a>
+      </dt>
+      <dd>
+          This contains the entire current CVS repository.  For Gecko, XULRunner, and Firefox, CVS trunk is no longer the trunk, and is instead used for Gecko 1.9 / Firefox 3 and the 1.9.0.* / 3.0.* security releases.
+      </dd>
+
+      <dt>
+         <a href="seamonkey/">SeaMonkey</a> / <a href="l10n/">l10n</a>
+      </dt>
+      <dd>
+          This the code in CVS for Gecko, XULRunner, Firefox, Thunderbird, Calendar, Camino, and SeaMonkey.  For Gecko, XULRunner, and Firefox, CVS trunk is only used for Gecko 1.9 / Firefox 3 and the 1.9.0.* / 3.0.* security releases.
+      </dd>
+
+      <dt>
+         <a href="firefox/">Firefox 3</a>
+      </dt>
+      <dd class="note">
+          The source specific to the Firefox 3 web browser.  Also available is the
+          <a href="firefox2/">Firefox 2.0 Branch</a>.
+      </dd>
+
+      <dt>
+         <a href="mailnews/">Mail/News</a>
+      </dt>
+      <dd class="note">
+          This contains the mail and news code on the trunk, including that
+          shared by both Seamonkey and Thunderbird (mozilla/mailnews/) as well
+          as that which is Thunderbird-specific (mozilla/mail/).
+      </dd>
+
+      <dt>
+         <a href="mobile-browser/">mobile-browser</a>
+      </dt>
+      <dd class="note">
+          This is the <a href="http://wiki.mozilla.org/Mobile">Fennec</a> mobile web browser.
+      </dd>
+
+      <dt>
+         <a href="mozilla1.8/">Mozilla 1.8</a> / <a href="l10n-mozilla1.8/">l10n</a>
+      </dt>
+      <dd class="note">
+          This is the Mozilla 1.8 branch.  This module also hosts Aviary's 1.5 Branch (e.g. Firefox 2.0), for Mozilla toolkit derived projects.
+      </dd>
+
+      <dt>
+         <a href="mozilla1.8.0/">Mozilla 1.8.0</a> / <a href="l10n-mozilla1.8.0/">l10n</a>
+      </dt>
+      <dd class="note">
+          This is the Mozilla 1.8.0 branch.  This is for security releases products released from Mozilla 1.8 Release (e.g. Firefox 1.5).
+      </dd>
+
+      <dt>
+         <a href="aviarybranch/">Aviary Branch</a> / <a href="l10n-aviarybranch/">l10n</a>
+      </dt>
+      <dd>
+          This module is Aviary's 1.0.1 Branch, Mozilla toolkit derived projects.
+      </dd>
+
+      <dt>
+         <a href="classic/">Classic</a>
+      </dt>
+      <dd class="note">
+          This is Mozilla Classic. It's a snapshot of the MozillaSource
+          module from Oct 26, 1998 just before the change was made to xpfe.
+          This is here for reference. No work is done on this branch.
+      </dd>
+
+      <dt>
+         <a href="nspr/">NSPR</a>
+      </dt>
+      <dd class="note">
+          This module is 
+          <a href="http://www.mozilla.org/projects/nspr/reference/html/index.html">NSPR</a>, 
+          a cross platform library for operating system facilities 
+          including threads, I/O, timing and memory management.
+      </dd>
+
+      <dt>
+         <a href="security/">Security</a>
+      </dt>
+      <dd class="note">
+         This module contains code related to 
+         <a href="http://www.mozilla.org/projects/security/">Open Source PKI</a>
+         including NSS.
+      </dd>
+
+      <dt>
+         <a href="js/">JavaScript</a>
+      </dt>
+      <dd class="note">
+          This is Mozilla JavaScript. It includes
+          <a href="js/source/js/src">SpiderMonkey</a>,
+          <a href="js/source/js/rhino">Rhino</a>,
+          <a href="js/source/js2">Epimetheus</a>,
+          as well as
+          <a href="js/source/js/jsd">debuggers</a> and
+          <a href="js/source/js/tests">test suites</a>.
+      </dd>
+
+      <dt>
+         <a href="webtools/">Webtools</a>
+      </dt>
+      <dd class="note">
+          These are the Mozilla Webtools. They include
+          <a href="webtools/source/bugzilla">Bugzilla</a>,
+          <a href="webtools/source/bonsai">Bonsai</a>,
+          <a href="webtools/source/tinderbox">Tinderbox</a>
+          (<a href="webtools/source/tinderbox2">2</a> and
+          <a href="webtools/source/tinderbox3">3</a>),
+          <a href="webtools/source/lxr">LXR</a>,
+          <a href="webtools/source/mozbot">Mozbot</a>.
+      </dd>
+
+      <dt>
+         <a href="bugzilla/">Bugzilla</a>
+      </dt>
+      <dd class="note">
+          This is <a href="http://www.bugzilla.org/">Bugzilla</a>
+          <a href="http://www.bugzilla.org/docs/tip/html/">tip</a>.
+      </dd>
+
+      <dt>
+         <a href="bugzilla3.0/">Bugzilla3.0</a>
+      </dt>
+      <dd class="note">
+          This is <a href="http://www.bugzilla.org/">Bugzilla</a>
+          <a href="http://www.bugzilla.org/docs/3.0/html/">3.0</a>.
+      </dd>
+
+      <dt>
+         <a href="bugzilla2.22/">Bugzilla2.22</a>
+      </dt>
+      <dd class="note">
+          This is <a href="http://www.bugzilla.org/">Bugzilla</a>
+          <a href="http://www.bugzilla.org/docs/2.22/html/">2.22</a>.
+      </dd>
+
+      <dt>
+         <a href="bugzilla2.20/">Bugzilla2.20</a>
+      </dt>
+      <dd class="note">
+          This is <a href="http://www.bugzilla.org/">Bugzilla</a>
+          <a href="http://www.bugzilla.org/docs/2.20/html/">2.20</a>.
+      </dd>
+
+      <dt>
+         <a href="addons/">addons</a>
+      </dt>
+      <dd class="note">
+          This is the <a href="https://addons.mozilla.org/">addons.mozilla.org</a> website.
+      </dd>
+
+      <dt>
+         <a href="mozilla-org/">mozilla-org</a>
+      </dt>
+      <dd class="note">
+          This is the <a href="http://www.mozilla.org/">www.mozilla.org</a> website.
+      </dd>
+
+      <dt>
+         <a href="spreadfirefox/">spreadfirefox</a>
+      </dt>
+      <dd class="note">
+          This is the <a href="http://www.spreadfirefox.com">www.spreadfirefox.com</a> website.
+      </dd>
+
+      </dl>
+
+     </td>
+    </tr>
+   </table>
+
+  </td>
+  <td width="8"></td>
+  <td align="left" valign="top">
+
+<h1>About Cross-References</h1>
+<p>This is a cross reference designed to display the 
+<a href="http://www.mozilla.org/">Mozilla</a> source code.
+The sources displayed are those that are currently checked 
+in to the mainline of the mozilla.org
+<a href="http://developer.mozilla.org/en/docs/Mozilla_Source_Code_%28CVS%29">CVS server</a>,
+<a href="http://developer.mozilla.org/en/docs/Mozilla_Source_Code_%28Mercurial%29">Mercurial Server</a>,
+and <a href="http://wiki.mozilla.org/SVN">Subversion Server</a>;
+these pages are updated many times a day, so they should
+be pretty close to the latest&#8209;and&#8209;greatest.</p>
+
+<p>It's possible to search through an entire source text;
+or to search for files whose name matches a pattern; or to search
+for the definitions of particular functions, variables, etc.</p>
+
+<p>The individual files of the source code are formatted on the fly
+and presented with clickable identifiers.  An <em>identifier</em> is a
+macro, typedef, struct, enum, union, function, function prototype or
+variable.  Clicking on them shows you a summary of how and where they
+are used.</p>
+
+<p>The <a href="search">free-text search</a> command is implemented
+using <a href="http://webglimpse.net/">Glimpse</a>, so all the
+capabilities of Glimpse are available.  
+<a href="search-help.html">Regular expression</a> searches are
+especially useful.</p>
+
+<p><a href="http://www.ibiblio.org/pub/Linux/utils/text/glimpse-3.6.src.tgz">Glimpse
+3.6</a> is available for general use in the belief that its license is
+tolerable.  This site is using the current version of glimpse under the
+<a href="http://webglimpse.net/sublicensing/licensing.html">open source
+project and nonprofits</a> license.</p>
+
+<p>(Don't use a web-crawler to try and download all of these pages;
+the CGIs will feed you several <em>gigabytes</em> worth of generated HTML!)</p>
+
+<p>(That's beyond the nearly <strong>30 gigabytes</strong> worth of content
+that is indexed here.)</p>
+
+<p class="note">The pages here are generated by the <a
+href="http://mxr.mozilla.org/">Mozilla MXR</a> tool, which is a hacked variant
+of the original LXR which was written to display the source code of the Linux
+kernel (LXR stands for ``Linux Cross-Reference''). Check out the <a
+href="http://lxr.linux.no/">original LXR site</a> for more information. That
+LXR is now maintained on <a
+href="http://sourceforge.net/projects/lxr">sourceforge.net</a>.</p>
+
+<p class="note">Thanks to Arne Georg Gleditsch and Per Kristian Gjermshus, the authors of
+the LXR tool, for writing it and making it available to the world; and thanks
+to Dawn Endico for doing almost all of the work to get LXR working with the
+Mozilla sources, and Josh Soref for the more recent updates to make it
+compatible with Subversion and Mercurial.</p>
+
+<!-- this would be a good place for the mxr administrator to include
+  ++ a contact link.
+  -->
+<p>Issues with this installation of MXR can be <a href="https://bugzilla.mozilla.org/enter_bug.cgi?product=Webtools&amp;component=LXR">filed in Bugzilla</a>.</p>
+
+<!--
+  ++ / good place
+  -->
+
+  </td>
+ </tr>
+</table>
+
+</body>
+</html>

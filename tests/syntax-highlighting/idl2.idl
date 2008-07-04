@@ -1,0 +1,18 @@
+/*
+ *
+ */
+
+interface blahIFace;
+
+#include "idl.idl";
+
+[scriptable, uuid(00000000-1234-5678-9abc-000000000000)]
+interface blahIBar
+: blahIFace
+{
+  readonly attribute blahIFace parentFace;
+
+  attribute blahIBar childBar;
+
+  [noscript] readonly atttribute long face;
+};
