@@ -56,6 +56,7 @@ my @reserved = ('auto', 'break', 'case', 'char', 'const', 'continue',
 	     'inline', 'operator',
 	     'class',		# (C++)
 # Her bør vi ha flere av disse: 
+	     '__inline',        # seved
 	     '__asm__','__inline__');
 
 
@@ -92,11 +93,17 @@ sub wash {
 
 sub stripodd {
     my $tostrip = $_[0];
-    while ($tostrip =~ s/\{([^\{\}]*)\}/
-	   "\05".&wash($1)/ges) {}
-    $tostrip =~ s/\05/\{\}/gs;
-    $tostrip =~ s/[\{\}]//gs;
+    while ($tostrip =~ s/\{([^\{\}]*)\}/\05$1\06/gs) {}
+    $tostrip =~ s/[\{\}]//gs; # remove *before* restoring outermost block
+    $tostrip =~ s/\05/\{/gs;
+    $tostrip =~ s/\06/\}/gs;
     return($tostrip);
+}
+
+sub enumval {
+    my $enum_conts = $_[0];
+    $enum_conts =~ s/($ident)[^,]*(,|$)/enum \01$itype{'enum'}$1\02 ;/gs;
+    return($enum_conts);
 }
 
 sub classes {
@@ -407,7 +414,7 @@ sub c_clean {
     # #else..#endif blocks.  (And pray they matched one in the
     # preceding #if..#else block.)
     while ($contents =~ s/\02([^\01\02\03]*\03)/&stripodd($1)/ges ||
-	   $contents =~ s/\01([^\01\02\03]*)\03/$1/gs) {}
+	   $contents =~ s/\01([^\01\02\03]*)\03/&stripodd($1)/ges) {}
     
     while ($contents =~ /([\01\02\03\04\05])/gs) {
 	print(STDERR "\t ** stray ".($1 eq "\01"  
@@ -422,6 +429,13 @@ sub c_clean {
 				     )." found.\n");
     }
     $contents =~ s/[\01\02\03\04\05]//gs;
+
+    # Special treatment of enum and struct: inhibit removal of such blocks
+    $contents =~ s/(\s+enum\s+)($ident|)(\s*){([^\}]*)}(\s*)($ident|)/
+	"$1 ".($2 ? "\01".$itype{enum}.$2."\02 " : "").$3.&enumval($4).$5.($6 ? "\01".$itype{enum}.$6."\02 " : "")/goes;
+
+    $contents =~ s/(\s+struct\s+)($ident|)(\s*){([^\}]*)}(\s*)($ident|)/
+	$1.$2.$3."{}".$4.$5.($6 ? "\01".$itype{typedef}.$6."\02 " : "")/goes;
 
 =pod
     # Remove all but outermost blocks.  (No local variables.)
@@ -459,6 +473,10 @@ sub java_clean {
 
 sub c_classes {
     my $contents = $_[0];
+
+    # Find struct, enum and union definitions with params (function returning struct etc)
+    $contents =~ s/((struct|enum|union)\s+($ident|)\s+($ident|)\s*({}|(;)))/
+	"$2 ".($3 ? "\01".$itype{$2}.$3."\02 " : " ").$4.$6.&wash($1)/goes;
 
     # Find struct, enum and union definitions.
     $contents =~ s/((struct|enum|union)\s+($ident|)\s*({}|(;)))/
@@ -643,14 +661,14 @@ sub findident {
 
 	print(STDERR 
 	      "(Pass 1 C/C++) $f (",length($contents),
-              "), file $curfnum of ",$#f+1,"...\n");
+              "), file $curfnum of ",$#f+1,"...");
 
 	# Remove comments.
 	$contents =~ s/\/\*(.*?)\*\//&wash($1)/ges;
 	$contents =~ s/\/\/[^\n]*//g; # C++
 
 	# Unwrap continuation lines.
-	$contents =~ s/\\\s*\n/$1\05/gs;
+	$contents =~ s/\\\n/$1\05/gs;
 	while ($contents =~ s/\05([^\n\05]+)\05/$1\05\05/gs) {}
 	$contents =~ s/(\05+)([^\n]*)/"$2"."\n" x length($1)/gse;
 
@@ -691,11 +709,11 @@ sub findident {
 
 	foreach (@contents) {
 	    if (!$java) {
-		s/^(\s*)(struct|enum|union|inline)/$1/;
+		my $t = /\n\s*typedef/s;	# Is this a type definition?
+		    
+		while ( s/(\n\s*)(typedef|struct|enum|union|inline|static|__inline)/$1/ ) {}
 		
 		if (/$ident[^a-zA-Z0-9_]+$ident/) { # It takes two, baby.
-		    
-		    my $t = /^\s*typedef/s;	# Is this a type definition?
 		    
 		    s/($ident(?:\s*::\s*$ident|))	# ($1) Match the identifier
 			([\s\)]*		# ($2) Tokens allowed after identifier
@@ -725,13 +743,16 @@ sub findident {
 	}
 
 	my $l = 0; 
+	my $ldefs = 0; 
 	foreach ($contents =~ /^(.*)/gm) {
 	    $l++;
 	    while (/\01(.)(?:(.+?)\s*::\s*|)($ident)\02/go) {
                 $xref{$3} .= "$1$fnum:$l".($2 ? ":$2" : "")."\t";
 		$defs++;
+		$ldefs++;
 	    }
 	}
+	print(STDERR " ".$ldefs." defs\n");
     }
 
     # Remove reserved from xref
@@ -1001,7 +1022,8 @@ while (<FILES>) {
     if (/\.idl$/i) {
         push(@idlfiles, $_);
     }
-    if (/\.(hh?|cpp?|cc?|java)$/i) {
+    #   Duplicated in lib/LXR/Common.pm
+    if (/\.(hh?|cpp?|cc?|java|fin|tbl)$/i) {
         push(@ft, ($1 eq 'java')?1:0);
 	push(@f, $_);
     }
@@ -1011,7 +1033,6 @@ while (<FILES>) {
     if (/\.(?:p[lm]|cgi)(?:\.in|)$/i) {
         push(@plfiles, $_);
     }
-#   Duplicated in lib/LXR/Common.pm
 }
 close(FILES);
 
