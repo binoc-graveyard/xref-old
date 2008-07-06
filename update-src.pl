@@ -69,9 +69,10 @@ die "could not find matching sourceroot" .($TREE ? " for $TREE" :'') unless defi
     #grab sourceroot from config file indexing multiple trees where
     #format is "sourceroot: treename dirname"
 
+-d $db_dir || mkdir $db_dir;
 my $log="$db_dir/cvs.log";
 
-open LOG, '>', $log;
+open LOG, '>', $log || die "can't open $log";
 #print LOG `set -x`;
 print LOG `date`;
 
@@ -82,6 +83,7 @@ print LOG `$TIME $CVSCOMMAND -d $CVSROOT update -dP` unless $skip_lxr_update;
 print LOG `date`;
 
 # then update the Mozilla sources
+-d $src_dir || mkdir $src_dir;
 chdir $src_dir;
 chdir '..';
 
@@ -118,7 +120,11 @@ for ($TREE) {
         last;
     };
     /^mailnews$/ && do {
-        print LOG `$TIME $CVSCOMMAND $CVSCO -P SeaMonkeyMailNews $STDERRTOSTDOUT`;
+        unless (-f 'client.mk') {
+          print LOG `$TIME $CVSCOMMAND $CVSCO mozilla/client.mk $STDERRTOSTDOUT`;
+        }
+        print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=mail $STDERRTOSTDOUT`;
+        print LOG `cat cvsco.log $STDERRTOSTDOUT`;
         last;
     };
     /^mobile-browser$/ && do {
