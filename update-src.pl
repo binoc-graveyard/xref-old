@@ -29,9 +29,10 @@ my $HGCOMMAND = 'hg ';
 my $HGUPDATE = 'pull -u ';
 my $EACHONE = 'xargs -n1 ';
 
-my $BZRCOMMAND = 'bzr ';
-my $BZRUPDATE = 'update -q';
-$BZRUPDATE = 'update';
+my $BZR = 'bzr ';
+my $BZRQUIETFLAGS = '-q ';
+my $BZRUPDATE = 'update $BZRQUIETFLAGS';
+my $BZRCOMMAND = "$BZR ";
 
 my $TREE;
 my $was_arg;
@@ -119,14 +120,6 @@ for ($TREE) {
         print LOG `$TIME $CVS $CVSQUIETFLAGS -d ':pserver:anonymous\@cvs-mirror.mozilla.org:/l10n' $CVSUP -dP $STDERRTOSTDOUT`;
         last;
     };
-    /^mailnews$/ && do {
-        unless (-f 'client.mk') {
-          print LOG `$TIME $CVSCOMMAND $CVSCO mozilla/client.mk $STDERRTOSTDOUT`;
-        }
-        print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=mail $STDERRTOSTDOUT`;
-        print LOG `cat cvsco.log $STDERRTOSTDOUT`;
-        last;
-    };
     /^mobile-browser$/ && do {
         print LOG `cd $src_dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
         last;
@@ -161,7 +154,19 @@ for ($TREE) {
         last;
     };
     /^firefox.*$/ && do {
+        unless (-f 'client.mk') {
+          print LOG `$TIME $CVSCOMMAND $CVSCO mozilla/client.mk $STDERRTOSTDOUT`;
+        }
         print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=browser $STDERRTOSTDOUT`;
+        print LOG `cat cvsco.log $STDERRTOSTDOUT`;
+        last;
+    };
+    /^thunderbird.*$/ && do {
+        unless (-f 'client.mk') {
+          print LOG `$TIME $CVSCOMMAND $CVSCO mozilla/client.mk $STDERRTOSTDOUT`;
+        }
+        print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=mail $STDERRTOSTDOUT`;
+        print LOG `cat cvsco.log $STDERRTOSTDOUT`;
         last;
     };
     /^(?:(?:bug|mo)zilla.*-.*)$/ && do {
