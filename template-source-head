@@ -45,8 +45,8 @@ $beginwebsvn
 <A HREF="$websvnhost/blame.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Blame</A><BR>
 $endwebsvn
 $beginwebhg
-<A HREF="$webhghost/?log/$hgbranch$hgpath">HG Log</A><BR>
-<A HREF="$webhghost/?annotate/$hgversion$hgpath">HG Blame</A><BR>
+<A HREF="$webhghost/index.cgi/log/$hgbranch$urlpath">HG Log</A><BR>
+<A HREF="$webhghost/index.cgi/annotate/$hgversion$urlpath">HG Blame</A><BR>
 $endwebhg
       <A HREF="$baseurl/diff?file=$urlpath">Diff file</A><BR>
       <A HREF="$thisurl?raw=1">Raw file</A><BR>
