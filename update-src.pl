@@ -29,9 +29,10 @@ my $HGCOMMAND = 'hg ';
 my $HGUPDATE = 'pull -u ';
 my $EACHONE = 'xargs -n1 ';
 
-my $BZRCOMMAND = 'bzr ';
-my $BZRUPDATE = 'update -q';
-$BZRUPDATE = 'update';
+my $BZR = 'bzr ';
+my $BZRQUIETFLAGS = '-q ';
+my $BZRUPDATE = 'update $BZRQUIETFLAGS';
+my $BZRCOMMAND = "$BZR ";
 
 my $TREE;
 my $was_arg;
@@ -69,9 +70,10 @@ die "could not find matching sourceroot" .($TREE ? " for $TREE" :'') unless defi
     #grab sourceroot from config file indexing multiple trees where
     #format is "sourceroot: treename dirname"
 
+-d $db_dir || mkdir $db_dir;
 my $log="$db_dir/cvs.log";
 
-open LOG, '>', $log;
+open LOG, '>', $log || die "can't open $log";
 #print LOG `set -x`;
 print LOG `date`;
 
@@ -82,6 +84,7 @@ print LOG `$TIME $CVSCOMMAND -d $CVSROOT update -dP` unless $skip_lxr_update;
 print LOG `date`;
 
 # then update the Mozilla sources
+-d $src_dir || mkdir $src_dir;
 chdir $src_dir;
 chdir '..';
 
@@ -115,10 +118,6 @@ for ($TREE) {
     };
     /^(l10n|l10n-(?:mozilla1\.8|aviarybranch|mozilla1\.8\.0))$/ && do {
         print LOG `$TIME $CVS $CVSQUIETFLAGS -d ':pserver:anonymous\@cvs-mirror.mozilla.org:/l10n' $CVSUP -dP $STDERRTOSTDOUT`;
-        last;
-    };
-    /^mailnews$/ && do {
-        print LOG `$TIME $CVSCOMMAND $CVSCO -P SeaMonkeyMailNews $STDERRTOSTDOUT`;
         last;
     };
     /^mobile-browser$/ && do {
@@ -155,7 +154,19 @@ for ($TREE) {
         last;
     };
     /^firefox.*$/ && do {
+        unless (-f 'client.mk') {
+          print LOG `$TIME $CVSCOMMAND $CVSCO mozilla/client.mk $STDERRTOSTDOUT`;
+        }
         print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=browser $STDERRTOSTDOUT`;
+        print LOG `cat cvsco.log $STDERRTOSTDOUT`;
+        last;
+    };
+    /^thunderbird.*$/ && do {
+        unless (-f 'client.mk') {
+          print LOG `$TIME $CVSCOMMAND $CVSCO mozilla/client.mk $STDERRTOSTDOUT`;
+        }
+        print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=mail $STDERRTOSTDOUT`;
+        print LOG `cat cvsco.log $STDERRTOSTDOUT`;
         last;
     };
     /^(?:(?:bug|mo)zilla.*-.*)$/ && do {

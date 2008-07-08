@@ -79,8 +79,8 @@ case "$1" in
 'grendel')
     time cvs -Q -d $CVSROOT checkout -P Grendel
     ;;
-'mailnews')
-    time cvs -Q -d $CVSROOT checkout -P SeaMonkeyMailNews
+'thunderbird')
+    time make -f mozilla/client.mk pull_all MOZ_CO_PROJECT=mail
     ;;
 'mozilla')
     time cvs -Q -d $CVSROOT checkout -P mozilla

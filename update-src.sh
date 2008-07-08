@@ -58,9 +58,6 @@ case "$1" in
 'grendel')
     time cvs -Q -d $CVSROOT checkout -P Grendel
     ;;
-'mailnews')
-    time cvs -Q -d $CVSROOT checkout -P SeaMonkeyMailNews
-    ;;
 'mozilla')
     time cvs -Q -d $CVSROOT checkout -P mozilla
     ;;
