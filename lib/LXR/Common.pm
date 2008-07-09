@@ -1352,15 +1352,18 @@ sub hgbranchexpand {
   # branch cache is a cache it might not be there
   # if it isn't, we simply offer tip
   # something better may be implemented eventually.
+  my $branch;
   if (open(HGCACHE, '<', $Path->{'hgroot'}. '/.hg/branch.cache')) {
-    my (%branches, %versions, $line, $ver, $branch, $sig);
+    my (%branches, %versions, $line, $ver, $sig);
     while ($line = <HGCACHE>) {
       if ($line =~ /^([0-9a-f]{40}) (\S+)/) {
-        $versions{$2} = $1;
-        $branches{$1} ||= $2;
-        $sig ||= $1;
+        ($ver, $branch) = ($1, $2);
+        $versions{$branch} = $ver;
+        $branches{$ver} = $branch unless $branch =~ /^\d+$/;
+        $sig ||= $ver;
       }
     }
+    $branch = $branches{$sig};
     close HGCACHE;
   } elsif (open(HGSTATE, '<', $Path->{'hgroot'}. '/.hg/dirstate')) {
     my ($parent1, $parent2);
