@@ -372,6 +372,18 @@ sub statustextmarkup {
     $_[0] =~ s#(\@status\s+)(FROZEN|UNDER_REVIEW|DEPRECATED)\b#<span class="idl_$2">$1$2</span>#gi;
 }
 
+my $padding = 0;
+sub csspadding {
+    my ($y) = @_;
+    my $style = '<style>';
+    my $s = '';
+    while ($y-- > 0) {
+        $s .= ' ';
+        $style .= ".d$y:before{content:'$s'} ";
+    }
+    return $style . '</style>';
+}
+
 sub linetag {
 #$frag =~ s/\n/"\n".&linetag($virtp.$fname, $line)/ge;
 #    my $tag = '<a href="'.$_[0].'#L'.$_[1].
@@ -380,14 +392,12 @@ sub linetag {
     my $y = log10($_[1]);
     my $x = $y | 0;
     my $class = "class='l d$x'";
-    if ($x && ($x == $y)) {
-        my $style = '<style>';
-        my $s = '';
-        while ($y-- > 0) {
-          $s .= ' ';
-          $style .= ".d$y:before{content:'$s'} ";
-        }
-        $tag = $style . '</style>' . $tag;
+    if ($padding < 2) {
+        my $size = (log10((stat($Path->{'realf'}))[7] / 40) | 0) + 1;
+        $padding = $size < 3 ? 3 : $size;
+        $tag = csspadding($padding) . $tag;
+    } elsif ($x > $padding) {
+        $tag = csspadding(++$padding) . $tag;
     }
     $tag .= &fileref($_[1], '', $_[1]).' ';
     $tag =~ s/<a/<a $class name=$_[1]/;
