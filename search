@@ -471,7 +471,7 @@ return $find;
 }
 $find = cleanFind($find);
 $searchtext =~ tr/+/ /;
-$searchtext =~ s/%(\w\w)/chr(hex $1)/ge;
+$searchtext =~ s/%([0-9a-f]{2})/chr(hex $1)/gie;
 
 my $tree = $HTTP->{'param'}->{'tree'};
 if ($tree && ($tree ne $Conf->{'treename'})) {
