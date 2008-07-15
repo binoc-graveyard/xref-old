@@ -472,7 +472,7 @@ return $find;
 $find = cleanFind($find);
 $searchtext =~ tr/+/ /;
 $searchtext =~ s/%([0-9a-f]{2})/chr(hex $1)/gie;
-
+my $refresh;
 my $tree = $HTTP->{'param'}->{'tree'};
 if ($tree && ($tree ne $Conf->{'treename'})) {
     my @treelist = @{$Conf->{'trees'}};
@@ -486,13 +486,14 @@ push @tail, "findi=$findi" if $findi ne '';
 push @tail, "filter=$filter" if $filter ne '';
 push @tail, "hitlimit=$hitlimit" if $hitlimit ne '';
 my $tail = $#tail >= 0 ? '?' . join "&", @tail : '';
-$head .= "Refresh: 0; url=../$tree/search$tail
+$refresh .= "Refresh: 0; url=../$tree/search$tail
 ";
     }
 }
 
-print "$head
+print "$head$refresh
 ";
+exit if $refresh ne '';
 
 &makeheader('search');
 &search;
