@@ -276,7 +276,7 @@ sub maybe_idref {
             ('I', 'interface'),
            );
 
-  my $class = 'ident';  
+  my $class = 'd';
 if (1) {
 } elsif (0) {
 my $id_line;
@@ -317,7 +317,7 @@ $refline++;
 
 sub idref {
     my ($desc, $id, $class, @args) = @_;
-    $class ||= 'ident';
+    $class ||= 'd';
     return("<a class='$class' href=\"$Conf->{virtroot}/ident".
            &urlargs(($id ? "i=$id" : ""),
                     @args).

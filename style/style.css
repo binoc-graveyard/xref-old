@@ -1,6 +1,6 @@
 .c { /* comment */
  font-style: italic;
- color: dimgrey;
+ font-weight: bold;
 }
 .v { /* verb */
  color: darkred;
