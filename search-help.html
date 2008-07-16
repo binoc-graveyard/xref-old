@@ -13,27 +13,28 @@
 <H1 ALIGN=CENTER>search help<BR>
 <FONT SIZE=3>
 for the<br>
-<A HREF="./"><I>mozilla cross-reference</I></A>
-</FONT></H1>
+<a href="./"><i>mozilla cross-reference</i></a>
+</font></h1>
+</td></tr></table>
 
-<P><BR>
-<BLOCKQUOTE><BLOCKQUOTE>
-<I>
+<p><br>
+<blockquote><blockquote>
+<i>
 This text is derived from the Glimpse manual page.
 For more information on glimpse, see the 
-<A HREF="http://glimpse.cs.arizona.edu">Glimpse homepage</A>.
-</I>
-</BLOCKQUOTE></BLOCKQUOTE>
+<a href="http://webglimpse.net/">Glimpse homepage</a>.
+</i>
+</blockquote></blockquote>
 
-<A NAME="Patterns"></A><H2>Patterns</H2>
-<UL>
+<a name="Patterns"></a><h2>Patterns</h2>
+<ul>
 glimpse supports a large variety of patterns, including simple
 strings, strings with classes of characters, sets of strings, 
-wild cards, and regular expressions (see <A HREF="#Limitations">Limitations</A>).
+wild cards, and regular expressions (see <a href="#Limitations">Limitations</a>).
 
-</UL>
-<P> <H3>Strings</H3>
-<UL>
+</ul>
+<p> <h3>Strings</h3>
+<ul>
 
 Strings are any sequence of characters, including the special symbols
 `^' for beginning of line and `$' for end of line.  The following
@@ -44,9 +45,9 @@ agrep): `;', `,', `#', `&gt;', `&lt;', `-', and `.', should be preceded by
 \^abc\\\\ corresponds to the string ^abc\\, whereas ^abc corresponds
 to the string abc at the beginning of a line.
 
-</UL>
-<P> <H3>Classes of characters</H3>
-<UL>
+</ul>
+<p> <h3>Classes of characters</h3>
+<ul>
 
 a list of characters inside [] (in order) corresponds to any character
 from the list.  For example, [a-ho-z] is any character between a and h
@@ -58,9 +59,9 @@ egrep.
 The symbol `.' (don't care) stands for any symbol (except for the
 newline symbol).
 
-</UL>
-<P> <H3>Boolean operations</H3>
-<UL>
+</ul>
+<p> <h3>Boolean operations</h3>
+<ul>
 
 Glimpse 
 supports an `AND' operation denoted by the symbol `;' 
@@ -73,22 +74,22 @@ both patterns.
 '{political,computer};science' will match 'political science' 
 or 'science of computers'.
 
-</UL>
-<P><H3>Wild cards</H3>
-<UL>
+</ul>
+<p><h3>Wild cards</h3>
+<ul>
 
 The symbol '#' is used to denote a sequence 
 of any number (including 0) 
-of arbitrary characters (see <A HREF="#Limitations">Limitations</A>).  
+of arbitrary characters (see <a href="#Limitations">Limitations</a>).  
 The symbol # is equivalent to .* in egrep.
 In fact, .* will work too, because it is a valid regular expression
 (see below), but unless this is part of an actual regular expression,
 # will work faster. 
 (Currently glimpse is experiencing some problems with #.)
 
-</UL>
-<P><H3>Combination of exact and approximate matching</H3>
-<UL>
+</ul>
+<p><h3>Combination of exact and approximate matching</h3>
+<ul>
 
 Any pattern inside angle brackets &lt;&gt; must match the text exactly even
 if the match is with errors.  For example, &lt;mathemat&gt;ics matches
@@ -96,9 +97,9 @@ mathematical with one error (replacing the last s with an a), but
 mathe&lt;matics&gt; does not match mathematical no matter how many errors are
 allowed. (This option is buggy at the moment.)
 
-</UL>
-<H3>Regular expressions</H3>
-<UL>
+</ul>
+<h3>Regular expressions</h3>
+<ul>
 
 Since the index is word based, a regular expression must match words
 that appear in the index for glimpse to find it.  Glimpse first strips
@@ -117,22 +118,22 @@ currently limited to approximately 30 characters (generally excluding
 meta characters). The maximal number of errors
 for regular expressions that use '*' or '|' is 4.
 
-</UL>
-<A NAME="Limitations"></A><H2>Limitations</H2>
-<UL>
+</ul>
+<a name="Limitations"></a><h2>Limitations</h2>
+<ul>
 
 The index of glimpse is word based.  A pattern that contains more than
 one word cannot be found in the index.  The way glimpse overcomes this
 weakness is by splitting any multi-word pattern into its set of words
 and looking for all of them in the index.
-For example, <I>'linear programming'</I> will first consult the index
-to find all files containing both <I>linear</I> and <I>programming</I>,
+For example, <i>'linear programming'</i> will first consult the index
+to find all files containing both <i>linear</i> and <i>programming</i>,
 and then apply agrep to find the combined pattern.
 This is usually an effective solution, but it can be slow for
 cases where both words are very common, but their combination is not.
 
-<P>
-As was mentioned in the section on <A HREF="#Patterns">Patterns</A> above, some characters
+<p>
+As was mentioned in the section on <a href="#Patterns">Patterns</a> above, some characters
 serve as meta characters for glimpse and need to be
 preceded by '\\' to search for them.  The most common
 examples are the characters '.' (which stands for a wild card),
@@ -144,18 +145,18 @@ The meta character - is translated automatically to a hyphen
 unless it appears between [] (in which case it denotes a range of
 characters).
 
-<P>
+<p>
 Search patterns are limited to 29 characters.
 Lines are limited to 1024 characters.
 
-</UL>
-<P>
-<HR>
+</ul>
+<p>
+<hr>
 
-<ADDRESS>
-  <A HREF="mailto:lxr@linux.no">
-    Arne Georg Gleditsch and Per Kristian Gjermshus</A>
-</ADDRESS>
+<address>
+  <a href="mailto:lxr@linux.no">
+    Arne Georg Gleditsch and Per Kristian Gjermshus</a>
+</address>
 
-</BODY>
-</HTML>
+</body>
+</html>
