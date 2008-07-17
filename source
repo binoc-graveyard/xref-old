@@ -456,15 +456,21 @@ $force = $HTTP->{'param'}->{'force'};
 $force = (defined $force && $force =~ /1|on|yes/ ? 1 : 0);
 
 unless ($exit) {
+    my $baseurl = $Conf->{baseurl};
+    my $localurl = $baseurl . '/source' . $ENV{'PATH_INFO'};
+    $localurl =~ m{(^.*/)/*[^/]+/*(?:|\?.*)$};
+    my $parenturl = $1;
     $head .=
-'Link: <' . $Conf->{baseurl} . '/source' . $ENV{'PATH_INFO'} . '?force=1>; rel="First"; title="Marked up"
-Link: <' . $Conf->{baseurl} . '/source' . $ENV{'PATH_INFO'} . '?raw=1>; rel="Last"; title="Raw"
+'Link: <' . $localurl . '?force=1>; rel="First"; title="Marked up"
+Link: <' . $localurl . '?raw=1>; rel="Last"; title="Raw"
 ';
 }
 
     if (defined($HTTP->{'param'}->{'raw'})) {
         unless (open(RAW, "<", $Path->{'realf'})) {
+            $Path->{'realf'} =~ m{/([-a-z0-9_.]+)$}i;
             print "Status: 404 File Not Found
+Link: <" . $Conf->{baseurl} . "/find?string=$1>; rel='Contents'; title='Find file'
 Content-Type: text/html
 
 ";

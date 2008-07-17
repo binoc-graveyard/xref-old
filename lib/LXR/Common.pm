@@ -1163,6 +1163,18 @@ sub init_all {
         $ctype = ($ctype =~ m|([\w\d\.;/+-]+)|) ? $1 : undef;
     }
 
+    my $baseurl = $Conf->{baseurl};
+    my $localurl = $baseurl . '/source' . $ENV{'PATH_INFO'};
+    $localurl =~ m{(^.*/)/*[^/]+/*(?:|\?.*)$};
+    my $parenturl = $1;
+    $head .=
+'Link: <' . $baseurl . '>; rel="Index"; title="' . $Conf->{'treename'} .'"
+Link: <' . $baseurl . '/ident>; rel="Glossary"; title="Identifier search"
+Link: <' . $baseurl . '/search>; rel="Search"; title="Text search"
+Link: <' . $baseurl . '/find>; rel="Contents"; title="Find file"
+Link: <' . $parenturl . '>; rel="Up"; title="Parent" 
+';
+
     $head .= "Content-Type: $ctype\n" if defined $ctype;
 
 	#
