@@ -1147,8 +1147,6 @@ sub init_all {
 
 
     $identifier = $HTTP->{'param'}->{'i'};
-    $readraw    = $HTTP->{'param'}->{'raw'};
-    $ctype      = $HTTP->{'param'}->{'ctype'};
     $Conf = new LXR::Config;
 
     foreach ($Conf->allvariables) {
@@ -1158,11 +1156,14 @@ sub init_all {
     &fixpaths($HTTP->{'path_info'} || $HTTP->{'param'}->{'file'});
 
     my $head = '';
-    if (defined($readraw)) {
-	$ctype = ($ctype =~ m|([\w\d\.;/+-]+)|) ? $1 : undef;
-	$head .= ("Content-Type: $ctype\n") if defined $ctype;
-    } else {
-        $head .= ("Content-Type: text/html\n");
+    my $ctype = 'text/html';
+
+    if (defined($HTTP->{'param'}->{'raw'})) {
+        $ctype = $HTTP->{'param'}->{'ctype'};
+        $ctype = ($ctype =~ m|([\w\d\.;/+-]+)|) ? $1 : undef;
+    }
+
+    $head .= "Content-Type: $ctype\n" if defined $ctype;
 
 	#
 	# Print out a Last-Modified date that is the larger of: the
@@ -1176,8 +1177,8 @@ sub init_all {
 	my $file2 = $argv_0;
 
 	# make sure the thing we call stat with doesn't end in /.
-	if ($file1) { $file1 =~ s@/$@@; }
-	if ($file2) { $file2 =~ s@/$@@; }
+	if ($file1) { $file1 =~ s{/$}{}; }
+	if ($file2) { $file2 =~ s{/$}{}; }
 
 	my $time1 = 0, $time2 = 0;
 	if ($file1) { $time1 = (stat($file1))[9]; }
@@ -1190,27 +1191,7 @@ sub init_all {
 	    # Expires: Thu, 11 Dec 1997 00:55:32 GMT
 	    $head .= ("Expires: ".(pretty_date(time+1200))."\n");
 	}
-    }
     
-    
-    if (defined($readraw)) {
-      unless (open(RAW, "<", $Path->{'realf'})) {
-        print "Status: 404 File Not Found
-Content-Type: text/html
-
-";
-  die "couldn't open $Conf->{'treename'}:$Path->{'virtf'}";
-      }
-        print "$head
-";
-	while (<RAW>) {
-	    print;
-	}
-	close(RAW);
-	exit;
-    }
-
-#exit;
     return($Conf, $HTTP, $Path, $head);
 }
 

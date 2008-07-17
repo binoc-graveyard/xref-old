@@ -455,6 +455,23 @@ if (($ENV{'PATH_INFO'} !~ m|/$|) && (-d $Path->{'realf'})) {
 $force = $HTTP->{'param'}->{'force'};
 $force = (defined $force && $force =~ /1|on|yes/ ? 1 : 0);
 
+    if (defined($HTTP->{'param'}->{'raw'})) {
+        unless (open(RAW, "<", $Path->{'realf'})) {
+            print "Status: 404 File Not Found
+Content-Type: text/html
+
+";
+  die "couldn't open $Conf->{'treename'}:$Path->{'virtf'}";
+        }
+        print "$head
+";
+        while (<RAW>) {
+            print;
+        }
+        close(RAW);
+        exit;
+    }
+
 #if the file is html then don't print a header because the file
 #has its own -dme
 my $strange_inexplicable_check = (-f $Path->{'real'}.$Path->{'file'});
