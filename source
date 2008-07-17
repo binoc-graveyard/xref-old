@@ -485,6 +485,8 @@ Content-Type: text/html
         exit;
     }
 
+$exit = 1 if $ENV{'REQUEST_METHOD'} eq 'HEAD';
+
 #if the file is html then don't print a header because the file
 #has its own -dme
 my $strange_inexplicable_check = (-f $Path->{'real'}.$Path->{'file'});
