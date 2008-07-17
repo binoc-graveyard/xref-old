@@ -155,8 +155,19 @@ my @shterm = (
 #  'string',     '"',            '"',
 #  'string',     "'",            "'",
 #  'string',     '`',            '`',
+);
 
-  
+my @pyterm = (
+  'atom', '\\\\.', '',
+  'comment', '#', '$',
+#  'string',     "'",            "'",
+  'string',     '"',            '"',
+  'include', '\\b(?:import)\\s+', '(?:\\bas\\b|$)',
+  'include', '\\b(?:from)\\s+', '(?:$|\\bimport\\b)',
+  'verb', '\\b(?:class|def|del|yield)\\b', '\W',
+  'verb', '\\b(?:i[fns]|else|and|not|while|f?or|break|continue)\\b', '\W',
+  'verb', '\\b(?:raise|try|except|finally|pass|return)\\b', '\W',
+  'verb', '\\b(?:True|False|None)\\b', '',
 );
 
 my %alreadywarned = ();
@@ -732,6 +743,8 @@ sub markupfile {
         @terms = @dtdterm;
     } elsif ($name =~ /(configure|\.sh)$/) {
         @terms = @shterm;
+    } elsif ($name =~ /\.(?:py)$/) {
+        @terms = @pyterm;
     } else {
         open HEAD_HANDLE, $fname;
         my $file_head = <HEAD_HANDLE>;
