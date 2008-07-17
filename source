@@ -457,8 +457,8 @@ $force = (defined $force && $force =~ /1|on|yes/ ? 1 : 0);
 
 unless ($exit) {
     $head .=
-'Link: <' . $Conf->{baseurl} . $ENV{'PATH_INFO'} . '?force=1>; rel="First"; title="Marked up"
-Link: <' . $Conf->{baseurl} . $ENV{'PATH_INFO'} . '?raw=1>; rel="Last"; title="Raw"
+'Link: <' . $Conf->{baseurl} . '/source' . $ENV{'PATH_INFO'} . '?force=1>; rel="First"; title="Marked up"
+Link: <' . $Conf->{baseurl} . '/source' . $ENV{'PATH_INFO'} . '?raw=1>; rel="Last"; title="Raw"
 ';
 }
 
