@@ -393,7 +393,7 @@ my $body = <SRCFILE>;
                 }
 		print("<pre lang='en'>");
                &markupfile(\*SRCFILE, $Path, $file,
-                             sub { print shift });
+                             sub { print shift }, $force);
 		print("</pre>");
 	    }
 	    close(SRCFILE);
