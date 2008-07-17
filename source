@@ -455,6 +455,13 @@ if (($ENV{'PATH_INFO'} !~ m|/$|) && (-d $Path->{'realf'})) {
 $force = $HTTP->{'param'}->{'force'};
 $force = (defined $force && $force =~ /1|on|yes/ ? 1 : 0);
 
+unless ($exit) {
+    $head .=
+'Link: <' . $Conf->{baseurl} . $ENV{'PATH_INFO'} . '?force=1>; rel="First"; title="Marked up"
+Link: <' . $Conf->{baseurl} . $ENV{'PATH_INFO'} . '?raw=1>; rel="Last"; title="Raw"
+';
+}
+
     if (defined($HTTP->{'param'}->{'raw'})) {
         unless (open(RAW, "<", $Path->{'realf'})) {
             print "Status: 404 File Not Found
