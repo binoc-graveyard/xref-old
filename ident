@@ -212,7 +212,7 @@ $tail =~ s/</&lt;/g;
 $tail =~ s/"/&quot;/g;
 
         print("<p><i>If you can't find what you're looking for, you can always <a href=search".$tail.
-">search</a> for it.</i></p>");
+">perform a free-text search</a> for it.</i></p>");
 
         my %f = {};
 	if (@refs) {
