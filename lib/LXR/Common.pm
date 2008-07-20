@@ -22,6 +22,10 @@ $wwwdebug = 1;
 $SIG{__WARN__} = 'warning';
 $SIG{__DIE__}  = 'fatal';
 
+my @allvariables_;
+my %allvariable_;
+my %alldefaults_;
+
 my @term = (
   'atom',	'\\\\.',	'',
   'comment',	'/\*',		'\*/',
@@ -213,9 +217,9 @@ sub urlargs {
     }
     @args = ();
 
-    foreach ($Conf->allvariables) {
-	$val = $args{$_} || $Conf->variable($_);
-	push(@args, "$_=$val") unless ($val eq $Conf->vardefault($_));
+    foreach (@allvariables_) {
+	$val = $args{$_} || $allvariable_{$_};
+	push(@args, "$_=$val") unless ($val eq $alldefaults_{$_});
 	delete($args{$_});
     }
 
@@ -240,7 +244,9 @@ $path =~ s/\n//g;
     if ($path ne '') {
     # dealing w/ a url that has {},,@%-
     # http://timeless.justdave.net/mxr-test/chinook/source/defoma-0.11.7osso/%7Barch%7D/,,inode-sigs/gus@inodes.org--debian%25defoma--debian--1.0--patch-1
-        $path =~ s|([^-a-zA-Z0-9.+,{}\@/_\r\n])|sprintf("%%%02X", ord($1))|ge;
+        if ($path =~ m|[^-a-zA-Z0-9.+,{}\@/_\r\n]|) {
+            $path =~ s|([^-a-zA-Z0-9.+,{}\@/_\r\n])|sprintf("%%%02X", ord($1))|ge;
+        }
         $path = "$Conf->{virtroot}/source$path";
     }
     return("<a href=\"$path".
@@ -395,21 +401,28 @@ sub csspadding {
     return $style . '</style>';
 }
 
+my $lastclass;
+my $nextrange = 1;
+
 sub linetag {
 #$frag =~ s/\n/"\n".&linetag($virtp.$fname, $line)/ge;
 #    my $tag = '<a href="'.$_[0].'#L'.$_[1].
 #              '" name="L'.$_[1].'">'.$_[1].' </a>';
     my $tag;
-    my $y = log10($_[1]);
-    my $x = $y | 0;
-    my $class = "class='l d$x'";
-    if ($padding < 2) {
-        my $size = (log10((stat($Path->{'realf'}))[7] / 40) | 0) + 1;
-        $padding = $size < 3 ? 3 : $size;
-        $tag = csspadding($padding) . $tag;
-    } elsif ($x > $padding) {
-        $tag = csspadding(++$padding) . $tag;
+    if ($_[1] >= $nextrange) {
+        my $y = log10($_[1]);
+        my $x = $y | 0;
+        $lastclass = "class='l d$x'";
+        $nextrange *= 10;
+        if ($padding < 2) {
+            my $size = (log10((stat($Path->{'realf'}))[7] / 40) | 0) + 1;
+            $padding = $size < 3 ? 3 : $size;
+            $tag = csspadding($padding) . $tag;
+        } elsif ($x > $padding) {
+            $tag = csspadding(++$padding) . $tag;
+        }
     }
+    my $class = $lastclass;
     $tag .= &fileref($_[1], '', $_[1]).' ';
     $tag =~ s/<a/<a $class name=$_[1]/;
 #    $_[1]++;
@@ -1162,7 +1175,10 @@ sub init_all {
     $identifier = $HTTP->{'param'}->{'i'};
     $Conf = new LXR::Config;
 
-    foreach ($Conf->allvariables) {
+    @allvariables_ = $Conf->allvariables;
+    foreach (@allvariables_) {
+        $allvariable_{$_} = $Conf->variable($_);
+        $alldefaults_{$_} = $Conf->vardefault($_);
 	$Conf->variable($_, $HTTP->{'param'}->{$_}) if $HTTP->{'param'}->{$_};
     }
     
@@ -1570,7 +1586,7 @@ sub varlinks {
     my ($val, $oldval);
     local $vallink;
     
-    $oldval = $Conf->variable($var);
+    $oldval = $allvariable_{$var};
     foreach $val ($Conf->varrange($var)) {
 	if ($val eq $oldval) {
 	    $vallink = "<b><i>$val</i></b>";
@@ -1614,7 +1630,7 @@ sub varexpand {
     my $varex = '';
     local $var;
     
-    foreach $var ($Conf->allvariables) {
+    foreach $var (@allvariables_) {
         $varex .= &expandtemplate($templ,
                                   ('varname',  sub { 
                                       return($Conf->vardescription($var))}),
