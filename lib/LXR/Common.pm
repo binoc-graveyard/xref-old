@@ -662,7 +662,7 @@ sub filelookup{
     return "<a href='$baseurl/find?string=$basefile$hash'>$prettyname</a>";
 }
 
-sub notvcalled {
+sub parsecvsentries {
  my ($entryrev,$entrybranch,$keywords);
  my ($entriespath, $entryname) = split m|/(?!.*/)|, $Path->{'realf'};
  if (open(CVSENTRIES, "$entriespath/CVS/Entries")) {
@@ -675,7 +675,7 @@ sub notvcalled {
  }
  return ($entryrev,$entrybranch,$keywords);
 }
-sub notycalled {
+sub getcvstag {
  my $entrybranch = 'HEAD';
  if (open(CVSTAG, " $Path->{'real'}/CVS/Tag")) {
   while (<CVSTAG>) {
@@ -901,7 +901,7 @@ sub markupfile {
     } else {
 	my $is_binary = -1;
 	my $keywords;
-	(undef,undef,$keywords) = &notvcalled;
+	(undef,undef,$keywords) = &parsecvsentries;
 	READFILE:
 	my $first_line = <$INFILE>;
 
