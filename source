@@ -411,6 +411,8 @@ my $body = <SRCFILE>;
 }
 
 ($Conf, $HTTP, $Path, $head) = &init($0);
+
+sub http_header_stuff {
 my $exit = 0;
 
 my $tree = $HTTP->{'param'}->{'tree'};
@@ -494,7 +496,11 @@ my $skip_wrap = $Path->{'file'} && noWrap($Path->{'file'});
 print "$head
 " if (!$Path->{'file'} || isHTML($Path->{'file'}) || !$skip_wrap);
 exit if $exit;
+}
 
+&http_header_stuff;
+
+sub html_header_stuff {
 if (
     !$skip_wrap
    ) {
@@ -542,9 +548,13 @@ print qq{</select></form>
 };
     }
 }
+}
+
+&html_header_stuff;
 
 &printfile;
 
+sub footer_stuff {
 if (
     !$skip_wrap
    ) {
@@ -554,5 +564,8 @@ if (
 	&makefooter('sourcedir');
     }
 }
+}
+
+&footer_stuff;
 
 1;
