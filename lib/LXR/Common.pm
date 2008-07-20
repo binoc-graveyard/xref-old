@@ -338,7 +338,7 @@ sub idref {
 
 sub atomref {
     my ($atom) = @_;
-    return "<span class='atom'>$atom</span>";
+    return "<span class='a'>$atom</span>";
 }
 
 sub http_wash {
