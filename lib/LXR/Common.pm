@@ -1359,22 +1359,25 @@ sub hgversionexpand {
   # branch cache is a cache it might not be there
   # if it isn't, we simply offer tip
   # something better may be implemented eventually.
+  my $sig;
   if (open(HGCACHE, '<', $Path->{'hgroot'}. '/.hg/branch.cache')) {
-    my (%branches, %versions, $line, $ver, $branch, $sig);
+    my (%branches, %versions, $line, $ver, $branch);
     while ($line = <HGCACHE>) {
       if ($line =~ /^([0-9a-f]{40}) (\S+)/) {
-        $versions{$2} = $1;
-        $branches{$1} ||= $2;
-        $sig ||= $1;
+        ($ver, $branch) = ($1, $2);
+        $versions{$branch} = $ver;
+        $branches{$ver} = $branch unless $branch =~ /^\d+$/;
+        $sig ||= $ver;
       }
     }
+    $sig = $versions{$branches{$sig}};
     close HGCACHE;
   } elsif (open(HGSTATE, '<', $Path->{'hgroot'}. '/.hg/dirstate')) {
     my ($parent1, $parent2);
     read (HGSTATE, $parent1, 20);
     read (HGSTATE, $parent2, 20);
     close HGSTATE;
-    $branch = $sig = hgdehex($parent1).hgdehex($parent2);
+    $sig = hgdehex($parent1).hgdehex($parent2);
   }
   return $sig || 'tip';
 }

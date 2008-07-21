@@ -49,7 +49,7 @@ $beginwebsvn
 <a href="$websvnhost/blame.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Blame</a><br>
 $endwebsvn
 $beginwebhg
-<a href="$webhghost/index.cgi/log/$hgbranch$urlpath">HG Log</a><br>
+<a href="$webhghost/index.cgi/log/$hgversion$urlpath">HG Log</a><br>
 <a href="$webhghost/index.cgi/annotate/$hgversion$urlpath">HG Blame</a><br>
 $endwebhg
       <a href="$baseurl/diff?file=$urlpath">Diff file</a><br>
