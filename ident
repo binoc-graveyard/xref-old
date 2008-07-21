@@ -216,9 +216,19 @@ $tail =~ s/"/&quot;/g;
 
         my %f = {};
 	if (@refs) {
+            -f $Conf->dbdir."/fileidx" ||
+                &fatal(
+'Cross reference database is missing its file list for "'.
+$Conf->{'treename'}.'" please complain to the webmaster [cite: nofileidx]');
+            -r $Conf->dbdir."/fileidx" ||
+                &fatal(
+'Cross reference database file list is not readable for "'.
+$Conf->{'treename'}.'" please complain to the webmaster [cite: norfileidx]');
+
 	    tie(%fileidx, "DB_File", $Conf->dbdir."/fileidx", 
 		O_RDONLY, undef, $DB_HASH) || 
-		    &fatal('Cross reference database is missing its file list for "'.$Conf->{'treename'}.'" please complain to the webmaster [cite: fileidx]');
+		    &fatal('Error opening Cross reference file list for "'.
+$Conf->{'treename'}.'" please complain to the webmaster [cite: fileidx]');
 
             my %normal_refh = {}, %fancy_refs = {};
             my %big_map = {};
