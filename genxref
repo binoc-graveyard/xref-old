@@ -277,6 +277,9 @@ sub findidentJS {
         $contents =~ s{//[^\n]*}{}g; # C++
         # $contents =~ s{^# [^\n]*|^#($)}{$1}gm; # evil preprocessor
 
+        # Remove license blocks.
+        $contents =~ s{(# \*\*\*\*\* BEGIN LICENSE BLOCK \*\*\*\*\*.*?# \*\*\*\*\* END LICENSE BLOCK \*\*\*\*\*)}{&wash($1)}ges;
+ 
         # Unwrap continuation lines.
         $contents =~ s/\\\s*\n/$1\05/gs;
         while ($contents =~ s/\05([^\n\05]+)\05/$1\05\05/gs) {}
@@ -844,6 +847,8 @@ sub findusageJS {
 	$contents =~ s/\/\*(.*?)\*\//&wash($1)/ges; 
 	$contents =~ s/\/\/[^\n]*//g;
 
+        # Remove license blocks.
+        $contents =~ s{(# \*\*\*\*\* BEGIN LICENSE BLOCK \*\*\*\*\*.*?# \*\*\*\*\* END LICENSE BLOCK \*\*\*\*\*)}{&wash($1)}ges;
 
 	# FIXME: "var"
 
