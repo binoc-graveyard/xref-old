@@ -100,6 +100,12 @@ sub display_line
           " -- $text<br>\n");
 }
 
+sub escape_re {
+    $re = shift;
+    $re =~ s/([.*+-{}|()\[\]])/\\$1/g;
+    return $re;
+}
+
 sub search {
     print(qq{<P ALIGN=CENTER>
 Free-text search through the source code, including comments.
@@ -128,6 +134,16 @@ function changefindpreset() {
 }
 </script>
 %;
+
+    if ($searchtext =~ /\S/ && $searchtext !~ /[a-z0-9]/) {
+        $filter = '' if $filter =~ /\$/;
+        $filter .= '.*' if $filter;
+        $filter .= $regexp ? $searchtext : escape_re($searchtext);
+        $searchtext = $search_sensitive ? '[a-zA-Z]' : '[a-z]';
+        $regexp = 1;
+        print "<p><em>Your search did not contain any indexed characters,
+and was converted into a filter</em></p>\n";
+    }
 
     print('<form name=search id=search method=get action="search">
 <TABLE><TR><TD>');
