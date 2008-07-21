@@ -149,6 +149,10 @@ for ($TREE) {
         print LOG `cd mozilla; $TIME $CVSCOMMAND $CVSUP-d tools` if /^seamonkey$/;
         last;
     };
+    /^comm-central$/ && do {
+        print LOG `cd $src_dir; $TIME python2.4 ./client.py checkout $STDERRTOSTDOUT`;
+        last;
+    };
     /^(?:.*)-(central|tracing)$/ && do {
         print LOG `cd $src_dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
         last;
