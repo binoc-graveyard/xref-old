@@ -1,82 +1,82 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
-<META NAME="GENERATOR" CONTENT="lxr-1998-06-10: http://lxr.linux.no">
+<meta name="GENERATOR" content="lxr-1998-06-10: http://lxr.linux.no">
 <link rel="icon" href="/mxr.png" type="image/png">
 <title>$title</title>
 $stylesheets</head>
 
-<BODY   BGCOLOR="#FFFFFF" TEXT="#000000"
-	LINK="#0000EE" VLINK="#551A8B" ALINK="#FF0000">
+<body   bgcolor="#FFFFFF" text="#000000"
+	link="#0000EE" vlink="#551A8B" alink="#FF0000">
 
 <table class=banner bgcolor="#000000" width="100%" border=0 cellpadding=0 cellspacing=0>
 <tr><td><a class="logo" href="http://www.mozilla.org/"><img
  src="http://www.mozilla.org/images/mozilla-banner.gif" alt=""
  border=0 width=600 height=58></a></td></tr></table>
 
-<TABLE class=header BORDER=0 CELLPADDING=12 CELLSPACING=0 WIDTH="100%">
- <TR>
-  <TD ALIGN=LEFT VALIGN=MIDDLE>
+<table class=header border=0 cellpadding=12 cellspacing=0 width="100%">
+ <tr>
+  <td align=left valign=middle>
    <nobr><font size="+2"><b><a href="$dotdoturl">Mozilla Cross-Reference</a></b>
 </nobr><i><a href="$baseurl">$treename</a></i>
 </font>
-   <BR><B>$banner</B>
+   <br><B>$banner</B>
   </TD>
 
-  <TD ALIGN=RIGHT VALIGN=TOP WIDTH="1%">
-   <TABLE BORDER CELLPADDING=12 CELLSPACING=0>
-    <TR>
-     <TD NOWRAP BGCOLOR="#FAFAFA">
+  <td align=right valign=top width="1%">
+   <table border cellpadding=12 cellspacing=0>
+    <tr>
+     <td nowrap bgcolor="#FAFAFA">
 $beginbonsai
-      <A HREF="$bonsaihost/cvslog.cgi?file=$cvspath/$filename&amp;rev=$cvsbranch&amp;mark=$cvsversion">CVS Log</A><BR>
-      <A HREF="$bonsaihost/cvsblame.cgi?file=$cvspath/$filename&amp;rev=$cvsversion">CVS Blame</A><BR>
-      <A HREF="$bonsaihost/cvsgraph.cgi?file=$cvspath/$filename&amp;rev=$cvsversion">CVS Graph</A><BR>
+      <a href="$bonsaihost/cvslog.cgi?file=$cvspath/$filename&amp;rev=$cvsbranch&amp;mark=$cvsversion">CVS Log</a><br>
+      <a href="$bonsaihost/cvsblame.cgi?file=$cvspath/$filename&amp;rev=$cvsversion">CVS Blame</a><br>
+      <a href="$bonsaihost/cvsgraph.cgi?file=$cvspath/$filename&amp;rev=$cvsversion">CVS Graph</a><br>
 $endbonsai
 $begintrac
-      <A HREF="$trachost/$virttree/log$virtfold/$filename">Trac Log</A><BR>
-      <A HREF="$trachost/$virttree/browser$virtfold/$filename">Trac View</A><BR>
+      <a href="$trachost/$virttree/log$virtfold/$filename">Trac Log</a><br>
+      <a href="$trachost/$virttree/browser$virtfold/$filename">Trac View</a><br>
 $endtrac
 $beginviewvc
-<A HREF="$viewvchost$virtfold/$filename$viewvctail">VC Log</A><BR>
-<A HREF="$viewvchost$virtfold/$filename$viewvctail&view=annotate">VC Blame</A><BR>
+<a href="$viewvchost$virtfold/$filename$viewvctail">VC Log</a><br>
+<a href="$viewvchost$virtfold/$filename$viewvctail&view=annotate">VC Blame</a><br>
 $endviewvc
 $beginwebsvn
-<A HREF="$websvnhost/log.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Log</A><BR>
-<A HREF="$websvnhost/blame.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Blame</A><BR>
+<a href="$websvnhost/log.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Log</a><br>
+<a href="$websvnhost/blame.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Blame</a><br>
 $endwebsvn
 $beginwebhg
-<A HREF="$webhghost/index.cgi/log/$hgbranch$urlpath">HG Log</A><BR>
-<A HREF="$webhghost/index.cgi/annotate/$hgversion$urlpath">HG Blame</A><BR>
+<a href="$webhghost/index.cgi/log/$hgbranch$urlpath">HG Log</a><br>
+<a href="$webhghost/index.cgi/annotate/$hgversion$urlpath">HG Blame</a><br>
 $endwebhg
-      <A HREF="$baseurl/diff?file=$urlpath">Diff file</A><BR>
-      <A HREF="$thisurl?raw=1">Raw file</A><BR>
+      <a href="$baseurl/diff?file=$urlpath">Diff file</a><br>
+      <a href="$thisurl?raw=1">Raw file</a><br>
      </TD>
     </TR>
-   </TABLE>
+   </table>
   </TD>
 
 $beginbonsai
-  <TD ALIGN=RIGHT VALIGN=TOP WIDTH="1%">
-   <TABLE BORDER CELLPADDING=6 CELLSPACING=0>
-    <TR>
-     <TD BGCOLOR="#FAFAFA">
-      <TABLE BORDER=0 CELLPADDING=6 CELLSPACING=0>
-       <TR>
-        <TD NOWRAP ALIGN=LEFT>
-         changes to<BR>this file in<BR>the last:
+  <td align=right valign=top width="1%">
+   <table border cellpadding=6 cellspacing=0>
+    <tr>
+     <td bgcolor="#FAFAFA">
+      <table border=0 cellpadding=6 cellspacing=0>
+       <tr>
+        <td nowrap align=left>
+         changes to<br>this file in<br>the last:
         </TD>
-        <TD NOWRAP>
-         <A HREF="$bonsaihost/cvsquery.cgi?branch=$cvsbranch&amp;file=$pathname&amp;date=day">day</A><BR>
-         <A HREF="$bonsaihost/cvsquery.cgi?branch=$cvsbranch&amp;file=$pathname&amp;date=week">week</A><BR>
-         <A HREF="$bonsaihost/cvsquery.cgi?branch=$cvsbranch&amp;file=$pathname&amp;date=month">month</A><BR>
+        <td nowrap>
+         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsbranch&amp;file=$pathname&amp;date=day">day</a><br>
+         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsbranch&amp;file=$pathname&amp;date=week">week</a><br>
+         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsbranch&amp;file=$pathname&amp;date=month">month</a><br>
         </TD>
        </TR>
-      </TABLE>
+      </table>
      </TD>
     </TR>
-   </TABLE>
+   </table>
   </TD>
 $endbonsai
 
  </TR>
-</TABLE>
+</table>
