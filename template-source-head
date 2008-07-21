@@ -28,9 +28,13 @@ $stylesheets</head>
     <tr>
      <td nowrap bgcolor="#FAFAFA">
 $beginbonsai
-      <a href="$bonsaihost/cvslog.cgi?file=$cvspath/$filename&amp;rev=$cvsbranch&amp;mark=$cvsversion">CVS Log</a><br>
-      <a href="$bonsaihost/cvsblame.cgi?file=$cvspath/$filename&amp;rev=$cvsversion">CVS Blame</a><br>
-      <a href="$bonsaihost/cvsgraph.cgi?file=$cvspath/$filename&amp;rev=$cvsversion">CVS Graph</a><br>
+      <a href="$bonsaihost/cvslog.cgi?file=$cvspath/$filename&amp;rev=$cvsbranch&amp;mark=$cvsversion"
+>CVS Log</a><br>
+      <a href="$bonsaihost/cvsblame.cgi?file=$cvspath/$filename&amp;rev=$cvsversion"
+onmouseover='if (document.location.hash) this.href=(this.href.replace(/&amp;mark=\d*|$/,document.location.hash.replace("#","&amp;mark=")).replace(/#.*|$/,document.location.hash))'
+>CVS Blame</a><br>
+      <a href="$bonsaihost/cvsgraph.cgi?file=$cvspath/$filename&amp;rev=$cvsversion"
+>CVS Graph</a><br>
 $endbonsai
 $begintrac
       <a href="$trachost/$virttree/log$virtfold/$filename">Trac Log</a><br>
