@@ -321,6 +321,10 @@ print " files</span></span>
         $filter =~ s/`/\\`/g;
         LINE: while (my $line = <GLIMPSE>) {
             if (!$numlines) {
+                if ($line =~ /^[^:]*:[^:]*pattern has some meta-characters interpreted by agrep!/) {
+                    print ("Pattern has some meta-characters. <em>Try moving characters that are not letters (a-z) or numbers (0-9) to the filter field</em><br>\n");
+                    next;
+                }
                 if ($line =~ /^[^:]*:[^:]*pattern too long/) {
                     print ("Pattern too long. Use a maximum 29 characters. <em>Try moving extra characters to the filter field.</em>\n");
                     last;
