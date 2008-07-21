@@ -476,7 +476,11 @@ Link: <" . $Conf->{baseurl} . "/find?string=$1>; rel='Contents'; title='Find fil
 Content-Type: text/html
 
 ";
-  die "couldn't open $Conf->{'treename'}:$Path->{'virtf'}";
+            my $virtf = $Path->{'virtf'};
+            $virtf =~ s/</&lt;/g;
+            print "<h1>File Not Found</h1>
+<h4><em>Couldn't open $Conf->{'treename'}:$virtf";
+            exit;
         }
         print "$head
 ";
