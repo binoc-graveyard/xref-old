@@ -88,8 +88,6 @@ only files with the most matches will be shown">Directory hints</a></b>:
 };
 print "<br>";
 
-    $searchtext =~ s/\+/\\+/g;
-
     if ($searchtext ne "") {
         my $filename = $Conf->dbdir."/.glimpse_filenames";
         unless (open(FILELLISTING, $filename)) {
@@ -97,6 +95,15 @@ print "<br>";
             return;
         }
         print "<p><hr>\n";
+
+        $searchtext =~ s/\+/\\+/g;
+
+        if ($searchtext =~ /^(\s*)(.*?)(\s*)$/ &&
+            (($1 ne '') || ($3 ne ''))) {
+            print "<p><i>Your search included <u>spaces</u></i>,
+if this was not your <b>intent</b>,
+<i>you can always search <a href='find?string=$2'>without them</a>.</i></p>";
+        }
         print "<p><i>If you can't find what you're looking for, you can always
 <a href='search?string=$searchtext&regexp=on'>search</a> for it.</i></p>";
         $sourceroot = $Conf->sourceroot;
