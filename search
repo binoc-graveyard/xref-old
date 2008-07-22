@@ -136,7 +136,7 @@ function changefindpreset() {
 %;
 
     if ($searchtext =~ /\S/) {
-        if ($searchtext !~ /[a-z0-9]/) {
+        if ($searchtext !~ /[a-zA-Z0-9]/) {
             $filter = '' if $filter =~ /\$/;
             $filter .= '.*' if $filter;
             $filter .= $regexp ? $searchtext : escape_re($searchtext);
