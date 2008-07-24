@@ -11,6 +11,12 @@
 .i { /* include */
  color: blue;
 }
+.m {
+ background-color: lightgreen;
+}
+a.m {
+ background-color: lightblue;
+}
 ul {
  margin: 0px 0px 0px 1em;
 }

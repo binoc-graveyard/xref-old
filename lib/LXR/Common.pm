@@ -401,20 +401,66 @@ sub csspadding {
     return $style . '</style>';
 }
 
+my %marked_lines;
+
+# The mark argument expects a specific format
+# digit or (d1)-(d2)
+# where digit is the line number to mark
+#    and d1 & d2 are the optional beginning & ending of a range.
+#    If d1 & d2 are omitted, the entire file is marked
+sub clean_mark {
+    my $mark = shift;
+    $mark =~ s/,/,,/g;
+    $mark =~ s/(^|,)[^,]*?-{2,}[^,]*?(,|$)/$1$2/g;
+    $mark =~ s/(^|,)[^,]*?[^,0-9-][^,]*?(,|$)/$1$2/g;
+    $mark =~ s/,{2,}/,/g;
+    $mark =~ s/^,|,$//g;
+    return $mark;
+}
+
+sub build_mark_map {
+    return unless (defined $HTTP->{'param'}->{'mark'});
+    my $marks = clean_mark($HTTP->{'param'}->{'mark'});
+    foreach my $mark (split ',', $marks) {
+        if ($mark =~ m/^(\d*)-(\d*)$/) {
+            my ($begin, $end) = ($1 || 1, $2);
+            if ($end eq '' || $end < $begin) {
+                $marked_lines{$begin} = 'begin';
+                next;
+            }
+            if ($begin < $end) {
+                $marked_lines{$begin} = 'begin';
+                $marked_lines{$end+1} = 'end';
+                next;
+            }
+            $mark = $begin;
+        }
+        $marked_lines{$mark} .= 'single';
+    }
+}
+
 my $lastclass;
 my $nextrange = 1;
+my $marker = 0;
+
+sub endmark {
+    --$marker;
+    return '</div>';
+}
 
 sub linetag {
+    my ($file, $line) = @_;
 #$frag =~ s/\n/"\n".&linetag($virtp.$fname, $line)/ge;
 #    my $tag = '<a href="'.$_[0].'#L'.$_[1].
 #              '" name="L'.$_[1].'">'.$_[1].' </a>';
     my $tag;
-    if ($_[1] >= $nextrange) {
-        my $y = log10($_[1]);
+    if ($line >= $nextrange) {
+        my $y = log10($line);
         my $x = $y | 0;
-        $lastclass = "class='l d$x'";
+        $lastclass = "d$x";
         $nextrange *= 10;
         if ($padding < 2) {
+            build_mark_map();
             my $size = (log10((stat($Path->{'realf'}))[7] / 40) | 0) + 1;
             $padding = $size < 3 ? 3 : $size;
             $tag = csspadding($padding) . $tag;
@@ -423,10 +469,23 @@ sub linetag {
         }
     }
     my $class = $lastclass;
-    $tag .= &fileref($_[1], '', $_[1]).' ';
-    $tag =~ s/<a/<a $class name=$_[1]/;
+    if (defined $marked_lines{$line}) {
+        my $mark = $marked_lines{$line};
+        if ($mark =~ /begin|end/) {
+            while ($mark =~ s/end//) {
+                $tag .= endmark();
+            }
+            while ($mark =~ s/begin//) {
+                $tag .= '<div class="m">';
+                ++$marker;
+            }
+        }
+        $class .= ' m' if $mark =~ 'single';
+    }
+    $tag .= &fileref($line, '', $line).' ';
+    $tag =~ s/<a/<a class='l $class' name=$line/;
 #    $_[1]++;
-    return($tag);
+    return $tag;
 }
 
 # dme: Smaller version of the markupfile function meant for marking up 
@@ -967,6 +1026,7 @@ sub markupfile {
 #	    &$outfun("<a name=\"L$.\"><\/a>".$_);
 		&$outfun(&linetag($virtp.$fname, $.).$_);
 	    } while (<$INFILE>);
+            print endmark() while $marker;
 	}
     }
 }
