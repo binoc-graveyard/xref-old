@@ -114,7 +114,7 @@ Free-text search through the source code, including comments.
 <BR>Read the <A HREF="search-help.html">documentation</A>
  for help with glimpse's regular expression syntax,
 });
-print qq%
+print qq|
 <script>
 function changetarget() {
  if (document.getElementById) {
@@ -133,7 +133,7 @@ function changefindpreset() {
  }
 }
 </script>
-%;
+|;
 
     if ($searchtext =~ /\S/) {
         if ($searchtext !~ /[a-zA-Z0-9]/) {
@@ -262,19 +262,23 @@ using tree:</td><td>
     $| = 1; print('');
 
     if ($searchtext ne "") {
-	print("<hr>\n");
-        print("<p><i>Searching <a href='find?string=$find'>these files</a>.</i></p>") if $find;
-
+        print '<hr>
+';
+        if ($find) {
+            print "<p><i>Searching <a href='find?string=$find'>these files</a>.</i></p>";
+        }
         my $displayedsearch = $searchtext;
-        if (!$regexp) {
-	    $searchtext =~ s/([;,#><\-\$.^*[^|()\!])/\\$1/g;
-	}
-	@execparams = ($Conf->glimpsebin,"-i","-H",$Conf->dbdir,'-y','-n');
-	if ($find) {
-	$find =~ s/-/\\-/g;
-	    push @execparams, ('-F', $find);
-	}
-	push @execparams, ('-e', $searchtext);
+        if ($regexp) {
+            $searchtext =~ s/([~;,><])/\\$1/g;
+        } else {
+            $searchtext =~ s/([~;,#><\-\$.^*[^|()\!])/\\$1/g;
+        }
+        @execparams = ($Conf->glimpsebin,"-i","-H",$Conf->dbdir,'-y','-n');
+        if ($find) {
+            $find =~ s/-/\\-/g;
+            push @execparams, ('-F', $find);
+        }
+        push @execparams, ('-e', $searchtext);
         my $glimpsepid;
         unless ($glimpsepid = open(GLIMPSE, "-|")) {
 	    open(STDERR, ">&STDOUT");
@@ -344,6 +348,11 @@ print " files</span></span>
         $filter =~ s/`/\\`/g;
         LINE: while (my $line = <GLIMPSE>) {
             if (!$numlines) {
+                if ($line =~ /^[^:]*:[^:]*parse error at/) {
+                    print "Pattern can't be handled today, please file a
+<a href='https://bugzilla.mozilla.org/enter_bug.cgi?product=Webtools&component=MXR&short_desc=glimpse+parse+error&bug_file_loc=please-fill-this-in'>bug</a>.";
+                    next;
+                }
                 if ($line =~ /^[^:]*:[^:]*pattern has some meta-characters interpreted by agrep!/) {
                     print ("Pattern has some meta-characters. <em>Try moving characters that are not letters (a-z) or numbers (0-9) to the filter field</em><br>\n");
                     next;
