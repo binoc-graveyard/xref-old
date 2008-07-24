@@ -53,7 +53,7 @@ $beginwebhg
 <a href="$webhghost/index.cgi/annotate/$hgversion$urlpath">HG Blame</a><br>
 $endwebhg
       <a href="$baseurl/diff?file=$urlpath">Diff file</a><br>
-      <a href="$thisurl?raw=1">Raw file</a><br>
+      <a href="$baseurl/source/$urlpath?raw=1">Raw file</a><br>
      </TD>
     </TR>
    </table>
