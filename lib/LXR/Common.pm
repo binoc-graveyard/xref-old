@@ -452,7 +452,8 @@ sub endmark {
 
 sub linetag {
     my ($file, $line) = @_;
-#$frag =~ s/\n/"\n".&linetag($virtp.$fname, $line)/ge;
+#    my $virtfname = $virtp.$fname;
+#$frag =~ s/\n/"\n".&linetag($virtfname, $line)/ge;
 #    my $tag = '<a href="'.$_[0].'#L'.$_[1].
 #              '" name="L'.$_[1].'">'.$_[1].' </a>';
     my $tag;
@@ -701,6 +702,7 @@ sub get_mime_type {
 sub markupfile {
     my ($INFILE, $Path, $fname, $outfun, $force) = @_;
     my $virtp = $Path->{'virt'};
+    my $virtfname = $virtp.$fname;
     my @terms;
     my $filenum;
     $force = 0 unless defined $force;
@@ -751,8 +753,8 @@ sub markupfile {
         if (tie(%fileidx, "DB_File", $Conf->dbdir."/fileidx",
             O_RDONLY, undef, $hash_params)) {
             foreach my $key (keys %fileidx) {
-                if (($virtp.$fname eq $fileidx{$key}) ||
-                    ($virtp.$fname eq '/'.$fileidx{$key})) {
+                if (($virtfname eq $fileidx{$key}) ||
+                    ($virtfname eq '/'.$fileidx{$key})) {
                     $filenum = $key, last;
                 }
             }
@@ -763,7 +765,7 @@ sub markupfile {
 
         &$outfun(# "<pre>\n".
                  #"<a name=\"".$line++.'"></a>');
-                 &linetag($virtp.$fname, $line++));
+                 &linetag($virtfname, $line++));
 
         ($btype, $frag) = &SimpleParse::nextfrag;
 
@@ -848,7 +850,7 @@ sub markupfile {
             }
 
             &htmlquote($frag);
-            $frag =~ s/(?:\r?\n|\r)/"\n".&linetag($virtp.$fname, $line++)/ge;
+            $frag =~ s/(?:\r?\n|\r)/"\n".&linetag($virtfname, $line++)/ge;
             &$outfun($frag);
 
             ($btype, $frag) = &SimpleParse::nextfrag;
@@ -871,7 +873,7 @@ sub markupfile {
             $extra = "&ctype=$ctype";
             $img = "embed type='$ctype'";
 	}
-        &$outfun("<$img src=\"$Conf->{virtroot}/source".$virtp.$fname.
+        &$outfun("<$img src=\"$Conf->{virtroot}/source".$virtfname.
                  &urlargs("raw=1").$extra."\" border=\"0\" alt=\"$fname\">");
 
         &$outfun("</tr></td></table></ul><pre>");
@@ -885,7 +887,7 @@ sub markupfile {
 	    s/^(E:\s+)(\S+@\S+)/$1<a href=\"mailto:$2\">$2<\/a>/gm;
 	    s/^(W:\s+)(.*)/$1<a href=\"$2\">$2<\/a>/gm;
 #	    &$outfun("<a name=\"L$.\"><\/a>".$_);
-	    &$outfun(&linetag($virtp.$fname, $.).$_);
+	    &$outfun(&linetag($virtfname, $.).$_);
 	}
     } else {
 	my $is_binary = -1;
@@ -941,7 +943,7 @@ sub markupfile {
 		&htmlquote($_);
 		&freetextmarkup($_);
 #	    &$outfun("<a name=\"L$.\"><\/a>".$_);
-		&$outfun(&linetag($virtp.$fname, $.).$_);
+		&$outfun(&linetag($virtfname, $.).$_);
 	    } while (<$INFILE>);
             print endmark() while $marker;
 	}
