@@ -564,10 +564,11 @@ sub getnext_fileentry{
         @file_listing = ();
     }
     my $fileentry;
+    my $filere = /$filematch/;
     if ($file_length == scalar @file_listing) {
         while ($file_iterator < $file_length) {
             $fileentry = $file_listing[$file_iterator++];
-            if ($fileentry =~ /$filematch/) {
+            if ($fileentry =~ $filere) {
                 return $fileentry;
             }
         }
@@ -575,10 +576,10 @@ sub getnext_fileentry{
     while (scalar @file_listing < $file_length) {
         $fileentry = <FILELLISTING>;
         chomp $fileentry;
-        $fileentry =~ s/^$sourceroot//;
-        $fileentry =~ s/\n//;
+        $fileentry =~ /^(?:$sourceroot|)(.*)\n?$/;
+        $fileentry = $1;
         push @file_listing, $fileentry;
-        if ($fileentry =~ /$filematch/) {
+        if ($fileentry =~ $filere) {
             $file_iterator = scalar @file_listing;
             return $fileentry;
         }
