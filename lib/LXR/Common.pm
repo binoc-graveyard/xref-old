@@ -270,17 +270,31 @@ sub diffref {
 }
 
 my %id_cache = ();
+my %id_cache2 = ();
+my %id_cache3 = ();
 
 sub maybe_idref {
   my ($desc, $filenum, $line) = @_;
-  my $ident = !defined ($xref{$desc})
+  return $id_cache2{$desc} if defined $id_cache2{$desc};
+  my $refed = $id_cache3{$desc};
+  if (!defined $refed) {
+    $refed = $xref{$desc} || '';
+    $id_cache3{$desc} = $refed;
+  }
+  my $ident = !$refed
     && $desc =~ /([A-Z])(.*)|([a-z])(.*)/
     && $1
    ? (lc $1) . $2
    : ($3
      ? (uc $3) . $4
      : $desc);
-  return &atomref($ident) unless (defined($xref{$ident}));
+
+  if ($ident ne $desc &&
+      !defined $id_cache3{$ident} &&
+      !($id_cache3{$ident} = $xref{$ident} || '')
+      ) {
+    return $id_cache2{$desc} = &atomref($ident);
+  }
   my %ty = (('M', 'macro'),
             ('V', 'var'),
             ('f', 'proto'),
@@ -331,7 +345,7 @@ $refline++;
 }
   my @args;
   push @args, 'scriptidly=1' if $desc ne $ident;
-  return &idref($desc,$ident,$class,@args);
+  return $id_cache2{$desc} = &idref($desc,$ident,$class,@args);
 }
 
 sub idref {
