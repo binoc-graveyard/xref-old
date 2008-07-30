@@ -277,9 +277,8 @@ sub maybe_idref {
   my ($desc, $filenum, $line) = @_;
   return $id_cache2{$desc} if defined $id_cache2{$desc};
   my $refed = $id_cache3{$desc};
-  if (!defined $refed) {
-    $refed = $xref{$desc} || '';
-    $id_cache3{$desc} = $refed;
+  unless (defined $refed) {
+    $id_cache3{$desc} = $refed = $xref{$desc} || '';
   }
   my $ident = !$refed
     && $desc =~ /([A-Z])(.*)|([a-z])(.*)/
