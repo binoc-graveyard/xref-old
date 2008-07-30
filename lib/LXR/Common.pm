@@ -610,24 +610,30 @@ sub filelookup{
     }
     $filename = '/' . $filename . '$';
     $file_iterator = 0;
-    while ($fileentry = &getnext_fileentry($idlfile || $filename)) {
-        if ($fileentry =~ m|/\Q$bestguess\E$|i) {
+    my $ifile = $idlfile || $filename;
+    my $bgre = m|/\Q$bestguess\E$|i;
+    my $fere = m|$filename|i;
+    my $ire = m|/\Q$idlfile.idl\E$|i;
+    my $lre = m|$loosefile|i;
+    my $bre = m|$basefile$|i;
+    while ($fileentry = &getnext_fileentry($ifile)) {
+        if ($fileentry =~ $bgre) {
             $pfile_ref=&fileref($prettyname, $fileentry, $hash);
             $p++;
         }
-        if ($fileentry =~ m|$filename|i) {
+        if ($fileentry =~ $fere) {
             $gfile_ref=&fileref($prettyname, $fileentry, $hash);
             $g++;
         }
-        if ($idlfile && $fileentry =~ m|/\Q$idlfile.idl\E$|i) {
+        if ($idlfile && $fileentry =~ $ire) {
             $ifile_ref=&fileref($prettyname, $fileentry, $hash);
             $i++;
         }
-        if ($loosefile && $fileentry =~ m|$loosefile|i) {
+        if ($loosefile && $fileentry =~ $lre) {
             $jfile_ref=&fileref($prettyname, $fileentry, $hash);
             $j++;
         }
-        if ($basefile && $fileentry =~ m|$basefile$|i) {
+        if ($basefile && $fileentry =~ $bre) {
             $kfile_ref=&fileref($prettyname, $fileentry, $hash);
             $k++;
         }
