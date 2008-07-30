@@ -773,27 +773,9 @@ sub markupfile {
 #print "<!--$btype-->" if @terms eq @pterm;
             &markspecials($frag);
 
-            if ($btype eq 'perldoc') {
-                # PerlDoc
-                $frag =~ s#(=head.\s+([^\s(]*)(?:([(]).*?([)])|))#<a name="$2$3$4">$1</a>#g;
-                $frag =~ s#(I\0?<)(.*?)(\0?>)#$1<i>$2</i>$3#g;
-                $frag =~ s#(C\0<)(.*?)(\0>)#$1<code><u>$2</u></code>$3#g;
-                $frag =~ s#(E\0<lt\0>)([^\0]*?@[^\0]*)(E\0<gt\0>)#$1<a href="mailto:$2">$2</a>$3#g;
-                $frag =~ s%(L\0)(<)(\w+?://[^\0]*?)(\0>)%$1\0$2<a href="$3">$3</a>$4%g;
-                $frag =~ s%(L\0)(<)([^(\0]*?\(\))(\0>)%$1\0$2<a href="#$3">$3</a>$4%g;
-                my ($ref_name, $ref_file, $ref_hash, $prettyfile);
-                while ($frag =~ s%(L\0)(<)(([^\|#\0]*)(?:\|(([^#\0]*)(#[^\0]*?|))|))(\0)(>)%
-                               "$1\0$2\0!$3\0!$8_$9"%e) {
-                    ($ref_name, $ref_file, $ref_hash, $prettyfile) = ($4, $6 || $4, $7, $3);
-                    $ref_file =~ s|::|/|g;
-                    $ref_file .= '.pm';
-                    $frag =~ s#\0!.*?\0!#
-                               &filelookup($ref_file, $virtp.$ref_file, $prettyfile, $ref_hash)#e;
-                }
-                $frag =~ s%L\0\0<(.*?)\0_>%L\0<$1\0>%g;
-                $frag =~ s%L\0\0<%L\0<%g;
-                $frag = "<span class='perldoc c'>$frag</span>";
-                $frag =~ s#\n#</span>\n<span class='perldoc c'>#g;
+            if ($btype eq 'verb') {
+                $frag =~ s/^/<span class='v'>/;
+                $frag =~ s|$|</span>|;
             } elsif ($btype eq 'comment') {
                 # Comment
                 # Convert mail addresses to mailto:
@@ -840,9 +822,27 @@ sub markupfile {
                 $modulefile =~ s|::|/|g; 
                 $module = (&filelookup($modulefile, $modulefile, $module));
                 $frag =~ s|(</span>\s+)([^\s;]*)|$1$module|;
-            } elsif ($btype eq 'verb') {
-                $frag =~ s/^/<span class='v'>/;
-                $frag =~ s|$|</span>|;
+            } elsif ($btype eq 'perldoc') {
+                # PerlDoc
+                $frag =~ s#(=head.\s+([^\s(]*)(?:([(]).*?([)])|))#<a name="$2$3$4">$1</a>#g;
+                $frag =~ s#(I\0?<)(.*?)(\0?>)#$1<i>$2</i>$3#g;
+                $frag =~ s#(C\0<)(.*?)(\0>)#$1<code><u>$2</u></code>$3#g;
+                $frag =~ s#(E\0<lt\0>)([^\0]*?@[^\0]*)(E\0<gt\0>)#$1<a href="mailto:$2">$2</a>$3#g;
+                $frag =~ s%(L\0)(<)(\w+?://[^\0]*?)(\0>)%$1\0$2<a href="$3">$3</a>$4%g;
+                $frag =~ s%(L\0)(<)([^(\0]*?\(\))(\0>)%$1\0$2<a href="#$3">$3</a>$4%g;
+                my ($ref_name, $ref_file, $ref_hash, $prettyfile);
+                while ($frag =~ s%(L\0)(<)(([^\|#\0]*)(?:\|(([^#\0]*)(#[^\0]*?|))|))(\0)(>)%
+                               "$1\0$2\0!$3\0!$8_$9"%e) {
+                    ($ref_name, $ref_file, $ref_hash, $prettyfile) = ($4, $6 || $4, $7, $3);
+                    $ref_file =~ s|::|/|g;
+                    $ref_file .= '.pm';
+                    $frag =~ s#\0!.*?\0!#
+                               &filelookup($ref_file, $virtp.$ref_file, $prettyfile, $ref_hash)#e;
+                }
+                $frag =~ s%L\0\0<(.*?)\0_>%L\0<$1\0>%g;
+                $frag =~ s%L\0\0<%L\0<%g;
+                $frag = "<span class='perldoc c'>$frag</span>";
+                $frag =~ s#\n#</span>\n<span class='perldoc c'>#g;
             } else {
                 # Code
                 $frag =~ s#(^|[^a-zA-Z_\#0-9])([a-zA-Z_][a-zA-Z0-9_]*)\b#
