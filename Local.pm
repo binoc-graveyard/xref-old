@@ -798,20 +798,29 @@ sub localexpandtemplate
 );
 };
 
+my $bonsai_host;
 sub bonsaihost
 {
-    my $cvsrootfile = $Path->{'real'}.'/CVS/Root';
+    return $bonsai_host if defined $bonsai_host;
     my $bonsai_not_found = 'http://error.bonsai-not-found.tld';
+    $bonsai_host = $bonsai_not_found;
+    my $cvsrootfile = $Path->{'real'}.'/CVS/Root';
     return $bonsai_not_found unless -f $cvsrootfile;
     return $bonsai_not_found unless open(CVSROOT,'<',$cvsrootfile);
     my $cvsroot = <CVSROOT>;
     close(CVSROOT);
-    return 'http://bonsai-www.mozilla.org' if $cvsroot =~ m{mozilla\.org:/www};
-    return 'http://bonsai-l10n.mozilla.org' if $cvsroot =~ m{mozilla\.org:/l10n};
-    return 'http://bonsai.mozilla.org' if $cvsroot =~ /mozilla\.org:/;
-    return 'http://cvs.gnome.org/bonsai' if $cvsroot =~ /gnome\.org:/;
-    return 'http://bonsai.freedesktop.org' if $cvsroot =~ /freedesktop\.org:/;
-    return $bonsai_not_found;
+    if ($cvsroot =~ m{mozilla\.org:/www}) {
+        $bonsai_host = 'http://bonsai-www.mozilla.org';
+    } elsif ($cvsroot =~ m{mozilla\.org:/l10n}) {
+        $bonsai_host = 'http://bonsai-l10n.mozilla.org';
+    } elsif ($cvsroot =~ /mozilla\.org:/) {
+        $bonsai_host = 'http://bonsai.mozilla.org';
+    } elsif ($cvsroot =~ /gnome\.org:/) {
+        $bonsai_host = 'http://cvs.gnome.org/bonsai';
+    } elsif ($cvsroot =~ /freedesktop\.org:/) {
+        $bonsai_host = 'http://bonsai.freedesktop.org';
+    }
+    return $bonsai_host;
 }
 
 sub beginbonsai
