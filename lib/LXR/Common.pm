@@ -427,17 +427,17 @@ sub build_mark_map {
         if ($mark =~ m/^(\d*)-(\d*)$/) {
             my ($begin, $end) = ($1 || 1, $2);
             if ($end eq '' || $end < $begin) {
-                $marked_lines{$begin} = 'begin';
+                $marked_lines{$begin} = 'b';
                 next;
             }
             if ($begin < $end) {
-                $marked_lines{$begin} = 'begin';
-                $marked_lines{$end+1} = 'end';
+                $marked_lines{$begin} = 'b';
+                $marked_lines{$end+1} = 'e';
                 next;
             }
             $mark = $begin;
         }
-        $marked_lines{$mark} .= 'single';
+        $marked_lines{$mark} .= 's';
     }
 }
 
@@ -473,16 +473,16 @@ sub linetag {
     my $class = $lastclass;
     if (defined $marked_lines{$line}) {
         my $mark = $marked_lines{$line};
-        if ($mark =~ /begin|end/) {
-            while ($mark =~ s/end//) {
+        if ($mark =~ /[be]/) {
+            while ($mark =~ s/e//) {
                 $tag .= endmark();
             }
-            while ($mark =~ s/begin//) {
+            while ($mark =~ s/b//) {
                 $tag .= '<div class="m">';
                 ++$marker;
             }
         }
-        $class .= ' m' if $mark =~ 'single';
+        $class .= ' m' if $mark =~ 's';
     }
     $tag .= &fileref($line, '', $line).' ';
     $tag =~ s/<a/<a class='l $class' name=$line/;
