@@ -780,8 +780,9 @@ sub markupfile {
         if (tie(%fileidx, "DB_File", $Conf->dbdir."/fileidx",
             O_RDONLY, undef, $hash_params)) {
             foreach my $key (keys %fileidx) {
-                if (($virtfname eq $fileidx{$key}) ||
-                    ($virtfname eq '/'.$fileidx{$key})) {
+                my $val = $fileidx{$key};
+                if (($virtfname eq $val) ||
+                    ($virtfname eq '/'.$val)) {
                     $filenum = $key, last;
                 }
             }
