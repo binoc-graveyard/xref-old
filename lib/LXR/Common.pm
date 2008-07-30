@@ -212,21 +212,22 @@ sub urlargs {
     my %args = ();
     my $val;
 
-    foreach (@args) {
-	$args{$1} = $2 if /(\S+)=(\S*)/;
-    }
-    @args = ();
+    if (scalar @args || scalar @allvariables_) {
+        foreach (@args) {
+            $args{$1} = $2 if /(\S+)=(\S*)/;
+        }
+        @args = ();
 
-    foreach (@allvariables_) {
-	$val = $args{$_} || $allvariable_{$_};
-	push(@args, "$_=$val") unless ($val eq $alldefaults_{$_});
-	delete($args{$_});
-    }
+        foreach (@allvariables_) {
+            $val = $args{$_} || $allvariable_{$_};
+            push(@args, "$_=$val") unless ($val eq $alldefaults_{$_});
+            delete($args{$_});
+        }
 
-    foreach (keys(%args)) {
-	push(@args, "$_=$args{$_}");
+        foreach (keys(%args)) {
+            push(@args, "$_=$args{$_}");
+        }
     }
-
     return($#args < 0 ? '' : '?'.join(';',@args));
 }    
 
@@ -249,10 +250,11 @@ $path =~ s/\n//g;
         }
         $path = "$Conf->{virtroot}/source$path";
     }
-    return("<a href=\"$path".
-           &urlargs(@args).
-           ($line > 0 ? "#$line" : "").
-           "\"\>$desc</a>");
+    $line = $line > 0 ? '#' . $line : '';
+    unless (scalar @args || scalar @allvariables_) {
+        return '<a href="'.$path.$line.'">'.$desc.'</a>';
+    }
+    return '<a href="'.$path.&urlargs(@args).line.'">'.$desc.'</a>';
 }
 
 
