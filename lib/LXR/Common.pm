@@ -1829,13 +1829,17 @@ sub checkhg
     my $ll = 0 + $hgpath;
     $hgpath =~ s/^\d+ //;
       $ll = 0 + $hgcache{$real};
-      while ($#dirs >= 0) {
+      while (scalar @dirs) {
         my $dir = '/' . (shift @dirs);
         $real .= $dir;
-        $dir =~ s/([A-Z])/_$1/g;
-        $dir = lc $dir;
+        if ($dir =~ s/([A-Z])/_$1/g) {
+          $dir = lc $dir;
+        }
         $hgpath .= $dir;
         ++$ll;
+        # this shows up in profiling (-d)
+        # if we don't care about knowing if intermediate
+        # directories exist, there's probably some way to skip some of these
         $hgcache{$real} = -d $hgpath ? "$ll ". $hgpath : "0";
       }
   }
