@@ -802,8 +802,7 @@ sub markupfile {
             &markspecials($frag);
 
             if ($btype eq 'verb') {
-                $frag =~ s/^/<span class='v'>/;
-                $frag =~ s|$|</span>|;
+                $frag = "<span class='v'>$frag</span>";
             } elsif ($btype eq 'comment') {
                 # Comment
                 # Convert mail addresses to mailto:
