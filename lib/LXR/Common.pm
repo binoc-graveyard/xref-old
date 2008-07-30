@@ -337,10 +337,16 @@ $refline++;
 sub idref {
     my ($desc, $id, $class, @args) = @_;
     $class ||= 'd';
-    return("<a class='$class' href=\"$Conf->{virtroot}/ident".
+    unless ($id || scalar @args) {
+        return '<a class="'.$class.'" href="'.$Conf->{virtroot}.
+               '/ident'.
+               '">'.$desc.'</a>';
+    }
+    return '<a class="'.$class.'" href="'.$Conf->{virtroot}.
+           '/ident'.
            &urlargs(($id ? "i=$id" : ""),
                     @args).
-           "\"\>$desc</a>");
+           '">'.$desc.'</a>';
 }
 
 
