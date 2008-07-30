@@ -61,7 +61,7 @@ sub nextfrag {
     my $frag = undef;
 
     while (1) {
-	if ($#frags < 0) {
+	unless (scalar @frags) {
 	    my $line = <$INFILE>;
 #$frag_debug = 1 if (!defined $frag_debug && $line =~ /ARGV/);
 	    
@@ -80,7 +80,7 @@ local $, = "\n";
 }
 	}
 
-	last if $#frags < 0;
+	last unless (scalar @frags);
 	
 	unless (length $frags[0]) {
 	    shift(@frags);
