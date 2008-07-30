@@ -1816,11 +1816,7 @@ sub checkhg
   $virt =~ s{^/}{};
   my @dirs;# = split m%/%, $virt;
   while (!defined $hgcache{$real} && $real) {
-print "<!-- check for .hg in $real -->
-";
     if (-d $real.'/.hg') {
-print "<!-- found .hg -->
-";
       $hgcache{$real} = '0 '.$real . '/.hg/store/data';
       $Path->{'hgroot'} = $real;
       last;
@@ -1832,12 +1828,7 @@ print "<!-- found .hg -->
     my $hgpath = $hgcache{$real};
     my $ll = 0 + $hgpath;
     $hgpath =~ s/^\d+ //;
-print "<!-- $ll @ $hgpath -->
-";
       $ll = 0 + $hgcache{$real};
-print "<!-- hgcache{$real} [$#dirs,$ll]= ".$hgcache{$real}."
-$hgpath -->
-";
       while ($#dirs >= 0) {
         my $dir = '/' . (shift @dirs);
         $real .= $dir;
@@ -1846,8 +1837,6 @@ $hgpath -->
         $hgpath .= $dir;
         ++$ll;
         $hgcache{$real} = -d $hgpath ? "$ll ". $hgpath : "0";
-print "<!-- ann $real [$hgpath]: ".$hgcache{$real}." -->
-";
       }
   }
   $real = $oreal;
