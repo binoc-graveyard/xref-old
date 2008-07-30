@@ -708,13 +708,17 @@ sub convertwhitespace {
     return($string);
 }
 
+my $skip;
 sub beginskip
 {
+    $skip = 1;
     return '<![MXR[';
 }
 
 sub endskip
 {
+    return '' unless $skip;
+    $skip = undef;
     return ']]>';
 }
 
@@ -819,9 +823,7 @@ sub beginbonsai
 
 sub endbonsai
 {
-    return &endskip unless -f $Path->{'real'}.'/CVS/Entries';
-    return &endskip if $Path->{'svnrepo'};# =~ /songbird/;
-    return '';
+    return &endskip;
 }
 
 sub trachost
@@ -842,8 +844,7 @@ sub begintrac
 
 sub endtrac
 {
-    return &endskip unless $Path->{'svnrepo'} =~ /flock|songbird|webkit/;
-    return '';
+    return &endskip;
 }
 
 sub viewvctail
@@ -872,9 +873,7 @@ sub beginviewvc
 
 sub endviewvc
 {
-    return '' if $Path->{'svnrepo'} =~ /garage/;
-    return &endskip unless $Path->{'svnrepo'} =~ /stage|garage|mozilla\.org/;
-    return '';
+    return &endskip;
 }
 
 sub websvnhost
@@ -890,8 +889,7 @@ sub beginwebsvn
 
 sub endwebsvn
 {
-    return &endskip unless 0;
-    return '';
+    return &endskip;
 }
 
 sub webhghost
@@ -942,8 +940,7 @@ sub beginwebhg
 
 sub endwebhg
 {
-    return &endskip unless checkhg($Path->{'virt'}, $Path->{'real'});
-    return '';
+    return &endskip;
 }
 
 sub loggerheadhost
