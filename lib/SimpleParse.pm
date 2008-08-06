@@ -11,14 +11,14 @@ use vars qw(@ISA @EXPORT);
 @ISA = qw(Exporter);
 @EXPORT = qw(&doparse &untabify &init &nextfrag);
 
-my $INFILE;			# Input file handle
-my @frags;			# Fragments in queue
-my @bodyid;			# Array of body type ids
-my @open;			# Fragment opening delimiters
-my @term;			# Fragment closing delimiters
-my $split;			# Fragmentation regexp
-my $open;			# Fragment opening regexp
-my $tabwidth;			# Tab width
+my $INFILE;                    # Input file handle
+my @frags;                     # Fragments in queue
+my @bodyid;                    # Array of body type ids
+my @open;                      # Fragment opening delimiters
+my @term;                      # Fragment closing delimiters
+my $split;                     # Fragmentation regexp
+my $open;                      # Fragment opening regexp
+my $tabwidth;                  # Tab width
 
 sub init {
     my @blksep;
@@ -26,20 +26,20 @@ sub init {
     ($INFILE, @blksep) = @_;
 
     while (@_ = splice(@blksep,0,3)) {
-	push(@bodyid, $_[0]);
-	push(@open, $_[1]);
-	push(@term, $_[2]);
+        push(@bodyid, $_[0]);
+        push(@open, $_[1]);
+        push(@term, $_[2]);
     }
 
     foreach (@open) {
-	$open .= "($_)|";
-	$split .= "$_|";
+        $open .= "($_)|";
+        $split .= "$_|";
     }
     chop($open);
-    
+
     foreach (@term) {
-	next if $_ eq '';
-	$split .= "$_|";
+        next if $_ eq '';
+        $split .= "$_|";
     }
     chop($split);
 
@@ -61,50 +61,50 @@ sub nextfrag {
     my $frag = undef;
 
     while (1) {
-	unless (scalar @frags) {
-	    my $line = <$INFILE>;
+        unless (scalar @frags) {
+            my $line = <$INFILE>;
 #$frag_debug = 1 if (!defined $frag_debug && $line =~ /ARGV/);
-	    
-	    if ($. == 1 &&
-		$line =~ /^.*-[*]-.*?[ \t;]tab-width:[ \t]*([0-9]+).*-[*]-/) {
-		$tabwidth = $1;
-	    }
-		
-	    &untabify($line, $tabwidth);
-#	    $line =~ s/([^\t]*)\t/
-#		$1.(' ' x ($tabwidth - (length($1) % $tabwidth)))/ge;
 
-	    @frags = split(/($split)/o, $line);
+            if ($. == 1 &&
+                $line =~ /^.*-[*]-.*?[ \t;]tab-width:[ \t]*([0-9]+).*-[*]-/) {
+                $tabwidth = $1;
+            }
+
+            &untabify($line, $tabwidth);
+#           $line =~ s/([^\t]*)\t/
+#               $1.(' ' x ($tabwidth - (length($1) % $tabwidth)))/ge;
+
+            @frags = split(/($split)/o, $line);
 if ($frag_debug) {
 local $, = "\n";
 }
-	}
+        }
 
-	last unless (scalar @frags);
-	
-	unless (length $frags[0]) {
-	    shift(@frags);
+        last unless (scalar @frags);
 
-	} elsif (defined($frag)) {
-	    if (defined($btype)) {
-		my $next = shift(@frags);
-		
-		$frag .= $next;
-		last if $next =~ /^$term[$btype]$/;
-	    } else {
-		last if $frags[0] =~ /^$open$/o;
-		$frag .= shift(@frags);
-	    }
-	} else {
-	    $frag = shift(@frags);
-	    if (defined($frag) && (@_ = $frag =~ /^$open$/o)) {
-		my $i = 1;
-		$btype = grep { $i = ($i && !defined($_)) } @_;
-	    }
-	}
+        unless (length $frags[0]) {
+            shift(@frags);
+
+        } elsif (defined($frag)) {
+            if (defined($btype)) {
+                my $next = shift(@frags);
+
+                $frag .= $next;
+                last if $next =~ /^$term[$btype]$/;
+            } else {
+                last if $frags[0] =~ /^$open$/o;
+                $frag .= shift(@frags);
+            }
+        } else {
+            $frag = shift(@frags);
+            if (defined($frag) && (@_ = $frag =~ /^$open$/o)) {
+                my $i = 1;
+                $btype = grep { $i = ($i && !defined($_)) } @_;
+            }
+        }
     }
     $btype = $bodyid[$btype] if $btype;
-    
+
     return($btype, $frag);
 }
 
