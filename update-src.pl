@@ -139,7 +139,7 @@ for ($TREE) {
         }
         last;
     };
-    /^(l10n|labs|webtools)-central$/ && do {
+    /^(build|incubator|l10n|labs|webtools)-central$/ && do {
         my @dirs = <$src_dir/*>;
         foreach my $dir (@dirs) {
             print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
