@@ -54,8 +54,6 @@ sub untabify {
     return($_[0]);
 }
 
-my $frag_debug = undef;
-
 sub nextfrag {
     my $btype = undef;
     my $frag = undef;
@@ -63,7 +61,6 @@ sub nextfrag {
     while (1) {
         unless (scalar @frags) {
             my $line = <$INFILE>;
-#$frag_debug = 1 if (!defined $frag_debug && $line =~ /ARGV/);
 
             if ($. == 1 &&
                 $line =~ /^.*-[*]-.*?[ \t;]tab-width:[ \t]*([0-9]+).*-[*]-/) {
@@ -75,12 +72,9 @@ sub nextfrag {
 #               $1.(' ' x ($tabwidth - (length($1) % $tabwidth)))/ge;
 
             @frags = split(/($split)/o, $line);
-if ($frag_debug) {
-local $, = "\n";
-}
-        }
 
-        last unless (scalar @frags);
+            last unless (scalar @frags);
+        }
 
         unless (length $frags[0]) {
             shift(@frags);
