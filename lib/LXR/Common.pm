@@ -616,9 +616,8 @@ sub getnext_fileentry{
 sub filelookup{
     my ($filename,$bestguess,$prettyname)=@_;
     $prettyname = $filename unless defined $prettyname;
-    my $idlfile;
-    $idlfile = $1 if ($filename =~ /(^.*)\.h$/);
     return &fileref($prettyname, $bestguess) if -e $Conf->sourceroot.$bestguess;
+    my $idlfile = $1 if ($filename =~ /(^.*)\.h$/);
     my $baseurl = $Conf->{virtroot}; # &baseurl;
     my ($pfile_ref,$gfile_ref,$ifile_ref,$jfile_ref,$kfile_ref,$loosefile,$basefile,$p,$g,$i,$j,$k);
     $filename =~ s|([(){}^\$.*?\&\@\\+])|\\$1|g;
@@ -872,7 +871,7 @@ sub markupfile {
             } else {
                 # Code
                 $frag =~ s#(^|[^a-zA-Z_\#0-9])([a-zA-Z_][a-zA-Z0-9_]*)\b#
-                    $1.(defined($xref{$2}) ? &maybe_idref($2, $filenum, $line) : &atomref($2))#ge;
+                    $1.($id_cache3{$2} || ($id_cache3{$2} = ($xref{$2} || '')) ? &maybe_idref($2, $filenum, $line) : &atomref($2))#ge;
             }
 
             &htmlquote($frag);
