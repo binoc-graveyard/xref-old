@@ -139,6 +139,13 @@ for ($TREE) {
         }
         last;
     };
+    /^(l10n|mozillalabs)-central$/ && do {
+        my @dirs = <$src_dir/*>;
+        foreach my $dir (@dirs) {
+            print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
+        }
+        last;
+    };
     /^nspr$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P NSPR $STDERRTOSTDOUT`;
         last;
