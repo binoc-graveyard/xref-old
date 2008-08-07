@@ -181,7 +181,7 @@ for ($TREE) {
         last;
     };
     /^(?:(?:bug|mo)zilla.*-.*)$/ && do {
-        print LOG `cd $src_dir; $TIME $CVSCOMMAND $CVSUP-d * $STDERRTOSTDOUT`;
+        print LOG `cd $src_dir; $TIME $CVS $CVSQUIETFLAGS -d ':pserver:anonymous\@cvs-mirror.mozilla.org:/www' $CVSUP -dP * $STDERRTOSTDOUT`;
         last;
     };
     /^fuel$/ && do {
