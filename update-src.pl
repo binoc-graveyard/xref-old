@@ -180,16 +180,16 @@ for ($TREE) {
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
         last;
     };
+    /^(?:.*)-bzr$/ && do {
+        print LOG `cd $src_dir; $TIME $BZRCOMMAND $BZRUPDATE $STDERRTOSTDOUT`;
+        last;
+    };
     /^(?:(?:bug|mo)zilla.*-.*)$/ && do {
         print LOG `cd $src_dir; $TIME $CVS $CVSQUIETFLAGS -d ':pserver:anonymous\@cvs-mirror.mozilla.org:/www' $CVSUP -dP * $STDERRTOSTDOUT`;
         last;
     };
     /^fuel$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P -d fuel -rFUEL_DEVEL_BRANCH mozilla/browser/fuel $STDERRTOSTDOUT`;
-        last;
-    };
-    /^(?:.*)-bzr$/ && do {
-        print LOG `cd $src_dir; $TIME $BZRCOMMAND $BZRUPDATE $STDERRTOSTDOUT`;
         last;
     };
     /^(.*)$/ && <$src_dir/*/CVS> && do {
