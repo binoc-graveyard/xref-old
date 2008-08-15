@@ -13,14 +13,18 @@ my @paths=qw(
 
 my $STDERRTOSTDOUT = '2>&1';
 
-my $TREE = shift;
-my $new_src_dir = shift;
-die unless $TREE ne '' && $new_src_dir ne '';
+my ($TREE, $new_src_dir, $force) = @ARGV;
+$force = 0 unless defined $force;
+
+die "must specify a tree" unless $TREE ne '';
+die "must specify new source directory" unless $new_src_dir ne '';
+
 unless (-d $new_src_dir) {
   die "new src dir $new_src_dir does not exist";
 }
 
 $ENV{'LANG'} = 'C';
+$TREE =~ s{/$}{};
 $ENV{'TREE'} = $TREE;
 
 $lxr_dir = '.';
@@ -31,7 +35,13 @@ die "could not find $lxr_conf";
 open LXRCONF, "< $lxr_conf";
 my $newconf = '';
 while ($line = <LXRCONF>) {
-    $db_dir = "$1/$TREE" if $line =~ /^dbdir:\s*(\S+)/;
+    if ($line =~ /^dbdir:\s*(\S+)/) {
+        $db_dir = $1;
+        unless (-d $db_dir) {
+            die "dbdir: $db_dir does not exist, did you just move the whole lxr?";
+        }
+        $db_dir .= "/$TREE";
+    }
     warn "trailing whitespace on line $. {$line}" if $line =~ /^\w+:.*\w.* \s*$/;
     #grab sourceroot from config file indexing multiple trees where
     #format is "sourceroot: treename dirname"
@@ -65,12 +75,14 @@ $ENV{'PATH'} = "$possible_path:$ENV{'PATH'}" if -d $possible_path;
 
 unless (-d $db_dir) {
 die "could not find database for tree $TREE";
-}
+} else {
 my $file_index = $db_dir . '/.glimpse_filenames';
 unless (-f $file_index) {
-die "could not find file index for tree $TREE";
-} 
-
+ unless ($force) {
+  die "could not find file index for tree $TREE";
+ }
+ warn "tree $TREE did not have an index";
+} else {
 
 my $changed = 0;
 open FILELIST, "< $file_index";
@@ -91,7 +103,9 @@ print "$cmd
 system($cmd);
 } else {
 unlink "$file_index.new";
-print "no changes needed";
+print "no changes needed\n";
+}
+}
 }
 rename "$lxr_conf.new", $lxr_conf;
 
