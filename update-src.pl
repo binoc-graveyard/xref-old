@@ -2,7 +2,6 @@
 # Run this from cron to update the source tree that lxr sees.
 # Created 12-Jun-98 by jwz.
 # Updated 27-Feb-99 by endico. Added multiple tree support.
-my $skip_lxr_update = 1;
 my $CVSROOT=':pserver:anonymous@cvs-mirror.mozilla.org:/cvsroot';
 
 $ENV{PATH}='/opt/local/bin:/opt/cvs-tools/bin:'.$ENV{PATH};
@@ -76,12 +75,7 @@ my $log="$db_dir/cvs.log";
 open LOG, '>', $log || die "can't open $log";
 #print LOG `set -x`;
 print LOG `date`;
-
-# update the lxr sources
 print LOG `pwd`;
-print LOG `$TIME $CVSCOMMAND -d $CVSROOT update -dP` unless $skip_lxr_update;
-
-print LOG `date`;
 
 # then update the Mozilla sources
 -d $src_dir || mkdir $src_dir;
