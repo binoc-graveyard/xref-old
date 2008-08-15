@@ -28,10 +28,26 @@ $stylesheets</head>
     <tr>
      <td nowrap bgcolor="#FAFAFA">
 $beginbonsai
+<script>
+function updateBonsaiBlameHash(node, event) {
+  if (!document.location.hash)
+    return;
+  var marks = [];
+  if (/[?&;]mark=([-,0-9]+)(?:[&;]|$)/.test(document.location.search))
+    marks.push(RegExp.$1);
+  marks.push(document.location.hash.replace("#",''));
+  marks = "&mark="+marks.join(',');
+  var anchor = document.location.hash;
+  node.href =
+    node.href.replace(/&amp;mark=\d*|$/, marks)
+             .replace(/#.*|$/, anchor);
+}
+</script>
       <a href="$bonsaihost/cvslog.cgi?file=$cvspath/$filename&amp;rev=$cvsbranch&amp;mark=$cvsversion"
 >CVS Log</a><br>
       <a href="$bonsaihost/cvsblame.cgi?file=$cvspath/$filename&amp;rev=$cvsversion"
-onmouseover='if (document.location.hash) this.href=(this.href.replace(/&amp;mark=\d*|$/,document.location.hash.replace("#","&amp;mark=")).replace(/#.*|$/,document.location.hash))'
+onfocus='updateBonsaiBlameHash(this, event)'
+onmouseover='updateBonsaiBlameHash(this, event)'
 >CVS Blame</a><br>
       <a href="$bonsaihost/cvsgraph.cgi?file=$cvspath/$filename&amp;rev=$cvsversion"
 >CVS Graph</a><br>
