@@ -45,6 +45,32 @@ $beginbonsai
    </table>
   </td>
 $endbonsai
+$beginwebhg
+  <td align=right valign=top width="1%">
+   <table border cellpadding=6 cellspacing=0>
+    <tr>
+     <td bgcolor="#FAFAFA">
+      <table border=0 cellpadding=6 cellspacing=0>
+       <tr>
+        <td nowrap align=left>
+         changes to<br>this directory<br>in the last:
+        </td>
+        <td nowrap>
+         <a
+href="$webhghost/index.cgi/pushloghtml?&amp;enddate=now&amp;path=$hgpath&amp;startdate=1+day+ago"
+>day</a><br>
+         <a href="$webhghost/index.cgi/pushloghtml?&amp;enddate=now&amp;path=$hgpath&amp;startdate=1+week+ago"
+>week</a><br>
+         <a href="$webhghost/index.cgi/pushloghtml?&amp;enddate=now&amp;path=$hgpath&amp;startdate=1+month+ago"
+>month</a><br>
+        </td>
+       </tr>
+      </table>
+     </td>
+    </tr>
+   </table>
+  </td>
+$endwebhg
 
  </tr>
 </table>
