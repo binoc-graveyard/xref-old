@@ -629,11 +629,11 @@ sub filelookup{
     $filename = '/' . $filename . '$';
     $file_iterator = 0;
     my $ifile = $idlfile || $filename;
-    my $bgre = m|/\Q$bestguess\E$|i;
-    my $fere = m|$filename|i;
-    my $ire = m|/\Q$idlfile.idl\E$|i;
-    my $lre = m|$loosefile|i;
-    my $bre = m|$basefile$|i;
+    my $bgre = qr|/\Q$bestguess\E$|i;
+    my $fere = qr|$filename|i;
+    my $ire = qr|/\Q$idlfile.idl\E$|i;
+    my $lre = qr|$loosefile|i;
+    my $bre = qr|$basefile$|i;
     while ($fileentry = &getnext_fileentry($ifile)) {
         if ($fileentry =~ $bgre) {
             $pfile_ref=&fileref($prettyname, $fileentry, $hash);
@@ -832,7 +832,13 @@ sub markupfile {
                         ($inc_head, $inc_file, $inc_tail, $prettyfile) = ($1, $2, undef, $2);
                     }
                     unless (length $inc_tail) {
-                        $inc_file .= '.pm' if $inc_file =~ s|::|/|g;
+                        if (@terms == @plterm) {
+                            $inc_file =~ s|::|/|g;
+                            $inc_file .= '.pm';
+                        } elsif (@terms == @pyterm) {
+                            $inc_file =~ s|\.|/|g;
+                            $inc_file .= '.py';
+                        }
                     }
                     $frag =~ s#\0.*?\0#
                         &filelookup($inc_file, $virtp.$inc_file,$prettyfile)#e;
