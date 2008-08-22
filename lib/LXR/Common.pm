@@ -1389,7 +1389,7 @@ sub hgversionexpand {
     close HGSTATE;
     $sig = hgdehex($parent1).hgdehex($parent2);
   }
-  return $sig || 'tip';
+  return $sig =~ /(.{12})/ ? $1 : 'tip';
 }
 
 sub hgbranchexpand {
