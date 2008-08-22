@@ -261,7 +261,13 @@ using tree:</td><td>
     
     $| = 1; print('');
 
-    if ($searchtext ne "") {
+    if (! -e $Conf->glimpsebin) {
+        &fatal("Search isn't available;
+please complain to the webmaster [cite: bad_glimpsebin]");
+    } elsif (! -d $Conf->dbdir) {
+        &fatal("Search isn't available;
+please complain to the webmaster [cite: bad_dbdir]");
+    } elsif ($searchtext ne "") {
         print '<hr>
 ';
         if ($find) {
