@@ -186,6 +186,10 @@ for ($TREE) {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P -d fuel -rFUEL_DEVEL_BRANCH mozilla/browser/fuel $STDERRTOSTDOUT`;
         last;
     };
+    /^(?:.*)-all$/ && do {
+        print LOG `$TIME $SVNCOMMAND $SVNUP`;
+        last;
+    };
     /^(.*)$/ && <$src_dir/*/CVS> && do {
         print LOG `cd $src_dir; $TIME $CVSCOMMAND $CVSUP-d * $STDERRTOSTDOUT`;
         last;
