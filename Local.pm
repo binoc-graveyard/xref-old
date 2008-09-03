@@ -875,7 +875,6 @@ sub viewvchost
 
 sub beginviewvc
 {
-    return '' if $Path->{'svnrepo'} =~ /garage/;
     return &beginskip unless $Path->{'svnrepo'} =~ /stage|garage|mozilla\.org/;
     return '';
 }
