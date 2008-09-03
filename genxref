@@ -544,6 +544,10 @@ sub findidentIDL {
         $contents =~ s/\/\*(.*?)\*\//&wash($1)/ges;
         $contents =~ s/\/\/[^\n]*//g; # C++
 
+        # Remove annotations
+        # XXX uuids should eventually be stored somehow
+        $contents =~ s/\[[^]]*\]//gs;
+
         # Unwrap continuation lines.
         $contents =~ s/\\\s*\n/$1\05/gs;
         while ($contents =~ s/\05([^\n\05]+)\05/$1\05\05/gs) {}
