@@ -1032,6 +1032,14 @@ sub fixpaths {
         https://garage.maemo.org/svn/browser/mozilla/trunk/microb-eal/src
         https://garage.maemo.org/svn/browser
         |;
+        $ignore = q|
+        9
+
+        dir
+        1657
+        http://src.chromium.org/svn/trunk/src/chrome/browser
+        http://src.chromium.org/svn
+        |;
         my $svnpath = $Path->{'svnvirt'} || undef; 
         my $svnurl;
         my $svnhead = <SVN>;
@@ -1057,7 +1065,7 @@ sub fixpaths {
               }
             }
           }
-        } elsif ($svnhead =~ /^8/) {
+        } elsif ($svnhead =~ /^\d/) {
           local $/ = "\f";
           my $svnentry = <SVN>;
           my $svnpath;
