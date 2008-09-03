@@ -511,7 +511,7 @@ sub idl_interfaces {
     my $contents = $_[0];
     # Find IDL interfaces
 
-    $contents =~ s/((interface)\s+($ident)\s*(:[^;\{]*|)({}|(;)))/
+    $contents =~ s/((interface)\s+($ident)\s*(:[^;\{]*|)(\{|(;)))/
 	"$2 "."\01".$itype{$2.($6 ? 'forw' : '')}.
 	    &classes($4).$3."\02 ".$6.&wash($1)/goes;
 
