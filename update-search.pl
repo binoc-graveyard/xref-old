@@ -153,6 +153,8 @@ my @exclude_paths = qw (
 /.hg/
 /.git/
 /.svn/
+/.bzr/
+/_MTN/
 );
 push @exclude_paths, '';
 print GLIMPSEEXCLUDE join("\n", @exclude_paths);
