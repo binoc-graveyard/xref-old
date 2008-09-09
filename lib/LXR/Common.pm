@@ -569,9 +569,32 @@ my $sourceroot;
 my @file_listing;
 my $file_iterator;
 my $file_length;
+my $useglimpse = 1;
 
 sub getnext_fileentry{
     my ($filematch) = @_;
+if ($useglimpse) {
+    unless ($file_iterator) {
+        my @execparams = (
+            $Conf->glimpsebin,
+            '-H',
+            $Conf->dbdir.'/.mxr',
+            '-y',
+            '-h',
+            '-i',
+            $filematch
+        );
+        my $execcmd = join ' ',@execparams;
+        @file_listing = ();
+        if (open(GLIMPSE, "$execcmd|")) {
+            local $/;
+            @file_listing = split /\n/, <GLIMPSE>;
+            close GLIMPSE;
+        }
+    }
+    return undef if $file_iterator > $#file_listing;
+    return $file_listing[$file_iterator++];
+}
     unless (@file_listing)
     {
         my $indexname = $indexname || $Conf->dbdir."/.glimpse_filenames";
