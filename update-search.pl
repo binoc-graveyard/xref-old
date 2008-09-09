@@ -168,11 +168,28 @@ print LOG "$cmd
 ";
 close LOG;
 system($cmd);
+my $mxr_dir_tmp = "$db_dir_tmp/.mxr";
+mkdir $mxr_dir_tmp; 
+
+$cmd = "cp .glimpse_filenames $mxr_dir_tmp/files
+($TIME glimpseindex -H $mxr_dir_tmp $mxr_dir_tmp $STDERRTOSTDOUT) >> $log
+perl -pi -e 's{tmp/\.mxr}{\.mxr}' $mxr_dir_tmp/.glimpse_filenames
+glimpseindex -H $mxr_dir_tmp -R";
+open LOG, ">>$log";
+print LOG "$cmd
+";
+close LOG;
+system($cmd);
 open LOG, ">>$log";
 print LOG 'chmod -R a+r .
 ';
 system("chmod", "-R", "a+r", ".");
-$cmd = 'mv .glimpse* ../'; 
+$cmd = "mv .glimpse* .mxr ../";
+if (-d '../.mxr') {
+  $cmd = "mv ../.mxr ../.mxr-old
+$cmd
+rm -rf ../.mxr-old"; 
+}
 print LOG "$cmd
 ";
 system($cmd);
