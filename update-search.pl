@@ -138,7 +138,6 @@ exit 6;
 
 # do index everything in lxrroot
 my @include_paths = qw (
-/var/www/html/mxr/lxr-root
 
 );
 unshift @include_paths, $db_dir;
