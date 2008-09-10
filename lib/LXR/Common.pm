@@ -575,6 +575,7 @@ sub getnext_fileentry{
     my ($filematch) = @_;
 if ($useglimpse) {
     unless ($file_iterator) {
+        $sourceroot = $sourceroot || $Conf->sourceroot;
         my @execparams = (
             $Conf->glimpsebin,
             '-H',
@@ -593,7 +594,9 @@ if ($useglimpse) {
         }
     }
     return undef if $file_iterator > $#file_listing;
-    return $file_listing[$file_iterator++];
+    my $fileentry = $file_listing[$file_iterator++];
+    $fileentry =~ s/^$sourceroot//;
+    return $fileentry; 
 }
     unless (@file_listing)
     {
