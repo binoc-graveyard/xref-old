@@ -1,11 +1,11 @@
 $beginbonsai
-<span class=bonsailinks>(View <a href="$bonsaihost/cvslog.cgi?file=$pathname&amp;rev=$cvsversion">change log</a> or
- <a href="$bonsaihost/cvsblame.cgi?file=$pathname&amp;mark=$fpos&amp;rev=$cvsversion">blame annotations</a>)</span>
+<span class=bonsailinks>(View <a href="$bonsaihost/cvslog.cgi?file=$pathname&amp;rev=$cvsversion">CVS log</a> or
+ <a href="$bonsaihost/cvsblame.cgi?file=$pathname&amp;mark=$fpos&amp;rev=$cvsversion">CVS annotations</a>)</span>
 $endbonsai
 $begintrac
-<span class=bonsailinks>(View <a href="$trachost$virttree/log/$virtfold/$filename">change log</a>)</span>
+<span class=bonsailinks>(View <a href="$trachost$virttree/log/$virtfold/$filename">SVN log</a>)</span>
 $endtrac
 $beginwebhg
-<span class=bonsailinks>(View <a href="$webhghost/log/$hgbranch$urlpath">change log</a> or
-<a href="$webhghost/annotate/$hgversion$urlpath">blame annotations</a>)</span>
+<span class=bonsailinks>(View <a href="$webhghost/log/$hgbranch$urlpath">Hg log</a> or
+<a href="$webhghost/annotate/$hgversion$urlpath">Hg annotations</a>)</span>
 $endwebhg
