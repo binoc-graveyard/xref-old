@@ -98,7 +98,7 @@ Multiple Trees
         Alias /seamonkey /opt/webtools/lxr.mozilla.org
  </VirtualHost>
 
- Alternatively, you can also use symlinks (mxr on landfill uses them)
+ Alternatively, you can also use symlinks (mxr.mozilla.org uses them)
 ln -s . ef
 ln -s . nspr
 ln -s . js

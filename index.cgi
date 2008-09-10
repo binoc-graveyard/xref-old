@@ -9,8 +9,8 @@ print "$head
 
 # this can be calculated from lxr.conf's baseurl parameter
 # unless of course there are two urls which could map here
-# http://landfill.mozilla.org/mxr-test/
-# http://mxr-test.landfill.bugzilla.org/
+# http://konigsberg.mozilla.org/mxr-test/
+# http://mxr-test.konigsberg.bugzilla.org/
 
 my $myserver = $ENV{'HTTP_HOST'} || $ENV{'SERVER_NAME'};
 my $depth = ($myserver =~ /[lm]xr.*\./) ? 2 : 3;
