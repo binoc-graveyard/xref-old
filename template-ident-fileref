@@ -6,6 +6,6 @@ $begintrac
 <span class=bonsailinks>(View <a href="$trachost$virttree/log/$virtfold/$filename">change log</a>)</span>
 $endtrac
 $beginwebhg
-<span class=bonsailinks>(View <a href="$webhghost/index.cgi/log/tip$urlpath">change log</a> or
-<a href="$webhghost/index.cgi/annotate/tip$urlpath">blame annotations</a>)</span>
+<span class=bonsailinks>(View <a href="$webhghost/log/$hgbranch$urlpath">change log</a> or
+<a href="$webhghost/annotate/$hgversion$urlpath">blame annotations</a>)</span>
 $endwebhg

@@ -57,11 +57,11 @@ $beginwebhg
         </td>
         <td nowrap>
          <a
-href="$webhghost/index.cgi/pushloghtml?&amp;enddate=now&amp;path=$hgpath&amp;startdate=1+day+ago"
+href="$webhghost/pushloghtml?&amp;enddate=now&amp;path=$hgpath&amp;startdate=1+day+ago"
 >day</a><br>
-         <a href="$webhghost/index.cgi/pushloghtml?&amp;enddate=now&amp;path=$hgpath&amp;startdate=1+week+ago"
+         <a href="$webhghost/pushloghtml?&amp;enddate=now&amp;path=$hgpath&amp;startdate=1+week+ago"
 >week</a><br>
-         <a href="$webhghost/index.cgi/pushloghtml?&amp;enddate=now&amp;path=$hgpath&amp;startdate=1+month+ago"
+         <a href="$webhghost/pushloghtml?&amp;enddate=now&amp;path=$hgpath&amp;startdate=1+month+ago"
 >month</a><br>
         </td>
        </tr>
