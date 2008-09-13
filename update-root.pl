@@ -101,6 +101,23 @@ my $cmd = "(glimpseindex -R -H $db_dir $STDERRTOSTDOUT)";
 print "$cmd
 ";
 system($cmd);
+
+# build filename index
+# shared w/ update-search.pl
+my $db_dir_tmp = "$db_dir/tmp";
+my $mxr_dir_tmp = "$db_dir_tmp/.mxr";
+mkdir $mxr_dir_tmp;
+
+$cmd = "cp $db_dir/.glimpse_filenames $mxr_dir_tmp/files
+(glimpseindex -H $mxr_dir_tmp $mxr_dir_tmp $STDERRTOSTDOUT)
+perl -pi -e 's{tmp/\.mxr}{\.mxr}' $mxr_dir_tmp/.glimpse_filenames
+glimpseindex -H $mxr_dir_tmp -R
+mv $db_dir/.mxr $db_dir/.mxr-0
+mv $mxr_dir_tmp $db_dir/.mxr
+rmdir $db_dir_tmp 
+rm -rf $db_dir/.mxr-0";
+system($cmd);
+
 } else {
 unlink "$file_index.new";
 print "no changes needed\n";

@@ -180,6 +180,9 @@ print LOG "$cmd
 ";
 close LOG;
 system($cmd);
+
+# build filename index
+# shared w/ update-root.pl
 open LOG, ">>$log";
 print LOG 'chmod -R a+r .
 ';
@@ -193,6 +196,7 @@ rm -rf ../.mxr-old";
 print LOG "$cmd
 ";
 system($cmd);
+
 print LOG 'cd ../..
 ';
 chdir '../..';
