@@ -60,8 +60,7 @@ function changetarget() {
         }
     }
 
-    $searchtext =~ s/\+/ /g;
-    $searchtext =~ s/%2b/+/ig;
+    $searchtext = cleanquery $searchtext;
     $lineno = $HTTP->{param}->{line};
     $lineno =~ s/\D+//g;
     $hint =~ s%[^\w\.]+%|%g;
@@ -78,14 +77,14 @@ value="$searchtext" size=50> in
         print "
 <option$default value='$othertree'>$othertree</option>";
       }
-    print qq{
+    print qq%
 </select>
 <input type=submit value="search"><br>
 <b><a title="each matching path is favored,
 only files with the most matches will be shown">Directory hints</a></b>:
 <input name="hint" value="$hint">
 </form>
-};
+%;
 print "<br>";
 
     if ($searchtext ne "") {
@@ -100,12 +99,13 @@ print "<br>";
 
         if ($searchtext =~ /^(\s*)(.*?)(\s*)$/ &&
             (($1 ne '') || ($3 ne ''))) {
-            print "<p><i>Your search included <u>spaces</u></i>,
+            my $find = cleanquery $2;
+            print qq%<p><i>Your search included <u>spaces</u></i>,
 if this was not your <b>intent</b>,
-<i>you can always search <a href='find?string=$2'>without them</a>.</i></p>";
+<i>you can always search <a href="find?string=$find">without them</a>.</i></p>%;
         }
-        print "<p><i>If you can't find what you're looking for, you can always
-<a href='search?string=$searchtext&regexp=on'>search</a> for it.</i></p>";
+        print qq%<p><i>If you can't find what you're looking for, you can always
+<a href="search?string=$searchtext&regexp=on">search</a> for it.</i></p>%;
         $sourceroot = $Conf->sourceroot;
         $file = <FILELLISTING>;
         if ($file !~ /^\d+$/) {

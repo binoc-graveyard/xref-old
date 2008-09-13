@@ -69,13 +69,22 @@ sub treeoption {
    }
    return " <option$selected$value>$tree</option>\n";
 }
+sub cleanhtml {
+    my $text = shift;
+    $text =~ s/"/&quot;/g;
+    $text =~ s/</&lt;/g;
+    $text =~ s/>/&gt;/g;
+    return $text;
+}
+    
 sub printdiff {
+    my ($virt, $file) = (cleanhtml $Path->{'virt'}, cleanhtml $Path->{'file'});
     unless (0 && $diffvar) {
         my @similartrees = ();
         my @othertrees = ();
         my @treelist = @{$Conf->{'trees'}};
         foreach my $othertree (@treelist) {
-            my $otherpath = $Conf->{'treehash'}{$othertree}.'/'.$Path->{'virt'}.'/'.$Path->{'file'};
+            my $otherpath = $Conf->{'treehash'}{$othertree}.'/'.$virt.'/'.$file;
             if (-e $otherpath) {
                 push @similartrees, $othertree;
             } else {
@@ -83,7 +92,7 @@ sub printdiff {
             }
         }
         print(qq{<form name='diff' id='diff'>
-Base file to compare: <input name=file size=60 value="$Path->{'virt'}$Path->{'file'}">
+Base file to compare: <input name=file size=60 value="$virt$file">
 in tree <select name=tree id=tree>
 });
 foreach my $othertree (@treelist) {
@@ -136,12 +145,13 @@ print qq{>
 	return;
     }
 
-    $origvirt = $Path->{'virt'}.$Path->{'file'};
-    $origreal = $Path->{'real'}.$Path->{'file'};
+    my $file = $Path->{'file'};
+    $origvirt = $Path->{'virt'}.$file;
+    $origreal = $Path->{'real'}.$file;
 
     $origval = $Conf->variable($diffvar);
     $Conf->variable($diffvar,$diffval);
-    $file2 ||= $Path->{'virt'}.$Path->{'file'};
+    $file2 ||= $Path->{'virt'}.$file;
     $diffvirt = $file2;
     $diffreal = $Conf->{'treehash'}{$diffvar}.$diffvirt;
     $Conf->variable($diffvar,$origval);
@@ -297,7 +307,7 @@ my $tree = $HTTP->{'param'}->{'tree'};
 $diffvar = $HTTP->{'param'}->{'diffvar'};
 $diffval = $HTTP->{'param'}->{'diffval'};
 $diffw = $HTTP->{'param'}->{'diffw'} eq '1';
-$file2 = $HTTP->{'param'}->{'file2'};
+$file2 = cleanhtml $HTTP->{'param'}->{'file2'};
 if ($file2 ne '') {
   if ($file2 =~ m{^//([^/]+)(/.*|$)}) {
     ($diffvar, $file2) = ($1, $2);

@@ -13,6 +13,7 @@ require Exporter;
 	     &markspecials &statustextmarkup &markupstring
 	     markupstring2
              &checkhg
+             &cleanquery
 	     &init &glimpse_init &makeheader &makefooter &expandtemplate
              &bigexpandtemplate, &blamerefs
 );
@@ -1488,29 +1489,35 @@ sub bonsaicvsroot {
     return $Conf->{'bonsaicvsroot'};
 }
 
+sub cleanquery {
+    my $s = shift;
+    $s =~ tr/+/ /;
+    $s =~ s/%(\w\w)/chr(hex $1)/ge;
+    $s =~ s/&/&amp;/g;
+    $s =~ s/</&lt;/g;
+    $s =~ s/>/&gt;/g;
+    $s =~ s/"/&quot;/g;
+    return $s;
+}
+
 sub titleexpand {
     if ($who eq 'source' || $who eq 'sourcedir' || $who eq 'diff') {
-        return(&treename.' '.$Conf->sourcerootname.$Path->{'virtf'});
+        my $virtf = cleanquery $Path->{'virtf'};
+        return(&treename.' '.$Conf->sourcerootname.$virtf);
 
     } elsif ($who eq 'ident') {
-        my $i = $HTTP->{'param'}->{'i'};
+        my $i = cleanquery $HTTP->{'param'}->{'i'};
         return(&treename.' identifier search'.
                ($i ? " \"$i\"" : ''));
 
     } elsif ($who eq 'search') {
-        my $s = $HTTP->{'param'}->{'string'};
-        $s =~ tr/+/ /;
-        $s =~ s/%(\w\w)/chr(hex $1)/ge;
-        $s =~ s/&/&amp;/g;
-        $s =~ s/</&lt;/g;
-        $s =~ s/>/&gt;/g;
-
+        my $s = cleanquery $HTTP->{'param'}->{'string'};
 
         return(&treename.' freetext search'.
                ($s ? " \"$s\"" : ''));
 
     } elsif ($who eq 'find') {
-        my $s = $HTTP->{'param'}->{'string'};
+        my $s = cleanquery $HTTP->{'param'}->{'string'};
         return(&treename.' file search'.
                ($s ? " \"$s\"" : ''));
     }
