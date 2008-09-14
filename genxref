@@ -466,10 +466,10 @@ sub java_clean {
     $contents =~ s/\05/\{\}/gs;
 
     # Remove imports
-    $contents =~ s/^\s*import.*;//gm;
+    $contents =~ s/^\s*import.*;/&wash($&)/gem;
 
     # Remove packages
-    $contents =~ s/^\s*package.*;//gm;
+    $contents =~ s/^\s*package.*;/&wash($&)/gem;
 
     return $contents;
 }
@@ -739,9 +739,9 @@ sub findident {
 				  )."$1\02 ".&wash($2)/goesx;
 		}
 	    } else {
-		s/($ident)\s*\([^\)]*\)[^\{]*($|\{)/
-		    "\01".($2 eq '{' ? $itype{'function'} : $itype{'funcprot'})."$1\02 ".
-			&wash($2)/goesx;
+		s/($ident)\s*\([^\)]*\)([^\{]*)($|\{)/
+		    "\01".($3 eq '{' ? $itype{'function'} : $itype{'funcprot'})."$1\02 ".
+			&wash($2)/goesx;	# capture what's between the identifier & the '{' - it may contain newlines!
 		s/($ident)\s*(=.*)$/
 		    "\01".$itype{'var'}."$1\02 ".&wash($2)/goesx;
 	    }
