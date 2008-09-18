@@ -31,7 +31,6 @@ my $EACHONE = 'xargs -n1 ';
 my $BZR = 'bzr ';
 my $BZRQUIETFLAGS = '-q ';
 my $BZRUPDATE = 'update $BZRQUIETFLAGS';
-my $BZRCOMMAND = "$BZR ";
 
 my $TREE;
 my $was_arg;
@@ -175,7 +174,12 @@ for ($TREE) {
         last;
     };
     /^(?:.*)-bzr$/ && do {
-        print LOG `cd $src_dir; $TIME $BZRCOMMAND $BZRUPDATE $STDERRTOSTDOUT`;
+        unless (`which $BZR`) {
+          print LOG `which $BZR 2>&1`;
+          close LOG;
+          die "can't find $BZR";
+        }
+        print LOG `cd $src_dir; $TIME $BZR $BZRUPDATE $STDERRTOSTDOUT`;
         last;
     };
     /^(?:(?:bug|mo)zilla.*-.*)$/ && do {
