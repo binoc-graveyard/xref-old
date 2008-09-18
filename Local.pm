@@ -350,12 +350,12 @@ sub dirdesc {
     if ($rpath =~ m{_files/$}) {
         return if deschtmlfilesfolder($path);
     }
+    if (-f $rpath."/README.html") {
+        return if descreadmehtml($path);
+    }
     if (-f $rpath."/README" ||
         -f $rpath."/ReadMe") {
         return if descreadme($path);
-    }
-    if (-f $rpath."/README.html") {
-        return if descreadmehtml($path);
     }
     if (-f $rpath.'/DEBIAN/control' ||
         -f $rpath.'/debian/control') {
