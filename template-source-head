@@ -60,6 +60,10 @@ $beginviewvc
 <a href="$viewvchost$virtfold/$filename$viewvctail">VC Log</a><br>
 <a href="$viewvchost$virtfold/$filename$viewvctail&view=annotate">VC Blame</a><br>
 $endviewvc
+$begincvsweb
+<a href="$cvswebhost/$cvspath/$filename">CVS Log</a><br>
+<a href="$cvswebhost/$cvspath/$filename?annotate=$cvsversion">CVS Blame</a><br>
+$endcvsweb
 $beginwebsvn
 <a href="$websvnhost/log.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Log</a><br>
 <a href="$websvnhost/blame.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Blame</a><br>

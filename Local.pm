@@ -786,6 +786,9 @@ sub localexpandtemplate
                           ('viewvchost',        \&viewvchost),
                           ('beginviewvc',       \&beginviewvc),
                           ('endviewvc',         \&endviewvc),
+                          ('begincvsweb',       \&begincvsweb),
+                          ('endcvsweb',         \&endcvsweb),
+                          ('cvswebhost',        \&cvswebhost),
                           ('websvnhost',        \&websvnhost),
                           ('beginwebsvn',       \&beginwebsvn),
                           ('endwebsvn',         \&endwebsvn),
@@ -825,7 +828,7 @@ sub bonsaihost
 
 sub beginbonsai
 {
-    return &beginskip unless -f $Path->{'real'}.'/CVS/Entries';
+    return &beginskip unless &bonsaihost !~ /bonsai-not-found/;
     return &beginskip if $Path->{'svnrepo'};# =~ /songbird/;
     return '';
 }
@@ -884,6 +887,34 @@ sub endviewvc
     return &endskip;
 }
 
+sub begincvsweb
+{
+    return '' if &cvswebhost !~ /not-found/;
+    return &beginskip;
+}
+
+sub endcvsweb
+{
+    return &endskip;
+}
+
+my $cvsweb_host;
+sub cvswebhost
+{
+    return $cvsweb_host if defined $cvsweb_host;
+    my $cvsweb_not_found = 'http://error.cvsweb-not-found.tld';
+    $cvsweb_host = $cvsweb_not_found;
+    my $cvsrootfile = $Path->{'real'}.'/CVS/Root';
+    return $cvsweb_not_found unless -f $cvsrootfile;
+    return $cvsweb_not_found unless open(CVSROOT,'<',$cvsrootfile);
+    my $cvsroot = <CVSROOT>;
+    close(CVSROOT);
+    if ($cvsroot =~ m{mozdev\.org:/cvs}) {
+        $cvsweb_host = 'http://www.mozdev.org/source/browse';
+    }
+    return $cvsweb_host;
+}
+ 
 sub websvnhost
 {
     return '';
