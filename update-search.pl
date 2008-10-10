@@ -23,6 +23,21 @@ my $STDERRTOSTDOUT = '2>&1';
 my $TREE;
 my $was_arg;
 
+sub do_log {
+  my $msg = shift;
+  open LOG, '>>', $log;
+  print LOG "$msg
+";
+  close LOG;
+}
+
+sub do_and_log {
+  my $cmd = shift;
+  do_log($cmd);
+  system($cmd);
+}
+
+
 do {
 $was_arg = 0;
 $TREE=shift;
@@ -99,8 +114,6 @@ mkdir $db_dir unless -d $db_dir;
                       ated word list.
 =cut
 
-open LOG, ">>$log";
-
 =pod
 for my $envvar (keys %ENV) {
 print LOG "$envvar=$ENV{$envvar}
@@ -109,31 +122,28 @@ print LOG "$envvar=$ENV{$envvar}
 =cut
 
 #system ("date >> $log");
-print LOG 'date
+do_log ('date
 '.localtime().'
-';
+');
 
 unless (-d $src_dir) {
-print LOG "$TREE src_dir $src_dir does not exist.
-";
-exit 4;
-} 
+  do_log("$TREE src_dir $src_dir does not exist.");
+  exit 4;
+}
 
 my $db_dir_tmp = "$db_dir/tmp";
 unless (-d $db_dir_tmp) {
-print LOG "mkdir $db_dir_tmp
-";
-unless (mkdir $db_dir_tmp) {
-print LOG "mkdir $db_dir_tmp failed";
-exit 5;
-}
+  do_log("mkdir $db_dir_tmp");
+  unless (mkdir $db_dir_tmp) {
+    do_log("mkdir $db_dir_tmp failed");
+    exit 5;
+  }
 }
 
-print LOG "chdir $db_dir_tmp
-";
+do_log("chdir $db_dir_tmp");
 unless (chdir $db_dir_tmp) {
-print LOG "chdir $db_dir_tmp failed";
-exit 6;
+  do_log("chdir $db_dir_tmp failed");
+  exit 6;
 } 
 
 # do index everything in lxrroot
@@ -164,47 +174,49 @@ close GLIMPSEEXCLUDE;
 #system ("set -e >> $log");
 #system("time", "glimpseindex", "-H", ".", "$src_dir");
 my $cmd = "($TIME glimpseindex -n -B -M 8 -H . $src_dir $STDERRTOSTDOUT) >> $log";
-print LOG "$cmd
-";
-close LOG;
-system($cmd);
+do_and_log($cmd);
 my $mxr_dir_tmp = "$db_dir_tmp/.mxr";
-mkdir $mxr_dir_tmp; 
+-d $mxr_dir_tmp || mkdir $mxr_dir_tmp; 
 
-$cmd = "cp .glimpse_filenames $mxr_dir_tmp/files
+$cmd = "ls -al >> $log
+(cp .glimpse_filenames $mxr_dir_tmp/files $STDERRTOSTDOUT || echo failed to copy .glimpse_filenames) >> $log
+ls .mxr -al >> $log
 ($TIME glimpseindex -H $mxr_dir_tmp $mxr_dir_tmp $STDERRTOSTDOUT) >> $log
-perl -pi -e 's{tmp/\.mxr}{\.mxr}' $mxr_dir_tmp/.glimpse_filenames
-glimpseindex -H $mxr_dir_tmp -R";
-open LOG, ">>$log";
-print LOG "$cmd
 ";
-close LOG;
-system($cmd);
+do_and_log($cmd);
+if (-f "$mxr_dir_tmp/.glimpse_filenames") {
+  $cmd = "
+perl -pi -e 's{tmp/\.mxr}{\.mxr}' $mxr_dir_tmp/.glimpse_filenames
+glimpseindex -H $mxr_dir_tmp -R $STDERRTOSTDOUT >> $log";
+  do_and_log($cmd);
+} else {
+  do_log("could not find .mxr/.glimpse_filenames");
+}
 
 # build filename index
 # shared w/ update-root.pl
-open LOG, ">>$log";
-print LOG 'chmod -R a+r .
-';
+do_log('chmod -R a+r .');
 system("chmod", "-R", "a+r", ".");
-$cmd = "mv .glimpse* .mxr ../";
-if (-d '../.mxr') {
-  $cmd = "mv ../.mxr ../.mxr-old
+$cmd = "mv .glimpse* ../";
+if (-d $mxr_dir_tmp) {
+  $cmd = 'mv .glimpse* .mxr ../';
+  if (-d '../.mxr') {
+    $cmd = "
+mv ../.mxr ../.mxr-old
 $cmd
-rm -rf ../.mxr-old"; 
-}
-print LOG "$cmd
+rm -rf ../.mxr-old
 ";
-system($cmd);
+  }
+}
+do_and_log($cmd);
 
-print LOG 'cd ../..
-';
+do_log('cd ../..');
 chdir '../..';
-print LOG 'date
-'.localtime().'
+do_log(
+'date
+'.localtime()."
 $UPTIME
-';
-close LOG;
+");
 system ("$UPTIME >> $log");
 
 exit 0;
