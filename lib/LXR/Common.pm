@@ -447,12 +447,12 @@ sub build_mark_map {
         if ($mark =~ m/^(\d*)-(\d*)$/) {
             my ($begin, $end) = ($1 || 1, $2);
             if ($end eq '' || $end < $begin) {
-                $marked_lines{$begin} = 'b';
+                $marked_lines{$begin} .= 'b';
                 next;
             }
-            if ($begin < $end) {
-                $marked_lines{$begin} = 'b';
-                $marked_lines{$end+1} = 'e';
+            if ($begin <= $end) {
+                $marked_lines{$begin} .= 'b';
+                $marked_lines{$end+1} .= 'e';
                 next;
             }
             $mark = $begin;
