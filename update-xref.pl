@@ -34,7 +34,7 @@ my $lxr_dir = '.';
 die "can't find $lxr_dir" unless -d $lxr_dir;
 my $lxr_conf = "$lxr_dir/lxr.conf";
 die "can't find $lxr_conf" unless -f $lxr_conf;
-open LXRCONF, "< $lxr_conf";
+open LXRCONF, '<', $lxr_conf;
 while ($line = <LXRCONF>) {
     $db_dir = "$1/$TREE" if $line =~ /^dbdir:\s*(\S+)/;
     unless ($TREE) {
@@ -52,7 +52,7 @@ while ($line = <LXRCONF>) {
     } 
 }
 close LXRCONF;
-open HTACCESS, "< $lxr_dir/.htaccess";
+open HTACCESS, '<', "$lxr_dir/.htaccess";
 while ($line = <HTACCESS>) {
     next unless $line =~ /^SetEnv\s+(\S+)\s+(.*)[\r\n]*$/;
     my ($envvar, $value) = ($1, $2);
@@ -73,19 +73,36 @@ $log = "$db_dir/genxref.log";
 #system ("set -x > $log");
 system ("$DATE >> $log");
 $lxr_dir=getcwd;
-mkdir "$db_dir/tmp" unless -d "$db_dir/tmp";
-chdir "$db_dir/tmp";
+my $db_tmp_dir="$db_dir/tmp";
+if (-d $db_tmp_dir) {
+  mkdir $db_tmp_dir || die "can't make $db_tmp_dir";
+} else {
+  unless (-w $db_tmp_dir) {
+    die "can't write to $db_tmp_dir";
+  }
+  for my $f (qw(xref fileidx)) {
+    $f = "$db_tmp_dir/$f";
+    if (-f $f && ! -w $f) {
+      die "$f isn't writable.";
+    }
+  }
+}
+chdir $db_tmp_dir || die "can't change to $db_tmp_dir";
 
 #XXX what does |set -e| mean?
 #system ("set -e >> $log");
 if (system("$TIME $lxr_dir/genxref $src_dir >> $log $ERROR_OUTPUT") == 0) {
-    system("chmod", "-R", "a+r", ".");
-    system("mv xref fileidx ../");
+  if (system("chmod", "-R", "a+r", $db_tmp_dir)) {
+    die "chmod failed";
+  }
+  if (system("mv", "$db_tmp_dir/xref", "$db_tmp_dir/fileidx", $db_dir)) {
+    die "move failed";
+  }
 } else {
-    open LOG, ">> $log";
-    print LOG 'Error executing genxref
+  open LOG, '>>', $log;
+  print LOG 'Error executing genxref
 ';
-    close LOG;
+  close LOG;
 }
 chdir "../..";
 system ("$DATE >> $log");
