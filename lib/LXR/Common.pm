@@ -15,7 +15,7 @@ require Exporter;
              &checkhg
              &cleanquery
 	     &init &glimpse_init &makeheader &makefooter &expandtemplate
-             &bigexpandtemplate, &blamerefs
+             &bigexpandtemplate &blamerefs
 );
 
 $wwwdebug = 1;
@@ -255,7 +255,7 @@ $path =~ s/\n//g;
     unless (scalar @args || scalar @allvariables_) {
         return '<a href="'.$path.$line.'">'.$desc.'</a>';
     }
-    return '<a href="'.$path.&urlargs(@args).line.'">'.$desc.'</a>';
+    return '<a href="'.$path.&urlargs(@args).$line.'">'.$desc.'</a>';
 }
 
 
@@ -1323,7 +1323,7 @@ sub bannerexpand {
     }
 }
 
-sub pathname {
+sub filepathname {
     return url_quote($Path->{'virtf'});
 }
 
@@ -1766,7 +1766,7 @@ sub bigexpandtemplate
 			  ('stylesheets',	\&stylesheets),
 			  ('dotdoturl',		\&dotdoturl),
 			  ('thisurl',		\&thisurl),
-			  ('pathname',		\&pathname),
+			  ('pathname',		\&filepathname),
 			  ('filename',          \&filename),
 			  ('virtfold',          \&virtfold),
 			  ('virttree',          \&virttree),
