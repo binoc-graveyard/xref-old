@@ -52,6 +52,11 @@ sub treeify {
     $self->{'sourceroot'} =~ s/^\s+//;
     $self->{'sourceprefix'} =~ s/^\s+//;
     $self->{'rewriteurl'} =~ s/^\s+//;
+    if ((($self->{'virtroot'} || '') eq '') &&
+        $self->{'baseurl'} =~ m{https?://[^/]*?(/.*)}) {
+        # auto detect virtroot
+        $self->{'virtroot'} = $1;
+    }
 
     if ($self->{'sourceroot'} =~ /\S\s+\S/) {
         $self->{'oldroot'} = $self->{'sourceroot'};
@@ -331,7 +336,7 @@ sub sourcerootname {
     return($self->varexpand(defined $self->{'sourceprefix'} ? $self->{'sourceprefix'} : $self->{'srcrootname'}));
 }
 
-sub virtroot{
+sub virtroot {
     my $self = shift;
     return($self->varexpand($self->{'virtroot'}));
 }
