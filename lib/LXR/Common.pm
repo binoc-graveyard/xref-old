@@ -813,7 +813,8 @@ sub markupfile {
             }
             untie(%fileidx);
         } else {
-            &warning('Cross reference database is missing its file list for "'.$Conf->{'treename'}.'" please complain to the webmaster [cite: fileidx]');
+            my $tree = $Conf->{'treename'} ne '' ? ' for "'.$Conf->{'treename'}.'"' : '';
+            &warning('Cross reference database is missing its file list'.$tree.'; please complain to the webmaster [cite: fileidx]');
         }
 
         &$outfun(# "<pre>\n".

@@ -114,8 +114,9 @@ Free-text search through the source code, including comments.
 <BR>Read the <A HREF="search-help.html">documentation</A>
  for help with glimpse's regular expression syntax,
 });
-print qq|
-<script>
+    my $changetarget = '';
+    if ($Conf->{'treename'} ne '') {
+        $changetarget = qq|
 function changetarget() {
  if (document.getElementById) {
   var form = document.getElementById('search');
@@ -123,6 +124,10 @@ function changetarget() {
   form.action='../'+target.value+'/search';
  }
 }
+|;
+    }
+    print qq|
+<script>$changetarget
 
 function changefindpreset() {
  if (document.getElementById) {
@@ -245,18 +250,20 @@ $value =~ s/>/&gt;/g;
     print('</td></tr><tr><td>Limit matches per file to:</td>
 '.        '<td><input type=text name="hitlimit" value="'.
           $hitlimit.'" size=10>');
-    print(qq{</td></tr><tr><td>
+    if ($Conf->{'treename'} ne '') {
+        print(qq{</td></tr><tr><td>
 using tree:</td><td>
 <select name='tree' id='tree' onchange='changetarget()'>
 });
-    my @treelist = @{$Conf->{'trees'}};
-    foreach my $othertree (@treelist) {
-        my $default= $othertree eq $Conf->{'treename'}
+        my @treelist = @{$Conf->{'trees'}};
+        foreach my $othertree (@treelist) {
+            my $default = $othertree eq $Conf->{'treename'}
                    ? ' selected=1' : '';
-        print "<option$default value='$othertree'>$othertree</option>
+            print "<option$default value='$othertree'>$othertree</option>
 ";
+        }
+        print (qq{</select>});
     }
-    print (qq{</select>});
     print ("</TD></TR></TABLE>\n</form>\n\n");
     
     $| = 1; print('');

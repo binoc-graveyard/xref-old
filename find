@@ -37,7 +37,8 @@ Search for files (by name) using <a
 href="search-help.html">regular expressions</a>.
 </p>
 ';
-print qq%
+    if ($Conf->{'treename'} ne '') {
+        print qq%
 <script>
 function changetarget() {
  if (document.getElementById) {
@@ -48,7 +49,7 @@ function changetarget() {
 }
 </script>
 %;
-
+    }
     print '<form name=find id=find method=get action="find">
 ';
 
@@ -69,7 +70,9 @@ function changetarget() {
 
     print qq%
 <b>Find file: </b><input type=text name="string"
-value="$searchtext" size=50> in
+value="$searchtext" size=50>%;
+    if ($Conf->{'treename'} ne '') {
+        print qq% in
 <select name=tree id=tree onchange='changetarget()'>%;
       my @treelist = @{$Conf->{'trees'}};
       foreach my $othertree (@treelist) {
@@ -79,7 +82,9 @@ value="$searchtext" size=50> in
       }
     print qq%
 </select>
-<input type=submit value="search"><br>
+%;
+    }
+print qq%<input type=submit value="search"><br>
 <b><a title="each matching path is favored,
 only files with the most matches will be shown">Directory hints</a></b>:
 <input name="hint" value="$hint">
