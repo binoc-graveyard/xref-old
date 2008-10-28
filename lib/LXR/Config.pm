@@ -53,7 +53,7 @@ sub treeify {
     $self->{'sourceprefix'} =~ s/^\s+//;
     $self->{'rewriteurl'} =~ s/^\s+//;
     if ((($self->{'virtroot'} || '') eq '') &&
-        $self->{'baseurl'} =~ m{https?://[^/]*?(/.*)}) {
+        $self->{'baseurl'} =~ m{https?://[^/]*?(/.+?)/?$}) {
         # auto detect virtroot
         $self->{'virtroot'} = $1;
     }
@@ -99,7 +99,7 @@ if (0) {
         $self->{'rewriteurl'} = $rewritehash{$self->{'treename'}};
 
         #append tree name to virtroot
-        $self->{'virtroot'} .= "/" . $self->{'treename'} ;
+        $self->{'virtroot'} .= '/' . $self->{'treename'};
 
         #append tree name to baseurl
         $self->{'baseurl'} .= $self->{'treename'};
