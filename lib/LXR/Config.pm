@@ -185,7 +185,7 @@ sub _initialize {
     unless ($conf) {
         $conf = $0;
         if ($conf =~ m{/}) {
-            $conf =~ s#/[^/]+$#/#;
+            $conf =~ s{/[^/]+$}{/};
         } else {
             $conf = './';
         }
@@ -194,6 +194,14 @@ sub _initialize {
     
     unless (open(CONFIG, $conf)) {
 	&fatal("Couldn't open configuration file \"$conf\".");
+    }
+
+    $self->{'sourceroot'} = '';
+    $self->{'sourceprefix'} = '';
+    $self->{'rewriteurl'} = '';
+    $self->{'alias'} = '';
+    { my @ary = ();
+    $self->{'variables'} = \@ary;
     }
 
     while (<CONFIG>) {

@@ -50,7 +50,7 @@ sub diricon {
     return(&fileref("<IMG class='dir icon' ALIGN=ABSBOTTOM BORDER=0 SRC=\"$img\">", $link));
 }
 
-sub dirname {
+sub dirnamehtml {
     if ($filename eq '..') {
 	return(&fileref("Parent directory", $parentdir));
     } else {
@@ -181,7 +181,7 @@ sub direxpand {
 	$line++;
 	$direx .= &expandtemplate($templ,
 	    ('iconlink',		\&diricon),
-	    ('namelink',		\&dirname),
+	    ('namelink',		\&dirnamehtml),
 	    ('filesize',		sub {return('-')}),
 	    ('modtime',		\&modtime),
 	    ('bgcolor',		\&bgcolor),

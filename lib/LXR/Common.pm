@@ -251,7 +251,9 @@ $path =~ s/\n//g;
         }
         $path = "$Conf->{virtroot}/source$path";
     }
-    $line = $line > 0 ? '#' . $line : '';
+    $line = defined $line && $line > 0
+        ? '#' . $line
+        : '';
     unless (scalar @args || scalar @allvariables_) {
         return '<a href="'.$path.$line.'">'.$desc.'</a>';
     }
@@ -1147,37 +1149,47 @@ sub fixpaths {
     $Path->{'xref'} =~ s#/</a>#</a>/#gi;
 }
 
+sub env_or {
+    my ($name, $default) = @_;
+    return defined $ENV{$name} ? $ENV{$name} : $default;
+}
+
 sub set_this_url {
 # HTTPS
-    my $default_port = $ENV{'HTTPS'} ? 443 : 80;
-    my $port = $default_port eq $ENV{'SERVER_PORT'} ? '' : ':'. $ENV{'SERVER_PORT'};
+    my $default_port = env_or('HTTPS', 0) ? 443 : 80;
+    my $env_port = env_or('SERVER_PORT', 80);
+    my $port = $default_port eq $env_port ? '' : ':'. $env_port;
     my $proto = $default_port == 443 ? 'https://' : 'http://';
-    my $query = $ENV{'QUERY_STRING'};
+    my $query = env_or('QUERY_STRING', '');
     $query = '?' . $query if $query ne '';
 
-    $HTTP->{'this_url'} = &http_wash(join('', $proto,
-                                          $ENV{'SERVER_NAME'},
-                                          $port,
-                                          $ENV{'SCRIPT_NAME'},
-                                          $ENV{'PATH_INFO'},
-                                          $query));
+    $HTTP->{'this_url'} =
+        &http_wash(join('', $proto,
+                        env_or('SERVER_NAME', 'localhost'),
+                        $port,
+                        env_or('SCRIPT_NAME', 'unknown_script'),
+                        env_or('PATH_INFO', ''),
+                        $query));
 }
+
 sub glimpse_init {
     set_this_url();
     my @a;
 
-    foreach ($ENV{'QUERY_STRING'} =~ /([^;&=]+)(?:=([^;&]+)|)/g) {
+    my $query = env_or('QUERY_STRING', '');
+    foreach ($query =~ /([^;&=]+)(?:=([^;&]+)|)/g) {
         push(@a, &http_wash($_));
     }
     $HTTP->{'param'} = {@a};
     my $head = init_all();
 
-    if ($ENV{'QUERY_STRING'} =~ s/\&regexp=on//) {
+    if ($query =~ s/\&regexp=on//) {
         $Conf->{'regexp'} = 'on';
     } else {
-        $ENV{'QUERY_STRING'} =~ s/\&regexp=off//;
+        $query =~ s/\&regexp=off//;
         $Conf->{'regexp'} = 'off';
     }
+    #$ENV{'QUERY_STRING'} = $query;
 
     return($Conf, $HTTP, $Path, $head);
 }
@@ -1186,7 +1198,8 @@ sub glimpse_init {
 sub init {
     set_this_url();
     my @a;
-    foreach ($ENV{'QUERY_STRING'} =~ /([^;&=]+)(?:=([^;&]+)|)/g) {
+    my $query = env_or('QUERY_STRING', '');
+    foreach ($query =~ /([^;&=]+)(?:=([^;&]+)|)/g) {
         push(@a, &http_wash($_));
     }
     $HTTP->{'param'} = {@a};
@@ -1212,7 +1225,7 @@ sub pretty_date
 sub init_all {
     my ($argv_0) = @_;
 
-    $HTTP->{'path_info'} = &http_wash($ENV{'PATH_INFO'});
+    $HTTP->{'path_info'} = &http_wash(env_or('PATH_INFO', ''));
     $HTTP->{'param'}->{'v'} ||= $HTTP->{'param'}->{'version'};
     $HTTP->{'param'}->{'a'} ||= $HTTP->{'param'}->{'arch'};
     $HTTP->{'param'}->{'i'} ||= $HTTP->{'param'}->{'identifier'};
@@ -1227,8 +1240,10 @@ sub init_all {
         $alldefaults_{$_} = $Conf->vardefault($_);
 	$Conf->variable($_, $HTTP->{'param'}->{$_}) if $HTTP->{'param'}->{$_};
     }
-    
-    &fixpaths($HTTP->{'path_info'} || $HTTP->{'param'}->{'file'});
+
+    my $path = $HTTP->{'path_info'} || '';
+    $path = $HTTP->{'param'}->{'file'} || '' unless $path;
+    &fixpaths($path);
 
     my $head = '';
     my $ctype = 'text/html';
@@ -1239,7 +1254,7 @@ sub init_all {
     }
 
     my $baseurl = $Conf->{baseurl};
-    my $localurl = $baseurl . '/source' . $ENV{'PATH_INFO'};
+    my $localurl = $baseurl . '/source' . env_or('PATH_INFO', '/');
     $localurl =~ m{(^.*/)/*[^/]+/*(?:|\?.*)$};
     my $parenturl = $1;
     $head .=

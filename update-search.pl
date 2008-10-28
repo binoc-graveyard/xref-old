@@ -5,7 +5,13 @@
 # Updated 2-27-99 by endico. Added multiple tree support.
 
 use Cwd;
+use File::Basename;
+use lib 'lib';
+use LXR::Common;
+use LXR::Config;
+
 my @paths=qw(
+/usr/local/bin
 /opt/local/bin
 /opt/cvs-tools/bin
 /usr/ucb
@@ -21,7 +27,6 @@ my $DATE = 'date ';
 my $STDERRTOSTDOUT = '2>&1';
 
 my $TREE;
-my $was_arg;
 
 sub do_log {
   my $msg = shift;
@@ -37,53 +42,67 @@ sub do_and_log {
   system($cmd);
 }
 
+sub process_args {
+  my $was_arg;
+  do {
+    $was_arg = 0;
+    $TREE = shift;
+    if ($TREE) {
+      if ($TREE eq '-cron') {
+        $was_arg = 1;
+        $TIME = $UPTIME = '';
+      }
+      $TREE =~ s{/$}{};
+    }
+  } while ($TREE && $was_arg);
+}
 
-do {
-$was_arg = 0;
-$TREE=shift;
-if ($TREE) {
-if ($TREE eq '-cron') {
-$was_arg = 1;
- $TIME = $UPTIME = '';
-}
-$TREE =~ s{/$}{};
-}
-} while ($TREE && $was_arg);
+process_args(@ARGV);
+
 $ENV{'LANG'} = 'C';
+
+# need to consider lxr.conf
+$lxr_dir = '.';
+die "can't find $lxr_dir" unless -d $lxr_dir;
+my $lxr_conf = "$lxr_dir/lxr.conf";
+
+unless (-f $lxr_conf) {
+  die "could not find $lxr_conf";
+}
+
+my $src_dir;
+unless (defined $TREE) {
+  # need to sniff lxr.conf
+  open LXRCONF, "< $lxr_conf" || die "Could not open $lxr_conf";
+  while ($line = <LXRCONF>) {
+    warn "trailing whitespace on line $. {$line}" if $line =~ /^\w+:.*\w.* \s*$/;
+    #since no tree is defined, assume sourceroot is defined the old way 
+    #grab sourceroot from config file indexing only a single tree where
+    #format is "sourceroot: dirname"
+    next unless $line =~ /^sourceroot:\s*(\S+)(\s+\S+|)$/;
+    if ($2 ne '') {
+      $TREE = $1;
+    } else {
+      $src_dir = $1;
+    }
+    last;
+  }
+  close LXRCONF;
+}
+
 $ENV{'TREE'} = $TREE;
 
-$lxr_dir = '.';
-my $lxr_conf = "$lxr_dir/lxr.conf";
-unless (-f $lxr_conf) {
-die "could not find $lxr_conf";
-}
-open LXRCONF, "< $lxr_conf";
-while ($line = <LXRCONF>) {
-    $db_dir = "$1/$TREE" if $line =~ /^dbdir:\s*(\S+)/;
-    warn "trailing whitespace on line $. {$line}" if $line =~ /^\w+:.*\w.* \s*$/;
-    unless ($TREE) {
-        #since no tree is defined, assume sourceroot is defined the old way 
-        #grab sourceroot from config file indexing only a single tree where
-        #format is "sourceroot: dirname"
-        $src_dir = $1 if $line =~ /^sourceroot:\s*(\S+)$/;
-        if ($line =~ /^sourceroot:\s*(\S+)\s+\S+$/) {
-            system("./update-search.pl", $1);
-        }
-    } else {
-        #grab sourceroot from config file indexing multiple trees where
-        #format is "sourceroot: treename dirname"
-        $src_dir = $1 if $line =~ /^sourceroot:\s*\Q$TREE\E\s+(\S+)$/;
-    } 
-    if ($line =~ /^glimpsebin:\s*(.*)\s*$/) {
-        $glimpse_bin = $1;
-        $glimpse_bin =~ m{(.*)/([^/]*)$};
-        push @paths, $1;
-    }
-}
-close LXRCONF;
+# let LXR:: handle lxr.conf
+$ENV{'SCRIPT_NAME'} = "/$TREE/" . basename($0);
+my ($Conf, $HTTP, $Path, $head) = &init($0);
+
+$db_dir = $Conf->dbdir;
+$src_dir = $Conf->sourceroot;
+
+push @paths, $1 if ($Conf->glimpsebin =~ m{(.*)/([^/]*)$});
 
 unless (defined $src_dir) {
-die "could not find sourceroot for tree $TREE";
+  die "could not find sourceroot for tree $TREE";
 }
 
 my %pathmap=();
