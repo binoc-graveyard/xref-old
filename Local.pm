@@ -289,19 +289,19 @@ sub descexpand {
     if (open(FILE, $readme)) {
 	$path = $Path->{'virt'}.$filename;
 	$path =~ s#/(.+)/#$1#;
-        while(<FILE>){
-            if($linecount++ > 10) {
+        while (<FILE>){
+            if ($linecount++ > 10) {
                 last;
-            }elsif (/\s*\Q$path\E\s*-\s*-*\s*/i){
+            } elsif (/\s*\Q$path\E\s*-\s*-*\s*/i){
                 $desc = (split(/\s*\Q$path\E\s*-\s*-*\s*/i))[1];
                 if ($desc) {last};
-            }elsif (/\s*\Q$filename\E\s*-\s*-*\s*/i){
+            } elsif (/\s*\Q$filename\E\s*-\s*-*\s*/i){
                 $desc = (split(/\s*\Q$filename\E\s*-\s*-*\s*/i))[1];
                 if ($desc) {last};
-            }elsif (/\Q$path\E\s*:\s*/i){
+            } elsif (/\Q$path\E\s*:\s*/i){
                 $desc = (split(/ \Q$path\E\s*:\s*/i))[1];
                 if ($desc) {last};
-            }elsif (/\Q$filename\E\s*:\s*/i){
+            } elsif (/\Q$filename\E\s*:\s*/i){
                 $desc = (split(/ \Q$filename\E\s*:\s*/i))[1];
                 if ($desc) {last};
             }
