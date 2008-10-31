@@ -21,6 +21,7 @@ require Exporter;
 
 use lib 'lib';
 use LXR::Common;
+use File::Basename;
 use File::Glob qw(bsd_glob :globally :nocase);
 
 # dme: Create descriptions for a file in a directory listing
@@ -236,6 +237,16 @@ sub fdescexpand {
     }
 }
 
+sub get_readable_file {
+    my ($path, $glob) = @_;
+    my @files = bsd_glob($path.$glob);
+    foreach (@files) {
+        next unless -f;
+        next unless -r;
+        return $_;
+    }
+    return '';
+}
 
 # dme: create a short description for a subdirectory in a directory listing
 # If no description, return the string "\&nbsp\;" to keep the
@@ -252,14 +263,8 @@ sub descexpand {
     my $linecount=0;
     local $desc= "";
 
-    my $readmefile = $Path->{'real'}. $filename. 'README{.html,.htm,}';
-    my @readmes = bsd_glob($readmefile);
-    my $readme;
-    foreach (@readmes) {
-        next unless -f;
-        $readme = $_;
-        last;
-    }
+    my $rpath = $Path->{'real'};
+    my $readme = get_readable_file($rpath . $filename, '{README,ReadMe}{.html,.htm,.txt,.TXT,}');
     if ($readme =~ /\.html?$/ && open(DESC, $readme)) {
         undef $/;
         $desc = <DESC>;
@@ -281,9 +286,7 @@ sub descexpand {
     }
 
     $desc = ""; 
-    my $rpath = $Path->{'real'};
-    if (open(FILE, $rpath. $filename.'README') ||
-        open(FILE, $rpath. $filename.'ReadMe')) {
+    if (open(FILE, $readme)) {
 	$path = $Path->{'virt'}.$filename;
 	$path =~ s#/(.+)/#$1#;
         while(<FILE>){
@@ -354,7 +357,8 @@ sub dirdesc {
         return if descreadmehtml($path);
     }
     if (-f $rpath."/README" ||
-        -f $rpath."/ReadMe") {
+        -f $rpath."/ReadMe" ||
+        -f $rpath."/README.TXT") {
         return if descreadme($path);
     }
     if (-f $rpath.'/DEBIAN/control' ||
@@ -408,13 +412,8 @@ sub descreadmehtml {
     my ($path, $readme) = @_;
 
     my $string = ""; 
-    my $readmefile = $Path->{'real'}. 'README{.html,.htm}';
-    my @readmes = bsd_glob($readmefile);
-    foreach (@readmes) {
-        next unless -f;
-        $readme = $_;
-        last;
-    }
+    my $rpath = $Path->{'real'};
+    $readme = get_readable_file($rpath, $readme) || get_readable_file($rpath, 'README{.html,.htm}');
     if (!$readme || !open(DESC, $readme)) {
 	return;
     }
@@ -431,15 +430,16 @@ sub descreadmehtml {
     # check if there's a short desc nested inside the long desc. If not, do
     # a non-greedy search for a long desc. assume there are no other stray
     # spans within the description.
+    my $shortname = basename $readme;
     if ($string =~ /<SPAN CLASS=\"?LXRLONGDESC\"?>(.*?<SPAN CLASS=\"?LXRSHORTDESC\"?>.*?<\/SPAN>.*?)<\/SPAN>/is) {
         $long = $1;
         if (!($long =~ m{<span.*?</span}is)) {
-            $long .= "<P>\nSEE ALSO: ./README.html\n";
+            $long .= "<P>\nSEE ALSO: ./$shortname\n";
         }
     } elsif ($string =~ m{<SPAN CLASS=['"]?LXRLONGDESC['"]?>(.*?)</SPAN>}is) {
         $long = $1;
         if (!($long =~ m{<span}is)) {
-            $long .= "<P>\nSEE ALSO: ./README.html\n";
+            $long .= "<P>\nSEE ALSO: ./$shortname\n";
         }
     } elsif ($string =~ m{<pre>(.*?)</pre>}is) {
         $long = $1;
@@ -449,7 +449,7 @@ sub descreadmehtml {
         $long = "<pre>" . $long;
 	if ($2) {
             $readme =~ s{^.*/}{./};
-            $long .= "<P>SEE ALSO: $readme\n";
+            $long .= "<P>SEE ALSO: $$shortname\n";
         }
         $long .= "\n</pre>";
     }
@@ -459,7 +459,7 @@ sub descreadmehtml {
 }
 
 sub descreadme {
-    my ($path) = @_;
+    my ($path, $readme) = @_;
 
     my $string = ""; 
 #    $string =~ s#(</?([^>^\s]+[^>]*)>.*$)#($2~/B|A|IMG|FONT|BR|EM|I|TT/i)?$1:""#sg;
@@ -471,10 +471,12 @@ sub descreadme {
     my $minlines = 5;   # Too small. Go back and add another paragraph.
     my $chopto = 10;    # Truncate long READMEs to this length
 
-    if (!(open(DESC, $Path->{'real'}."/README") ||
-          open(DESC, $Path->{'real'}."/ReadMe"))) {
+    my $rpath = $Path->{'real'};
+    $readme = get_readable_file($rpath, $readme) || get_readable_file($rpath, '{README,ReadMe}{.txt,.TXT,}');
+
+    if (!(open(DESC, $readme))) {
 	return;
-        }
+    }
 
     undef $/;
     $string = <DESC>;
@@ -542,10 +544,11 @@ sub descreadme {
         # since not all of the README is displayed here,
         # add a link to it.
         chomp($string);
+        my $shortname = basename $readme;
         if ($string =~ /SEE ALSO/) {
-            $string = $string . ", README";
+            $string = $string . ", $shortname";
         } else {
-            $string = $string . "\n\nSEE ALSO: ./README";
+            $string = $string . "\n\nSEE ALSO: ./$shortname";
         }
     }
 
