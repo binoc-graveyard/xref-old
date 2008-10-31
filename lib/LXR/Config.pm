@@ -128,7 +128,10 @@ if (0) {
                                 ? $sourceprefix
                                 : undef;
 
+    } else {
+        $self->{'treename'} = '';
     }
+
     return($self);
 }
 
@@ -310,16 +313,23 @@ sub varexpand {
     return($exp);
 }
 
+sub varexpandit {
+    my ($self, $item) = @_;
+    return undef unless defined $self->{$item};
+    return($self->varexpand($self->{$item}));
+}
+
+
 
 sub baseurl {
     my $self = shift;
-    return($self->varexpand($self->{'baseurl'}));
+    return varexpandit($self, 'baseurl');
 }
 
 
 sub sourceroot {
     my $self = shift;
-    return($self->varexpand($self->{'sourceroot'}));
+    return varexpandit($self, 'sourceroot');
 }
 
 sub treehash {
@@ -346,114 +356,114 @@ sub sourcerootname {
 
 sub virtroot {
     my $self = shift;
-    return($self->varexpand($self->{'virtroot'}));
+    return varexpandit($self, 'virtroot');
 }
 
 
 sub incprefix {
     my $self = shift;
-    return($self->varexpand($self->{'incprefix'}));
+    return varexpandit($self, 'incprefix');
 }
 
 
 sub bonsaihome {
     my $self = shift;
-    return($self->varexpand($self->{'bonsaihome'}));
+    return varexpandit($self, 'bonsaihome');
 }
 
 
 sub dbdir {
     my $self = shift;
-    return($self->varexpand($self->{'dbdir'}));
+    return varexpandit($self, 'dbdir');
 }
 
 
 sub glimpsebin {
     my $self = shift;
-    return($self->varexpand($self->{'glimpsebin'}));
+    return varexpandit($self, 'glimpsebin');
 }
 
 
 sub htmlhead {
     my $self = shift;
-    return($self->varexpand($self->{'htmlhead'}));
+    return varexpandit($self, 'htmlhead');
 }
 
 
 sub htmltail {
     my $self = shift;
-    return($self->varexpand($self->{'htmltail'}));
+    return varexpandit($self, 'htmltail');
 }
 
 sub diffhead {
     my $self = shift;
-    return($self->varexpand($self->{'diffhead'}));
+    return varexpandit($self, 'diffhead');
 }
 
 sub difftail {
     my $self = shift;
-    return($self->varexpand($self->{'difftail'}));
+    return varexpandit($self, 'difftail');
 }
 
 sub sourcehead {
     my $self = shift;
-    return($self->varexpand($self->{'sourcehead'}));
+    return varexpandit($self, 'sourcehead');
 }
 
 sub sourcetail {
     my $self = shift;
-    return($self->varexpand($self->{'sourcetail'}));
+    return varexpandit($self, 'sourcetail');
 }
 
 sub sourcedirhead {
     my $self = shift;
-    return($self->varexpand($self->{'sourcedirhead'}));
+    return varexpandit($self, 'sourcedirhead');
 }
 
 sub sourcedirtail {
     my $self = shift;
-    return($self->varexpand($self->{'sourcedirtail'}));
+    return varexpandit($self, 'sourcedirtail');
 }
 
 sub findhead {
     my $self = shift;
-    return($self->varexpand($self->{'findhead'}));
+    return varexpandit($self, 'findhead');
 }
 
 sub findtail {
     my $self = shift;
-    return($self->varexpand($self->{'findtail'}));
+    return varexpandit($self, 'findtail');
 }
 
 sub identhead {
     my $self = shift;
-    return($self->varexpand($self->{'identhead'}));
+    return varexpandit($self, 'identhead');
 }
 
 sub identref {
     my $self = shift;
-    return($self->varexpand($self->{'identref'}));
+    return varexpandit($self, 'identref');
 }
 
 sub identtail {
     my $self = shift;
-    return($self->varexpand($self->{'identtail'}));
+    return varexpandit($self, 'identtail');
 }
 
 sub searchhead {
     my $self = shift;
-    return($self->varexpand($self->{'searchhead'}));
+    return varexpandit($self, 'searchhead');
 }
 
 sub searchtail {
     my $self = shift;
-    return($self->varexpand($self->{'searchtail'}));
+    return varexpandit($self, 'searchtail');
 }
 
 
 sub htmldir {
     my $self = shift;
-    return($self->varexpand($self->{'htmldir'}));
+    return varexpandit($self, 'htmldir');
 }
 
 
