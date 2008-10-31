@@ -71,17 +71,22 @@ unless (-f $lxr_conf) {
 }
 
 my $src_dir;
-unless (defined $TREE) {
+my $script_prefix = './';
+if (defined $TREE) {
+  $script_prefix = "/$TREE/";
+} else { 
   # need to sniff lxr.conf
   open LXRCONF, "< $lxr_conf" || die "Could not open $lxr_conf";
   while ($line = <LXRCONF>) {
-    warn "trailing whitespace on line $. {$line}" if $line =~ /^\w+:.*\w.* \s*$/;
+    warn "trailing whitespace on line $. {$line}" if $line =~ /^\w+:.*\w.*\s+\n$/;
     #since no tree is defined, assume sourceroot is defined the old way 
     #grab sourceroot from config file indexing only a single tree where
     #format is "sourceroot: dirname"
     next unless $line =~ /^sourceroot:\s*(\S+)(\s+\S+|)$/;
     if ($2 ne '') {
       $TREE = $1;
+      $ENV{'TREE'} = $TREE;
+      $script_prefix = "/$TREE/";
     } else {
       $src_dir = $1;
     }
@@ -90,16 +95,17 @@ unless (defined $TREE) {
   close LXRCONF;
 }
 
-$ENV{'TREE'} = $TREE;
-
 # let LXR:: handle lxr.conf
-$ENV{'SCRIPT_NAME'} = "/$TREE/" . basename($0);
+$ENV{'SCRIPT_NAME'} = $script_prefix . basename($0);
 my ($Conf, $HTTP, $Path, $head) = &init($0);
 
+die "dbdir not set" unless defined $Conf->dbdir;
 $db_dir = $Conf->dbdir;
 $src_dir = $Conf->sourceroot;
 
-push @paths, $1 if ($Conf->glimpsebin =~ m{(.*)/([^/]*)$});
+if (defined $Conf->glimpsebin) {
+  push @paths, $1 if ($Conf->glimpsebin =~ m{(.*)/([^/]*)$});
+}
 
 unless (defined $src_dir) {
   die "could not find sourceroot for tree $TREE";

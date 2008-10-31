@@ -22,15 +22,25 @@ my $STDERRTOSTDOUT = '2>&1';
 my ($TREE, $new_src_dir, $force) = @ARGV;
 $force = 0 unless defined $force;
 
-die "must specify a tree" unless $TREE ne '';
-die "must specify new source directory" unless $new_src_dir ne '';
+if (!defined $TREE || $TREE eq '') {
+  die "$0: [tree] new_source_directory [force]";
+}
+
+$TREE =~ s{/+$}{};
+
+if (!defined $new_src_dir && -d $TREE) {
+  ($new_src_dir, $TREE) = ($TREE, '');
+} else {
+  if (!defined $new_src_dir || $new_src_dir eq '') {
+    die "you must specify a new source directory";
+  }
+}
 
 unless (-d $new_src_dir) {
   die "new src dir $new_src_dir does not exist";
 }
 
 $ENV{'LANG'} = 'C';
-$TREE =~ s{/$}{};
 
 my $lxr_dir = '.';
 my $lxr_conf = "$lxr_dir/lxr.conf";
@@ -54,19 +64,28 @@ open LXRCONF, "< $lxr_conf" || die "Could not open $lxr_conf";
 my $newconf = '';
 my $line;
 while ($line = <LXRCONF>) {
-  warn "trailing whitespace on line $. {$line}" if $line =~ /^\w+:.*\w.* \s*$/;
+  warn "trailing whitespace on line $. {$line}" if $line =~ /^\w+:.*\w.*\s+\n$/;
 
   #grab sourceroot from config file indexing multiple trees where
   #format is "sourceroot: treename dirname"
-  if ($line =~ /^sourceroot:\s*\Q$TREE\E\s+(\S+)$/) {
-    $src_dir = $1;
-    $line = "sourceroot: $TREE $new_src_dir\n"; 
+  if ($TREE ne '') {
+    if ($line =~ /^sourceroot:\s*\Q$TREE\E\s+(\S+)$/) {
+      $src_dir = $1;
+      $line = "sourceroot: $TREE $new_src_dir\n"; 
+    }
+  } else {
+    if ($line =~ /^sourceroot:\s*(\S+)$/) {
+      $src_dir = $1;
+      $line = "sourceroot: $new_src_dir\n";
+    }
   }
   $newconf .= $line;
 }
 close LXRCONF;
 
-push @paths, $1 if ($Conf->glimpsebin =~ m{(.*)/([^/]*)$});
+if (defined $Conf->glimpsebin) {
+  push @paths, $1 if ($Conf->glimpsebin =~ m{(.*)/([^/]*)$});
+}
 
 unless (defined $src_dir) {
   die "could not find sourceroot for tree $TREE";

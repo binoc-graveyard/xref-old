@@ -35,6 +35,13 @@ my $ERROR_OUTPUT = $STDERRTOSTDOUT;
 
 my $TREE;
 
+sub do_mkdir {
+  my $dir = shift;
+  return if -d $dir;
+  die "dangling symlink $dir" if -l $dir;
+  mkdir $dir || die "can't create $dir";
+}
+
 sub process_args {
   my $was_arg;
   do {
@@ -96,10 +103,11 @@ close HTACCESS;
 $ENV{'SCRIPT_NAME'} = "/$TREE/" . basename($0);
 my ($Conf, $HTTP, $Path, $head) = &init($0);
 
+die "dbdir not set" unless defined $Conf->dbdir;
 $db_dir = $Conf->dbdir;
 $src_dir = $Conf->sourceroot;
 
-mkdir $db_dir unless -d $db_dir;
+do_mkdir $db_dir;
 $log = "$db_dir/genxref.log";
 
 #exec > $log 2>&1
@@ -108,16 +116,16 @@ $log = "$db_dir/genxref.log";
 system ("$DATE >> $log");
 $lxr_dir=getcwd;
 my $db_tmp_dir="$db_dir/tmp";
-if (-d $db_tmp_dir) {
-  mkdir $db_tmp_dir || die "can't make $db_tmp_dir";
+unless (-d $db_tmp_dir) {
+  do_mkdir $db_tmp_dir;
 } else {
   unless (-w $db_tmp_dir) {
     die "can't write to $db_tmp_dir";
   }
-  for my $f (qw(xref fileidx)) {
-    $f = "$db_tmp_dir/$f";
-    if (-f $f && ! -w $f) {
-      die "$f isn't writable.";
+  for my $name (qw(xref fileidx)) {
+    my $file = "$db_tmp_dir/$name";
+    if (-f $file && ! -w $file) {
+      die "$file isn't writable.";
     }
   }
 }
