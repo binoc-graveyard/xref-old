@@ -93,7 +93,7 @@ while ($line = <HTACCESS>) {
 #SetEnv LD_LIBRARY_PATH /zfsroot/.zfs/snapshot/solex_snv41_eol/usr/sfw/lib:/usr/sfw/lib:/zfsroot/.zfs/snapshot/solex_snv41_eol/usr/local/BerkeleyDB.4.4/lib:/usr/local/BerkeleyDB.4.4/lib
     if ($envvar =~ /PATH/) {
         $value = $ENV{$envvar}.':'.$value;
-        $value =~ s/::/:/g;
+        $value =~ s/::+/:/g;
     }
     $ENV{$envvar} = $value;
 }
