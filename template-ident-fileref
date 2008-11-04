@@ -7,5 +7,5 @@ $begintrac
 $endtrac
 $beginwebhg
 <span class=bonsailinks>(View <a href="$webhghost/log/$hgbranch/$hgpath/$filename">Hg log</a> or
-<a href="$webhghost/annotate/$hgversion$urlpath">Hg annotations</a>)</span>
+<a href="$webhghost/annotate/$hgversion/$hgpath/$filename">Hg annotations</a>)</span>
 $endwebhg
