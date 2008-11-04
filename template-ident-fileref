@@ -6,6 +6,6 @@ $begintrac
 <span class=bonsailinks>(View <a href="$trachost$virttree/log/$virtfold/$filename">SVN log</a>)</span>
 $endtrac
 $beginwebhg
-<span class=bonsailinks>(View <a href="$webhghost/log/$hgbranch$urlpath">Hg log</a> or
+<span class=bonsailinks>(View <a href="$webhghost/log/$hgbranch/$hgpath/$filename">Hg log</a> or
 <a href="$webhghost/annotate/$hgversion$urlpath">Hg annotations</a>)</span>
 $endwebhg

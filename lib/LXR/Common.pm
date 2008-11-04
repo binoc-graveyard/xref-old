@@ -1403,8 +1403,16 @@ sub cvsbranchexpand {
     return('');
 }
 
+sub gethgroot {
+  my $hgpath = checkhg($Path->{'virt'}, $Path->{'real'});
+  return $1 if $hgpath =~ /^\d+\s(.*)\.hg/;
+  return '';
+}
+
 sub hgpathexpand {
-    return substr($Path->{'realf'}, length $Path->{'hgroot'});
+  my $path = substr($Path->{'real'}, length gethgroot());
+  $path =~ s{/+$}{};
+  return $path;
 }
 
 sub hgdehex {
@@ -1416,12 +1424,13 @@ sub hgdehex {
 }
 
 sub hgversionexpand {
-  return 'tip' unless -d $Path->{'hgroot'};
+  my $hgroot = gethgroot();
+  return 'tip' unless -d $hgroot;
   # branch cache is a cache it might not be there
   # if it isn't, we simply offer tip
   # something better may be implemented eventually.
   my $sig;
-  if (open(HGCACHE, '<', $Path->{'hgroot'}. '/.hg/branch.cache')) {
+  if (open(HGCACHE, '<', $hgroot. '/.hg/branch.cache')) {
     my (%branches, %versions, $line, $ver, $branch);
     while ($line = <HGCACHE>) {
       if ($line =~ /^([0-9a-f]{40}) (\S+)/) {
@@ -1433,7 +1442,7 @@ sub hgversionexpand {
     }
     $sig = $versions{$branches{$sig}};
     close HGCACHE;
-  } elsif (open(HGSTATE, '<', $Path->{'hgroot'}. '/.hg/dirstate')) {
+  } elsif (open(HGSTATE, '<', $hgroot . '/.hg/dirstate')) {
     my ($parent1, $parent2);
     read (HGSTATE, $parent1, 20);
     read (HGSTATE, $parent2, 20);
@@ -1444,12 +1453,13 @@ sub hgversionexpand {
 }
 
 sub hgbranchexpand {
-  return 'tip' unless -d $Path->{'hgroot'};
+  my $hgroot = gethgroot();
+  return 'tip' unless -d $hgroot;
   # branch cache is a cache it might not be there
   # if it isn't, we simply offer tip
   # something better may be implemented eventually.
   my $branch;
-  if (open(HGCACHE, '<', $Path->{'hgroot'}. '/.hg/branch.cache')) {
+  if (open(HGCACHE, '<', $hgroot . '/.hg/branch.cache')) {
     my (%branches, %versions, $line, $ver, $sig);
     while ($line = <HGCACHE>) {
       if ($line =~ /^([0-9a-f]{40}) (\S+)/) {
@@ -1461,7 +1471,7 @@ sub hgbranchexpand {
     }
     $branch = $branches{$sig};
     close HGCACHE;
-  } elsif (open(HGSTATE, '<', $Path->{'hgroot'}. '/.hg/dirstate')) {
+  } elsif (open(HGSTATE, '<', $hgroot . '/.hg/dirstate')) {
     my ($parent1, $parent2);
     read (HGSTATE, $parent1, 20);
     read (HGSTATE, $parent2, 20);
@@ -1897,9 +1907,9 @@ sub checkhg
   $virt =~ s{^/}{};
   my @dirs;# = split m%/%, $virt;
   while (!defined $hgcache{$real} && $real) {
-    if (-d $real.'/.hg') {
-      $hgcache{$real} = '0 '.$real . '/.hg/store/data';
-      $Path->{'hgroot'} = $real;
+    if (-d $real . '/.hg') {
+      $hgcache{$real} = '0 '. $real . '/.hg/store/data';
+      # $Path->{'hgroot'} = $real;
       last;
     }
     $real =~ s{/([^/]*)$}{};
@@ -1909,20 +1919,20 @@ sub checkhg
     my $hgpath = $hgcache{$real};
     my $ll = 0 + $hgpath;
     $hgpath =~ s/^\d+ //;
-      $ll = 0 + $hgcache{$real};
-      while (scalar @dirs) {
-        my $dir = '/' . (shift @dirs);
-        $real .= $dir;
-        if ($dir =~ s/([A-Z])/_$1/g) {
-          $dir = lc $dir;
-        }
-        $hgpath .= $dir;
-        ++$ll;
-        # this shows up in profiling (-d)
-        # if we don't care about knowing if intermediate
-        # directories exist, there's probably some way to skip some of these
-        $hgcache{$real} = -d $hgpath ? "$ll ". $hgpath : "0";
+    $ll = 0 + $hgcache{$real};
+    while (scalar @dirs) {
+      my $dir = '/' . (shift @dirs);
+      $real .= $dir;
+      if ($dir =~ s/([A-Z])/_$1/g) {
+        $dir = lc $dir;
       }
+      $hgpath .= $dir;
+      ++$ll;
+      # this shows up in profiling (-d)
+      # if we don't care about knowing if intermediate
+      # directories exist, there's probably some way to skip some of these
+      $hgcache{$real} = -d $hgpath ? "$ll ". $hgpath : "0";
+    }
   }
   $real = $oreal;
   $real =~ s{/$}{};
