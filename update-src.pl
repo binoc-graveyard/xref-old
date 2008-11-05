@@ -2,6 +2,23 @@
 # Run this from cron to update the source tree that lxr sees.
 # Created 12-Jun-98 by jwz.
 # Updated 27-Feb-99 by endico. Added multiple tree support.
+
+use Cwd;
+use File::Basename;
+use lib 'lib';
+use LXR::Common;
+use LXR::Config;
+
+my @paths=qw(
+/opt/local/bin
+/opt/cvs-tools/bin
+/usr/ucb
+/usr/local/apache/html/mxr/glimpse
+/usr/local/glimpse-4.18.1p/bin
+/usr/local/glimpse-3.6/bin
+/home/build/glimpse-3.6.src/bin
+);
+
 my $CVSROOT=':pserver:anonymous@cvs-mirror.mozilla.org:/cvsroot';
 
 $ENV{PATH}='/opt/local/bin:/opt/cvs-tools/bin:'.$ENV{PATH};
@@ -10,6 +27,8 @@ my $TIME = 'time ';
 my $UPTIME = 'uptime ';
 my $DATE = 'date ';
 my $STDERRTOSTDOUT = '2>&1';
+my $STDERRTODEVNUL = '2>/dev/null';
+my $ERROR_OUTPUT = $STDERRTOSTDOUT;
 
 my $CVS = 'cvs ';
 my $CVSQUIETFLAGS = '-Q ';
@@ -33,40 +52,74 @@ my $BZRQUIETFLAGS = '-q ';
 my $BZRUPDATE = 'update $BZRQUIETFLAGS';
 
 my $TREE;
-my $was_arg;
-do {
-$was_arg = 0;
-$TREE=shift;
-if ($TREE) {
-if ($TREE eq '-cron') {
-$was_arg = 1;
- $TIME = $UPTIME = '';
-}
-$TREE =~ s{/$}{};
-}
-} while ($TREE && $was_arg);
 
-my $lxr_dir='.';
-open LXRCONF, '<', "$lxr_dir/lxr.conf" || die "can't open lxr.conf";
+sub process_args {
+  my $was_arg;
+  do {
+    $was_arg = 0;
+    $TREE = shift;
+    if ($TREE) {
+      if ($TREE eq '-cron') {
+        $was_arg = 1;
+        $TIME = $UPTIME = '';
+        $ERROR_OUTPUT = $STDERRTODEVNUL;
+      }
+      $TREE =~ s{/$}{};
+    }
+  } while ($TREE && $was_arg);
+}
+
+process_args(@ARGV);
+
+my $lxr_dir = '.';
+die "can't find $lxr_dir" unless -d $lxr_dir;
+my $lxr_conf = "$lxr_dir/lxr.conf";
+
 my $db_dir;
-my %sourceroot = ();
-do { 
-$line = <LXRCONF>;
-$db_dir = "$1" if $line =~ /^dbdir:\s*(.*)$/;
-$sourceroot{$1} = $2 if $line =~ /^sourceroot:\s*(\S+ |)(.*)/;
-} until eof LXRCONF;
-die "could not find dbdir: directive"  unless defined $db_dir;
-$db_dir .= "/$TREE" if defined $TREE && $TREE ne '';
+my $src_dir;
+# let LXR:: handle lxr.conf
+my ($Conf, $HTTP, $Path, $head);
+if (defined $TREE) {
+  $ENV{'SCRIPT_NAME'} = "/$TREE/" . basename($0);
+  ($Conf, $HTTP, $Path, $head) = &init($0);
+  $db_dir = $Conf->dbdir;
+  $src_dir = $Conf->sourceroot;
+  die "Could not find sourceroot for $TREE" unless defined $src_dir;
 
-my $src_dir = $sourceroot{$TREE ? "$TREE " : ''};
-die "could not find matching sourceroot" .($TREE ? " for $TREE" :'') unless defined $src_dir;
-
-    #since no tree is defined, assume sourceroot is defined the old way 
+  if (defined $Conf->glimpsebin) {
+    push @paths, $1 if ($Conf->glimpsebin =~ m{(.*)/([^/]*)$});
+  }
+} else {
+  open LXRCONF, '<', "$lxr_dir/lxr.conf" || die "can't open lxr.conf";
+  my %sourceroot = ();
+  do { 
     #grab sourceroot from config file indexing only a single tree where
     #format is "sourceroot: dirname"
 
     #grab sourceroot from config file indexing multiple trees where
     #format is "sourceroot: treename dirname"
+
+    $line = <LXRCONF>;
+    $db_dir = "$1" if $line =~ /^dbdir:\s*(.*)$/;
+    $sourceroot{$1} = $2 if $line =~ /^sourceroot:\s*(\S+ |)(.*)/;
+  } until eof LXRCONF;
+  die "could not find dbdir: directive"  unless defined $db_dir;
+  $db_dir .= "/$TREE" if defined $TREE && $TREE ne '';
+
+  #since no tree is defined, assume sourceroot is defined the old way
+  $src_dir = $sourceroot{$TREE ? "$TREE " : ''};
+}
+unless (defined $src_dir) {
+  die "could not find matching sourceroot:" .($TREE ? " for $TREE" :'');
+}
+
+my %pathmap=();
+for my $mapitem (@paths) {
+  $pathmap{$mapitem} = 1;
+}
+for my $possible_path (keys %pathmap) {
+  $ENV{'PATH'} = "$possible_path:$ENV{'PATH'}" if -d $possible_path;
+}
 
 -d $db_dir || mkdir $db_dir;
 my $log="$db_dir/cvs.log";
