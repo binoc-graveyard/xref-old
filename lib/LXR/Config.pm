@@ -109,9 +109,11 @@ if (0) {
 
         #find the cvsroot to sed in proper bonsai url
         my $path = $self->{'sourceroot'};
-        my @pathdirs = split(/\//, $path);
-        my $pathnum = @pathdirs;
-        $self->{'bonsaicvsroot'} = $pathdirs[$pathnum - 1]; 
+        if (defined $path) {
+          my @pathdirs = split(/\//, $path);
+          my $pathnum = @pathdirs;
+          $self->{'bonsaicvsroot'} = $pathdirs[$pathnum - 1]; 
+        }
 
         my %treehashp = split(/\s+/, $self->{'sourceprefix'});
         foreach my $alias (keys %aliases) {

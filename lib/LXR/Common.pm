@@ -1188,6 +1188,7 @@ sub markupfile {
 
 sub fixpaths {
   my $virtf = '/'.shift;
+  return unless defined $Conf->sourceroot;
   $Path->{'root'} = $Conf->sourceroot;
   
   while ($virtf =~ s#/[^/]+/\.\./#/#g) {

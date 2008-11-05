@@ -106,6 +106,9 @@ my ($Conf, $HTTP, $Path, $head) = &init($0);
 die "dbdir not set" unless defined $Conf->dbdir;
 $db_dir = $Conf->dbdir;
 $src_dir = $Conf->sourceroot;
+unless (defined $src_dir) {
+  die 'Could not find matching sourceroot:'.($TREE ?" for $TREE":'');
+}
 
 do_mkdir $db_dir;
 $log = "$db_dir/genxref.log";
