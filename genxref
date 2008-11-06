@@ -1032,7 +1032,7 @@ while (<FILES>) {
         push(@idlfiles, $_);
     }
     #   Duplicated in lib/LXR/Common.pm
-    if (/\.(hh?|cpp?|cc?|java|fin|tbl)$/i) {
+    if (/\.(hh?|cpp?|c[cs]?|java|fin|tbl)$/i) {
         push(@ft, ($1 eq 'java')?1:0);
 	push(@f, $_);
     }

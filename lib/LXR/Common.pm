@@ -933,7 +933,7 @@ sub markupfile {
   }
   if ($name =~ /\.(?:java|idl)$/i) {
     @terms = @javaterm;
-  } elsif ($name =~ /\.(?:hh?|cpp?|cc?|mm?|pch\+?\+?|fin|tbl)$/i) { # Duplicated in genxref.
+  } elsif ($name =~ /\.(?:hh?|cpp?|c[cs]?|mm?|pch\+?\+?|fin|tbl)$/i) { # Duplicated in genxref.
     @terms = @cppterm;
   } elsif ($name =~ /\.(?:js)$/) {
     @terms = @jsterm;
