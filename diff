@@ -166,9 +166,9 @@ compare against a different file:</label>
   $file2 ||= $Path->{'virt'} . $file;
   $diffvirt = $file2;
   if ($diffvar) {
-  $diffreal = $Conf->{'treehash'}{$diffvar} . $diffvirt;
+    $diffreal = $Conf->{'treehash'}{$diffvar} . $diffvirt;
   } else {
-    $diffreal = $Path->{'real'} . $diffvirt;
+    $diffreal = $Conf->{'sourceroot'} . $diffvirt;
   }
   $Conf->variable($diffvar, $origval);
 
