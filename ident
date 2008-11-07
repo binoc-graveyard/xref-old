@@ -84,7 +84,7 @@ sub list_links
             if ($xref{$_}) {
               print("class ".&idref($_, $_));
             } else {
-              print("class <A TITLE='unindexed fixme'>$_</A>");
+              print("class <a title='unindexed fixme'>$_</a>");
             }
           }
           print("  </ul>");
@@ -99,10 +99,10 @@ sub list_links
 sub ident {
     my $concise = 0;
 
-    print('<P ALIGN=CENTER>
+    print('<p align=center>
 Type the full name of an identifier
 (a function name, variable name, typedef, etc.)
-<BR>to summarize. Matches are <u>case-sensitive</u>.');
+<br>to summarize. Matches are <u>case-sensitive</u>.');
     if ($Conf->{'treename'} ne '') {
         print qq%
 <script>
@@ -126,15 +126,16 @@ function changetarget() {
         }
     }
     
-    print('<b>Identifier: </b><input type=text name="i"
+    print('<b><label for="i">Identifier:</label></b>
+<input type=text id="i" name="i"
 value="'.$identifier.'" size=50>
 <input type=submit value="Find">
 ');
     if ($Conf->{'treename'} ne '') {
-        print(qq{
-using tree:
-<select name='tree' id='tree' onchange='changetarget()'>
-});
+        print '
+<label for="tree">using tree:
+<select name="tree" id="tree" onchange="changetarget()">
+';
         my @treelist = @{$Conf->{'trees'}};
         foreach my $othertree (@treelist) {
             my $default=$othertree eq $Conf->{'treename'} ? ' selected=1' : '';
@@ -149,15 +150,18 @@ using tree:
     $value =~ s/"/&quot;/g;
     $value =~ s/</&lt;/g;
     $value =~ s/>/&gt;/g;
-    print('<br>Limit output to pattern: <input type=text name="filter" value="'.
-            $value.'" size=30>');
+    print '<br>
+<label for="filter">Limit output to pattern:</label>
+<input type=text id="filter" name="filter" value="'.
+$value.'" size=30>';
 
-    print('<br><input type=checkbox value="1" ');
-    print('checked="checked" ') if $scriptidly == 1;
-    print('name=scriptidly>Match C++, JS, and IDL variants');
+    print '<br><input type=checkbox value="1" ';
+    print 'checked="checked" ' if $scriptidly == 1;
+    print 'id="scriptidly" name="scriptidly"
+><label for="scriptidly">Match C++, JS, and IDL variants</label>
+</form>
+';
 
-    print("</form>\n");
-    
     if ($identifier) {
 	tie(%xref, "DB_File", $Conf->dbdir."/xref", 
 	    O_RDONLY, undef, $DB_HASH) || 

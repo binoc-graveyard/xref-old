@@ -107,11 +107,11 @@ sub escape_re {
 }
 
 sub search {
-    print(qq{<P ALIGN=CENTER>
+    print(qq{<p align=center>
 Free-text search through the source code, including comments.
-<BR>By default, this form treats all characters as literals.
-<BR>Search strings can have a maximum of 29 characters.
-<BR>Read the <A HREF="search-help.html">documentation</A>
+<br>By default, this form treats all characters as literals.
+<br>Search strings can have a maximum of 29 characters.
+<br>Read the <a href="search-help.html">documentation</A>
  for help with glimpse's regular expression syntax,
 });
     my $changetarget = '';
@@ -158,7 +158,7 @@ converted into a filter.</em></p>\n";
     }
 
     print('<form name=search id=search method=get action="search">
-<TABLE><TR><TD>');
+<table><tr><td>');
 
     foreach ($Conf->allvariables) {
 	if ($Conf->variable($_) ne $Conf->vardefault($_)) {
@@ -171,25 +171,25 @@ converted into a filter.</em></p>\n";
     $s = $searchtext;
     $s =~ s/\&/\&amp;/g;
     $s =~ s/"/\&quot;/g;
-    print('<B>Search for: </B></TD><TD><input type=text name="string" ',
-          'value="',$s,'" maxlength=29 size=30>
-',
-          '<input type=submit value="search"><BR>
-',
-          '</TD></TR><TR><TD></TD><TD>
-',
-  '<input type="checkbox" name="regexp"');
+    print('<b>
+<label for="string">Search for:</label></b></td>
+<td>
+<input type=text id="string" name="string"
+value="',$s,'" maxlength=29 size=30>
+<input type=submit value="search"><br>
+</td></tr><tr><td></td><td>
+<input type="checkbox" id="regexp" name="regexp"');
     if ($regexp) {
-        print (' CHECKED');
+        print (' checked');
         print (' value="on"');
     }
-    print (">Regular Expression Search\n");
-    print '</td><tr><td><td><input type="checkbox" name="case"';
+    print '><label for="regexp">Regular Expression Search</label>
+</td><tr><td><td><input type="checkbox" id="case" name="case"';
     if ($search_sensitive) {
-        print (' CHECKED');
+        print (' checked');
         print (' value="on"');
     }
-    print '>Case sensitive
+    print '><label for="case">Case sensitive</label>
 ';
 
 my $value = $find;
@@ -197,16 +197,19 @@ $value =~ s/&/&amp;/g;
 $value =~ s/"/&quot;/g;
 $value =~ s/</&lt;/g;
 $value =~ s/>/&gt;/g;
-    print('</td><tr><td>in files matching:</td><td><input type=text id="find" name="find" value="'.
-          $value.'" size=30>');
+    print('</td>
+<tr><td><label for="find">in files matching:</label></td>
+<td><input type=text id="find" name="find" value="'.
+$value.
+'" size=30>');
 
     if ($find_warning) {
         print ' a suggestion was made by your browser, but it was ignored in favor of the provided string, if you empty the string and search again, it will be honored.';
     }
 
-    print ' Suggestions from our users: ';
-    print('<select id="findi" name="findi" onchange="changefindpreset()">
-<option value="">none of these</option>');
+    print ' <label for="findi">Suggestions from our users:</label>
+<select id="findi" name="findi" onchange="changefindpreset()">
+<option value="">none of these</option>';
 # this needs to move into Local.pm
 @find_options = qw(
 \.xul$
@@ -244,17 +247,18 @@ $value =~ s/"/&quot;/g;
 $value =~ s/</&lt;/g;
 $value =~ s/>/&gt;/g;
 
-    print('</td></tr><tr><td>Limit output to pattern:</td>
-'.        '<td><input type=text name="filter" value="'.
-          $value.'" size=30>');
-    print('</td></tr><tr><td>Limit matches per file to:</td>
-'.        '<td><input type=text name="hitlimit" value="'.
-          $hitlimit.'" size=10>');
+    print '</td></tr>
+<tr><td><label for="filter">Limit output to pattern:</label></td>
+<td><input type=text id="filter" name="filter" value="'.
+$value.'" size=30></td></tr>
+<tr><td><label for="hitlimit">Limit matches per file to:</label></td>
+<td><input type=text id="hitlimit" name="hitlimit" value="'.
+$hitlimit.'" size=10>';
     if ($Conf->{'treename'} ne '') {
-        print(qq{</td></tr><tr><td>
-using tree:</td><td>
-<select name='tree' id='tree' onchange='changetarget()'>
-});
+        print('</td></tr><tr><td>
+<label for="tree">using tree:</label></td><td>
+<select name="tree" id="tree" onchange="changetarget()">
+');
         my @treelist = @{$Conf->{'trees'}};
         foreach my $othertree (@treelist) {
             my $default = $othertree eq $Conf->{'treename'}
@@ -262,9 +266,12 @@ using tree:</td><td>
             print "<option$default value='$othertree'>$othertree</option>
 ";
         }
-        print (qq{</select>});
+        print '</select>';
     }
-    print ("</TD></TR></TABLE>\n</form>\n\n");
+    print '</td></tr></table>
+</form>
+
+';
     
     $| = 1; print('');
 

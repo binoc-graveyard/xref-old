@@ -1,10 +1,10 @@
 #!/usr/bin/perl
 # $Id: diff,v 1.2 2006/12/07 04:59:38 reed%reedloden.com Exp $
 
-# diff --    Display diff output with markup.
+# diff -- Display diff output with markup.
 #
-#    Arne Georg Gleditsch <argggh@ifi.uio.no>
-#    Per Kristian Gjermshus <pergj@ifi.uio.no>
+#  Arne Georg Gleditsch <argggh@ifi.uio.no>
+#  Per Kristian Gjermshus <pergj@ifi.uio.no>
 #
 #
 # This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -57,17 +57,19 @@ sub htmlsub {
   return $s;
 }
 
+my $file;
 my $file2;
 
 sub treeoption {
   my ($tree, $defaulttree, $novalue) = @_;
-  my $value=" value='$tree'";
+  my $value = " value='$tree'";
   my $selected;
   if ($tree eq $defaulttree) {
     $selected = ' selected=1';
     $value = '' if $novalue;
   }
-  return " <option$selected$value>$tree</option>\n";
+  return " <option$selected$value>$tree</option>
+";
 }
 sub cleanhtml {
   my $text = shift;
@@ -79,10 +81,14 @@ sub cleanhtml {
 
 sub printdiff {
   my ($virt, $file) = (cleanhtml $Path->{'virt'}, cleanhtml $Path->{'file'});
-  unless (0 && $diffvar) {
-    my @similartrees = ();
-    my @othertrees = ();
-    my @treelist = @{$Conf->{'trees'}};
+  my @similartrees = ();
+  my @othertrees = ();
+  my @treelist = @{$Conf->{'trees'}};
+  print "<form name='diff' id='diff'>
+<label for='file'>Base file to compare:</label>
+<input id='file' name='file' size=60 value='$virt".$Path->{'file'}."'>
+";
+  if (scalar @treelist > 0) {
     foreach my $othertree (@treelist) {
       my $otherpath = $Conf->{'treehash'}{$othertree}.'/'.$virt.'/'.$file;
       if (-e $otherpath) {
@@ -91,20 +97,21 @@ sub printdiff {
         push @othertrees, $othertree;
       }
     }
-    print(qq{<form name='diff' id='diff'>
-Base file to compare: <input name=file size=60 value="$virt$file">
-in tree <select name=tree id=tree>
-});
+
+    print "
+<label for='tree'>in</label>
+<select name='tree' id='tree'>
+";
     foreach my $othertree (@treelist) {
       print treeoption($othertree, $Conf->{'treename'}, 1);
     }
-    print(qq{
+    print '
 </select>
 <br>
-Please select the other tree against which you wish to
-compare this file:
-<select name='diffvar' id='diffvar'>
-});
+<label for="diffvar" title="Please select">Tree against which you wish to
+compare this file:</label>
+<select name="diffvar" id="diffvar">
+';
     if (scalar @similartrees) {
       print " <option value=''>--(this path)--</option>
 ";
@@ -119,49 +126,65 @@ compare this file:
         print treeoption($othertree, $diffvar);
       }
     }
-    print qq{</select>
+    print '</select>
+';
+  }
+  print qq{
 <br>
+<label for="file2">
 You can
 };
-    print "also " if (scalar @similartrees > 1);
-    print qq{
-compare against a different file: <input name=file2 size=60 value="$file2">
+  print "also " if (scalar @similartrees > 1);
+  print "
+compare against a different file:</label>
+<input id='file2' name='file2' size=60 value='$file2'>
 <br>
-Ignore whitespace changes:
-<input type=checkbox name='diffw' id='diffw' value='1'};
-    print " checked=1" if $diffw;
-    print qq{>
+<label for='diffw'>Ignore whitespace changes:</label>
+<input type=checkbox name='diffw' id='diffw' value='1'";
+  print " checked=1" if $diffw;
+  print '>
 
 <hr>
 <input type=submit>
 </form>
-};
+';
 
-    return unless $diffvar;
-  }
+  return unless (scalar @treelist == 0) || $diffvar;
 
-  unless ($Path->{'file'}) {
+  my $file = $Path->{'file'};
+  unless ($file) {
     print("<h3 align=center>Diff not yet supported for directories.</h3>\n");
     return;
   }
 
-  my $file = $Path->{'file'};
-  $origvirt = $Path->{'virt'}.$file;
-  $origreal = $Path->{'real'}.$file;
+  my $virt = $Path->{'virt'};
+  $origvirt = $virt . $file;
+  $origreal = $Path->{'real'} . $file;
 
   $origval = $Conf->variable($diffvar);
-  $Conf->variable($diffvar,$diffval);
-  $file2 ||= $Path->{'virt'}.$file;
+  $Conf->variable($diffvar, $diffval);
+  $file2 ||= $Path->{'virt'} . $file;
   $diffvirt = $file2;
-  $diffreal = $Conf->{'treehash'}{$diffvar}.$diffvirt;
-  $Conf->variable($diffvar,$origval);
+  if ($diffvar) {
+  $diffreal = $Conf->{'treehash'}{$diffvar} . $diffvirt;
+  } else {
+    $diffreal = $Path->{'real'} . $diffvirt;
+  }
+  $Conf->variable($diffvar, $origval);
 
   &fflush;
-  unless (-f  $origreal && -f $diffreal) {
-    print "<h1>Could not find one of the specified files</h1>";
+
+  unless (-f $origreal && -f $diffreal) {
+    print "<h1>Can not find one of the specified files</h1>
+";
     return;
   }
-  unless (open(DIFF, "-|")){
+  unless (-r $origreal && -r $diffreal) {
+    print "<h1>Can not read one of the specified files</h1>
+";
+    return;
+  }
+  unless (open(DIFF, "-|")) {
     open(STDERR, ">&STDOUT");
     my @args = ('diff', '-U0');
     push @args, '-w' if $diffw;
@@ -173,8 +196,8 @@ Ignore whitespace changes:
   my $diff = 1;
   my $diffn = 2;
   while (<DIFF>) {
-    if (($os, $ol, $ns, $nl) = 
-        /@@ -(\d+)(?:,(\d+)|) \+(\d+)(?:,(\d+)|) @@/) {
+    if (($os, $ol, $ns, $nl) =
+      /@@ -(\d+)(?:,(\d+)|) \+(\d+)(?:,(\d+)|) @@/) {
       # this seems to be a gnu hack
       $os++ if $ol eq '0' && $nl eq '';
       $ns++ if $nl eq '0' && $ol eq '';
@@ -189,7 +212,7 @@ Ignore whitespace changes:
       my $nextd = "<a name='d$diff' href='#d$diffn'>";
       my $removen = "$nextd$remove</a>";
       my $changen = "$nextd$change</a>";
-      my $addittn = "$nextd$additt</a>"; 
+      my $addittn = "$nextd$additt</a>";
       if ($diff > 1) {
         my $prevd = "<a href='#d" . ($diff - 1) . "'>";
         $removep = "$prevd$remove</a>";
@@ -213,7 +236,7 @@ Ignore whitespace changes:
         $ms  = $ol - $nl;
         $ml  = $nl;
         $new{$ns+$nl} = $ms;
-      } 
+      }
       foreach (0..$ml - 1) {
         $chg{$bo + $_} = $change;
       }
@@ -235,30 +258,29 @@ Ignore whitespace changes:
   my $path = $diffvirt;
   $path =~ s|([^-a-zA-Z0-9.+\@/_\r\n])|sprintf("%%%02X", ord($1))|ge;
   $path = qq{<a href="../$diffvar/source$path">$path$tree2</a>};
-  print("<h1>Diff markup</h1>\n",
-    "<h3><a href='#d1'>Differences</a> between ",
+  print "<h1>Diff markup</h1>
+<h3><a href='#d1'>Differences</a> between " .
+&fileref("$origvirt$tree1", $origvirt, undef, "") .
+" and $path (<a href='diff?tree=$diffvar&diffvar=" .
+$Conf->{'treename'} .
+"&file=$diffvirt&file2=$origvirt'>reverse</a>)
+</h3><hr>
+<style>.x, .x > a { color: red; text-decoration: none } </style>";
 
-    &fileref("$origvirt$tree1", $origvirt, undef, ""),
-    " and ",
-    $path,
-    " (<a href='diff?tree=$diffvar&diffvar=",$Conf->{'treename'},
-    "&file=$diffvirt&file2=$origvirt'>reverse</a>)",
-    "</h3><hr>\n<style>.x, .x > a { color: red; text-decoration: none } </style>");
-
-#      "<table width=\"100%\" border=0 cellpadding=0><tr><td>",
+#  "<table width=\"100%\" border=0 cellpadding=0><tr><td>",
 #
-#      &fileref("<b>$origvirt <i>(".$Conf->vardescription($diffvar).
+#  &fileref("<b>$origvirt <i>(".$Conf->vardescription($diffvar).
 #           " $origval)</i></b>", $origvirt, undef, "$diffvar=$origval"),
-#      "<hr></td>\n<td></td>\n<td>",
+#           "<hr></td>\n<td></td>\n<td>",
 #
-#      &fileref("<b>$diffvirt <i>(".$Conf->vardescription($diffvar).
+#  &fileref("<b>$diffvirt <i>(".$Conf->vardescription($diffvar).
 #           " $diffval)</i></b>",$diffvirt, undef, "$diffvar=$diffval"),
-#      "<hr></td>\n</tr></table>\n");
+#           "<hr></td>\n</tr></table>\n");
 
 
   open(FOO, $origreal);
   $orig = '';
-  &markupfile(\*FOO, $Path->{'virt'}, $Path->{'file'}, 
+  &markupfile(\*FOO, $Path->{'virt'}, $Path->{'file'},
     sub { $orig .= shift }, 1);
   $len = $.+$ofs;
   close(FOO);
@@ -267,7 +289,7 @@ Ignore whitespace changes:
 
   open(FOO, $diffreal);
   $new = '';
-  &markupfile(\*FOO, $Conf->mappath($Path->{'virt'}), $Path->{'file'}, 
+  &markupfile(\*FOO, $Conf->mappath($Path->{'virt'}), $Path->{'file'},
     sub { $new .= shift }, 1);
   close(FOO);
 
@@ -328,7 +350,6 @@ if ($file2 ne $HTTP->{'param'}->{'file2'} || $tree) {
   }
   $head .= "Refresh: 0; url=../$newtree/diff$tail
 ";
-
 }
 print "$head
 ";
