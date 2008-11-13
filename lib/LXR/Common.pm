@@ -325,6 +325,27 @@ my @pyterm = (
    "'",
 =cut
 
+my @xmlterm = (
+  'comment',
+  '<!--',
+   '-->',
+  'idprefix',
+  '<!ENTITY\b',
+   '>',
+  'idprefix',
+  '<!DOCTYPE\b',
+   '>',
+  'string',
+  '<!\[CDATA\[',
+   '\]\]>',
+  'verb',
+  '</?\w+\b',
+   '(?:\b|\s|>)',
+  'verb',
+  '\b(?:id|name|readonly)\b',
+   '.',
+);
+
 my %alreadywarned = ();
 
 sub warning {
@@ -949,6 +970,8 @@ sub markupfile {
     @terms = @shterm;
   } elsif ($name =~ /\.(?:py)$/) {
     @terms = @pyterm;
+  } elsif ($name =~ /\.(?:xml)$/) {
+    @terms = @xmlterm;
   } else {
     open HEAD_HANDLE, $fname;
     my $file_head = <HEAD_HANDLE>;

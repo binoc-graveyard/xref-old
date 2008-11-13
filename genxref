@@ -64,6 +64,8 @@ my @reservedJS = ( 'abstract',   'as',   'break',   'case',   'catch',   'class'
 
 my @reservedXUL = (''); #nothing yet
 
+my @reservedXBL = (''); #nothing yet
+
 my @ft;
 
 my %xref;
@@ -72,6 +74,7 @@ my @f;
 my @jsfiles;
 my @plfiles;
 my @idlfiles;
+my @xblfiles;
 
 my $ident = '\~?_*[a-zA-Z][a-zA-Z0-9_]*';
 my $fnum = 1;
@@ -114,6 +117,210 @@ sub classes {
 	return('');
     }
 }
+
+sub findidentXBL {
+    print(STDERR "Starting pass 1 for XBL: Collect identifier definitions.\n");
+    my $start = time;
+    my $defs = 0;
+    my $f = "";
+    my $contents = "";
+    my @contents;
+    my $curfnum = 0;
+
+    foreach $f (@xblfiles) {
+        $f =~ s/^$realpath//o;
+        $fileidx{++$fnum} = $f;
+        ++$curfnum;
+
+        open(SRCFILE, $realpath.$f);
+        {
+            local $/ = undef;
+            $contents = <SRCFILE>;
+        }
+        close(SRCFILE);
+
+        print(STDERR
+              "(Pass 1 XBL) $f (",length($contents),
+              "), file $curfnum of ",$#xblfiles+1,"...\n");
+
+        # XBL
+        next unless $contents =~ /<!DOCTYPE\s+bindings/ms;
+
+        # Remove comments.
+        # Magic
+        $contents =~ s/<\?([^?]*(?:\?[^?>]|))*\?>/&wash($1)/ges;
+        # XML Comment
+        $contents =~ s/^<!--(?:\w+?\n)-->/&wash($1)/ges;
+        # Preprocessor Comment
+        $contents =~ s/^\s*\#[^\n]*//g;
+
+        # From here on, \01 and \02 are used to encapsulate found
+        # identifiers,
+
+        my ($ct, $ct2, $input);
+        $ct = $input = $contents;
+        $contents = '';
+        my $ct2 = ($ct =~ s/\n//g) || 0;
+        my ($ids, $junk, $tailjunk, $junkkind);
+        my (@tagstack, @tagattrs);
+        # <tag...>
+        # </tag>
+        my ($class, $func);
+        my $l = 1;
+        while ($input =~ s{(^.*?<)(/?)(\w+)([^>]*)>}{}ms) {
+            my ($pre, $close, $tag, $rest) = ($1, $2, $3, $4);
+            $l += ($pre =~ s/\n//g) || 0;
+            if ($close) {
+                pop @tagstack;
+                pop @tagattrs;
+                for ($tag) {
+                  /^binding$/ && do {
+                    $class = undef;
+                    last;
+                  };
+                  /^(?:property|method|field)$/ && do {
+                    $func = undef;
+                    last;
+                  };
+                }
+                next;
+            }
+            my %attrs = ();
+            push @tagstack, $tag;
+            push @tagattrs, \%attrs;
+            my %attrlines = ();
+            my $attrline = 0;
+            while ($rest =~ /(\s+)(\S+)(\s*=\s*)(?:"([^"]*)"|'([^']*)')/g) {
+                my ($pre, $attr, $val) = ($1.$3, $2.$5, $4.$6);
+                $attrline += ($pre =~ s/\n//g) || 0;
+                $attrs{$attr} = $val;
+                $attrlines{$attr} = $attrline;
+                $attrline += ($val =~ s/\n//g) || 0;
+            }
+            for ($tag) {
+              /^(?:content|children|resources|body|handlers)$/ && do {
+                last;
+              };
+              /^binding$/ && do {
+                # Binding (class) declarations
+                if (defined $attrs{'id'}) {
+                    $class = $attrs{'id'};
+                    $contents = $contents . "\04$l\01" .
+                      $itype{'classforw'} .
+                      $class .
+                      "\02";
+                }
+                last;
+              };
+              /^implementation$/ && do {
+                # Implementation (interface) derivations
+                if (defined $attrs{'implements'}) {
+                    $contents .=
+                      "\04$l\01" .
+                      $itype{'class'} .
+                      &classes($attrs{'implements'}) .
+                      "$class\02";
+                }
+                last;
+              };
+              /^(de|con)structor$/ && do {
+                if (defined $class) {
+                    $contents .=
+                      "\04$l\01" .
+                      $itype{'function'} .
+                      &classes($class) .
+                      ($1 eq 'de' ? '~' : '') .
+                      $class .
+                      "\02";
+                }
+                last;
+              };
+              /^([gs])etter$/ && do {
+                my $prefix = $1;
+                $func =~ /^(.)(.*)/;
+                # as an experiment, this declares both the flavors
+                $contents .=
+                  "\04$l\01" .
+                  $itype{'function'} .
+                  $prefix . 'et' . uc($1) . $2 .
+                  "\02";
+                last;
+              };
+              /^(?:property|method|field)$/ && do {
+                if (defined $attrs{'name'}) {
+                    $func = $attrs{'name'};
+                    $contents .=
+                      "\04$l\01" .
+                      $itype{'function'} .
+                      $func .
+                      "\02";
+                    foreach my $attr (qw(onget onset)) {
+                        if (defined $attrs{$attr}) {
+                            $attr =~ /on([gs])et/;
+                            my $prefix = $1;
+                            $func =~ /(.)(.*)/;
+                            $contents .=
+                              "\04".($l+$attrlines{$attr})."\01" .
+                              $itype{'function'} .
+                              $prefix . 'et' . uc($1) . $2 .
+                              "\02";
+                        }
+                    }
+                }
+                last;
+              };
+              /^handler$/ && do {
+                if (defined $attrs{'event'}) {
+                    $func = $attrs{'event'};
+                    $contents .=
+                      "\04$l\01" .
+                      $itype{'function'} .
+                      $func .
+                      "\02";
+                    $func = "on$func";
+                    $contents .=
+                      "\04$l\01" .
+                      $itype{'function'} .
+                      $func .
+                      "\02";
+                }
+                last;
+              };
+              /^parameter$/ && do {
+                if (defined $attrs{'name'}) {
+                    $contents .=
+                      "\04$l\01" .
+                      $itype{'reference'} .
+                      $attrs{'name'} .
+                      "\02";
+                }
+                last;
+              };
+            }
+            $l += $attrline;
+        }
+
+        foreach ($contents =~ /^(.*)/gm) {
+            while (/\04(\d+)\01(.)($ident)\02/go) {
+                $xref{$3} .= "$2$fnum:$1\t";
+                $defs++;
+            }
+        }
+    }
+
+    # Cleanup.
+    foreach (@reservedJS) {
+        delete($xref{$_});
+    }
+
+    $totaldefs = $totaldefs + $defs;
+
+    print(STDERR
+          "Completed pass 1 XBL (",(time-$start),"s):",
+          " $defs definitions found (total found so far: $totaldefs).\n\n");
+}
+
+
 
 sub findidentPL {
     print(STDERR "Starting pass 1 for Perl: Collect identifier definitions.\n");
@@ -1028,19 +1235,27 @@ print(STDERR "looking in $realpath.\n");
 
 while (<FILES>) {
     chop;
-    if (/\.idl$/i) {
-        push(@idlfiles, $_);
-    }
     #   Duplicated in lib/LXR/Common.pm
     if (/\.(hh?|cpp?|c[cs]?|java|fin|tbl)$/i) {
         push(@ft, ($1 eq 'java')?1:0);
-	push(@f, $_);
+        push(@f, $_);
+        next;
     }
     if (/\.(?:js)(?:\.in|)$/i) {
         push(@jsfiles, $_);
+        next;
     }
     if (/\.(?:p[lm]|cgi)(?:\.in|)$/i) {
         push(@plfiles, $_);
+        next;
+    }
+    if (/\.idl$/i) {
+        push(@idlfiles, $_);
+        next;
+    }
+    if (/\.xml$/i) {
+        push(@xblfiles, $_);
+        next;
     }
 }
 close(FILES);
@@ -1064,6 +1279,8 @@ print "Stage 1 C/C++ XREF keycount is : " . scalar(keys %xref) . "\n";
 print "Stage 1 C/C++/JS XREF keycount is : " . scalar(keys %xref) . "\n";
 &findidentPL;
 print "Stage 1 C/C++/JS/PL XREF keycount is : " . scalar(keys %xref) . "\n";
+&findidentXBL;
+print "Stage 1 C/C++/JS/PL/XBL XREF keycount is : " . scalar(keys %xref) . "\n";
 
 $fnum = 0;
 
