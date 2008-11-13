@@ -284,10 +284,21 @@ please complain to the webmaster [cite: bad_dbdir]");
     } elsif ($searchtext ne "") {
         print '<hr>
 ';
-        if ($find) {
-            print "<p><i>Searching <a href='find?string=$find'>these files</a>.</i></p>";
-        }
         my $displayedsearch = $searchtext;
+        $displayedsearch =~ s/&/&amp;/g;
+        $displayedsearch =~ s/</&lt;/g;
+        $displayedsearch =~ s/>/&gt;/g;
+
+        if ($find) {
+            my $displayedfind = $find;
+            $displayedfind =~ s/&/&amp;/g;
+            $displayedfind =~ s/</&lt;/g;
+            $displayedfind =~ s/>/&gt;/g;
+            $displayedfind =~ s/"/&quot;/g;
+            print '<p><i>Searching <a href="find?string=' . $displayedfind . '">these files</a>
+for <a href="search?string=' . $displayedsearch . '">this text</a>.</i></p>';
+        }
+
         if ($regexp) {
             $searchtext =~ s/([~;,><])/\\$1/g;
         } else {
@@ -326,9 +337,6 @@ print "<!--
             }
         }
         $searchtext = $displayedsearch;
-        $searchtext =~ s/&/&amp;/g;
-        $searchtext =~ s/</&lt;/g;
-        $searchtext =~ s/>/&gt;/g;
 
         print("<h1>$searchtext</h1>\n");
 
