@@ -295,8 +295,8 @@ my ($refkind, $reffnum, $refline, $classes) = ($1, $2, $3, $4);
                 }
             } 
             @normal_refs = ();
-            my $ref_count = scalar(@normal_refs);
-            print('Referenced '.($ref_count > 1 ? "(in $ref_count files total)" : '')."in:\n",
+            my $ref_count = scalar(keys %normal_refh);
+            print('Referenced '.($ref_count > 1 ? "(in $ref_count files total) " : '')."in:\n",
                   "<ul>\n");
             foreach (sort { $a <=> $b } keys %normal_refh) {
                 list_links($t, $fileidx{$_}, $concise, $normal_refh{$_});
