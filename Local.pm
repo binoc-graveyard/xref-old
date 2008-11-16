@@ -325,7 +325,7 @@ sub descexpand {
         $desc = <FILE>;
         close(FILE);
     }
-    $desc ||= descmozcontentsrdf($rpath, $Path->{'virt'}, $filename, 0);
+    $desc ||= descmozrdf($rpath, $Path->{'virt'}, $filename, 0);
 
     #strip trailing asterisks and "*/"
     $desc =~ s{\*/?\s*$}{};
@@ -640,17 +640,29 @@ sub descdebcontrol2 {
         || $descriptions{$package};
 }
 
-sub descmozcontentsrdf {
+sub descmozrdf {
     my $line;
     my $description;
     my ($rpath, $directory, $filename, $multiline) = @_;
-    return '' unless open(FILE, $rpath.$filename.'contents.rdf');
-    my $chrome;
+    return '' unless open(FILE, $rpath.$filename.'install.rdf') ||
+                     open(FILE, $rpath.$filename.'contents.rdf');
+    my ($chromeNS, $chrome, $emNS, $em);
     while ($line = <FILE>) {
-        if ($line =~ /xmlns:(\S+)=(?:"([^"]*)"|'([^']*)')/) {
-            $chrome = $1 if ("$2$3" eq 'http://www.mozilla.org/rdf/chrome#');
-        } elsif ($chrome && $line =~ /$chrome:description=(?:"([^"]*)"|'([^']*)')/) {
+        if ($line =~ /xmlns(?::(\S+)|)=(?:"([^"]*)"|'([^']*)')/) {
+            my $ns = $2.$3;
+            if ($ns eq 'http://www.mozilla.org/rdf/chrome#') {
+                $chromeNS = $1;
+                $chrome = ($chromeNS ? "$chromeNS:" : '') . 'description';
+            } elsif ($ns eq 'http://www.mozilla.org/2004/em-rdf#') {
+                $emNS = $1;
+                $em = ($emNS ? "$emNS:" : '') . 'description';
+            }
+        } elsif ($chrome && $line =~ /$chrome=(?:"([^"]*)"|'([^']*)')/) {
             $description = "$1$2";
+            last;
+        } elsif ($em && $line =~ m{<$em>(.*)</$em}) {
+            $description = $1;
+            $description =~ s/<!\[CDATA\[(.*?)\]\]>/$1/g;
             last;
         }
     }
