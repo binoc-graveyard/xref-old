@@ -641,33 +641,76 @@ sub descdebcontrol2 {
 }
 
 sub descmozrdf {
-    my $line;
-    my $description;
+    my ($line, $description, $name, $displayName);
     my ($rpath, $directory, $filename, $multiline) = @_;
-    return '' unless open(FILE, $rpath.$filename.'install.rdf') ||
-                     open(FILE, $rpath.$filename.'contents.rdf');
-    my ($chromeNS, $chrome, $emNS, $em);
-    while ($line = <FILE>) {
-        if ($line =~ /xmlns(?::(\S+)|)=(?:"([^"]*)"|'([^']*)')/) {
-            my $ns = $2.$3;
-            if ($ns eq 'http://www.mozilla.org/rdf/chrome#') {
-                $chromeNS = $1;
-                $chrome = ($chromeNS ? "$chromeNS:" : '') . 'description';
-            } elsif ($ns eq 'http://www.mozilla.org/2004/em-rdf#') {
-                $emNS = $1;
-                $em = ($emNS ? "$emNS:" : '') . 'description';
-            }
-        } elsif ($chrome && $line =~ /$chrome=(?:"([^"]*)"|'([^']*)')/) {
-            $description = "$1$2";
-            last;
-        } elsif ($em && $line =~ m{<$em>(.*)</$em}) {
-            $description = $1;
-            $description =~ s/<!\[CDATA\[(.*?)\]\]>/$1/g;
-            last;
+    my (@descs, $descre, @display, $dispre, @names, $namere);
+
+    foreach my $file (qw(install.rdf contents.rdf)) {
+        next unless open(FILE, '<', $rpath.$filename.$file);
+        $line = <FILE>;
+        unless ($line) {
+            close FILE;
+            next;
         }
+        my $wide;
+        if ($line =~ /^(?:(\xFE\xFF)|(\xFF\xFE))/) {
+if (1) {
+            $wide = 1;
+} else {
+            # this requires a working version of Encode and Encode::LocalConfig
+            # given all i want is to not have null characters, it's overkill.
+            close FILE;
+            next unless open(FILE, '<:encoding(UTF-16)', $rpath.$filename.$file);
+}
+        }
+        do {
+            $line =~ s/\x00//g if $wide;
+            while ($line =~ /xmlns(?::(\S+)|)=(?:"([^"]*)"|'([^']*)')/g) {
+                my $ns = $2.$3;
+                if ($ns eq 'http://www.mozilla.org/rdf/chrome#' ||
+                    $ns eq 'http://www.mozilla.org/2004/em-rdf#') {
+                    my $prefix = ($1 ? "$1:" : '');
+                    push @descs, $prefix . 'description';
+                    push @display, $prefix . 'displayName';
+                    push @names, $prefix . 'name';
+                    $descre = "(?:" . join('|', @descs) . ')\s*';
+                    $dispre = "(?:" . join('|', @display) . ')\s*';
+                    $namere = "(?:" . join('|', @names) . ')\s*';
+                }
+            }
+            if ($descre) {
+                if ($line =~ /$descre=(?:"([^"]*)"|'([^']*)')/) {
+                    $description = "$1$2";
+                    last;
+                }
+                if ($line =~ m{<$descre>(.*)}) {
+                    $line = $1;
+                    my $newline;
+                    $line .= $newline while (($line !~ m{(.*?)</$descre}s) && ($newline = <FILE>));
+                    $description = $1;
+                    $description =~ s/<!\[CDATA\[(.*?)\]\]>/$1/g;
+                    $description =~ s/\s+/ /msg;
+                    last;
+                }
+                if ($line =~ /$dispre=(?:"([^"]*)"|'([^']*)')/) {
+                    $displayName = "$1$2";
+                }
+                if ($line =~ m{<$dispre>(.*)</$dispre}) {
+                    $displayName = $1;
+                    $displayName =~ s/<!\[CDATA\[(.*?)\]\]>/$1/g;
+                }
+                if ($line =~ /$namere=(?:"([^"]*)"|'([^']*)')/) {
+                    $name = "$1$2";
+                }
+                if ($line =~ m{<$namere>(.*)</$namere}) {
+                    $name = $1;
+                    $name =~ s/<!\[CDATA\[(.*?)\]\]>/$1/g;
+                }
+            }
+        } while ($line = <FILE>);
+        close(FILE);
     }
-    close(FILE);
-    return $description;
+    return $description || $displayName || $name;
 }
 
 sub readman {
