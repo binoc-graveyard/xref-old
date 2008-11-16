@@ -113,7 +113,9 @@ sub list_links
           print("  </ul>");
         }
       }
-      print(" -- <span class='p'>" . getline(\%filedesc, $line) . "</span>\n");
+      print " -- <span class='p'>" .
+            markupstring(getline(\%filedesc, $line), $Path->{'virt'}) .
+            "</span>\n";
     }
     close FILEREADER if $closefilereader;
     print(" </ul>\n");
