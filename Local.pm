@@ -325,9 +325,10 @@ sub descexpand {
         $desc = <FILE>;
         close(FILE);
     }
+    $desc ||= descmozcontentsrdf($rpath, $Path->{'virt'}, $filename, 0);
 
     #strip trailing asterisks and "*/"
-    $desc =~ s#\*/?\s*$##;
+    $desc =~ s{\*/?\s*$}{};
 
     if ($desc){
         #htmlify the comments making links to symbols and files
@@ -637,6 +638,24 @@ sub descdebcontrol2 {
     return $descriptions{$collection{Source}}
         || $descriptions{$directory}
         || $descriptions{$package};
+}
+
+sub descmozcontentsrdf {
+    my $line;
+    my $description;
+    my ($rpath, $directory, $filename, $multiline) = @_;
+    return '' unless open(FILE, $rpath.$filename.'contents.rdf');
+    my $chrome;
+    while ($line = <FILE>) {
+        if ($line =~ /xmlns:(\S+)=(?:"([^"]*)"|'([^']*)')/) {
+            $chrome = $1 if ("$2$3" eq 'http://www.mozilla.org/rdf/chrome#');
+        } elsif ($chrome && $line =~ /$chrome:description=(?:"([^"]*)"|'([^']*)')/) {
+            $description = "$1$2";
+            last;
+        }
+    }
+    close(FILE);
+    return $description;
 }
 
 sub readman {
