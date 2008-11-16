@@ -15,4 +15,11 @@ interface blahIBar
   attribute blahIBar childBar;
 
   [noscript] readonly atttribute long face;
+
+  const long BEFORE = 1;
+  void twoParam(
+    in long firstP,
+    in long secondP
+  );
+  const long AFTER = 2;
 };

@@ -766,17 +766,6 @@ sub findidentIDL {
         while ($contents =~ s/\(([^\)]*)\(/\($1\05/g ||
                $contents =~ s/\05([^\(\)]*)\)/ $1 /g) {}
 
-        # Some heuristics here: Try to recognize "code" and delete
-        # everything up to the next block delimiter.
-        # $contents =~ s/([\;\}\{])(\s*$ident\s*\([^\)]*\)[^\{\}]*)/
-        #       "$1".&wash($2)/goes;
-        # $contents =~ s/([\;\{])(\s*\**$ident\s*\=[^\{\}]*)/
-        #       "$1".&wash($2)/goes;
-
-        # Parentheses containing commas are probably not interesting.
-        $contents =~ s/\(([^\)]*\,[^\)]*)\)/
-            "()".&wash($1)/ges;
-
         # From here on, \01 and \02 are used to encapsulate found
         # identifiers,
 
