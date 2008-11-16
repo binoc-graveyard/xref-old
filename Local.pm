@@ -679,32 +679,42 @@ if (1) {
                 }
             }
             if ($descre) {
-                if ($line =~ /$descre=(?:"([^"]*)"|'([^']*)')/) {
-                    $description = "$1$2";
-                    last;
+                unless ($description) {
+                    if ($line =~ /$descre=(?:"([^"]*)"|'([^']*)')/) {
+                        $description = "$1$2";
+                    }
+                    if ($line =~ m{<$descre>(.*)}) {
+                        my $frag = $1;
+                        my $newline;
+                        unless ($frag =~ m{(.*?)</$descre}s) {
+                            while ($newline = <FILE>) {
+                                 $line .= $newline;
+                                 $frag .= $newline;
+                                 $frag =~ m{(.*?)</$descre}s;
+                            }
+                        }
+                        $description = $1;
+                        $description =~ s/<!\[CDATA\[(.*?)\]\]>/$1/g;
+                        $description =~ s/\s+/ /msg;
+                    }
                 }
-                if ($line =~ m{<$descre>(.*)}) {
-                    $line = $1;
-                    my $newline;
-                    $line .= $newline while (($line !~ m{(.*?)</$descre}s) && ($newline = <FILE>));
-                    $description = $1;
-                    $description =~ s/<!\[CDATA\[(.*?)\]\]>/$1/g;
-                    $description =~ s/\s+/ /msg;
-                    last;
+                unless ($displayName) {
+                    if ($line =~ /$dispre=(?:"([^"]*)"|'([^']*)')/) {
+                        $displayName = "$1$2";
+                    }
+                    if ($line =~ m{<$dispre>(.*)</$dispre}) {
+                        $displayName = $1;
+                        $displayName =~ s/<!\[CDATA\[(.*?)\]\]>/$1/g;
+                    }
                 }
-                if ($line =~ /$dispre=(?:"([^"]*)"|'([^']*)')/) {
-                    $displayName = "$1$2";
-                }
-                if ($line =~ m{<$dispre>(.*)</$dispre}) {
-                    $displayName = $1;
-                    $displayName =~ s/<!\[CDATA\[(.*?)\]\]>/$1/g;
-                }
-                if ($line =~ /$namere=(?:"([^"]*)"|'([^']*)')/) {
-                    $name = "$1$2";
-                }
-                if ($line =~ m{<$namere>(.*)</$namere}) {
-                    $name = $1;
-                    $name =~ s/<!\[CDATA\[(.*?)\]\]>/$1/g;
+                unless ($name) {
+                    if ($line =~ /$namere=(?:"([^"]*)"|'([^']*)')/) {
+                        $name = "$1$2";
+                    }
+                    if ($line =~ m{<$namere>(.*)</$namere}) {
+                        $name = $1;
+                        $name =~ s/<!\[CDATA\[(.*?)\]\]>/$1/g;
+                    }
                 }
             }
         } while ($line = <FILE>);
