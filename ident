@@ -58,6 +58,29 @@ sub list_links
       $blamelines =~ s/:[^,]*//g;
       print(&blamerefs($fnam, $blamelines));
     }
+    my $closefilereader;
+    my %filedesc = (line => 0, data => '');
+    if (open FILEREADER, '<', $Path->{'realf'}) {
+      $closefilereader = 1;
+      $filedesc{'line'} = 0;
+      $filedesc{'data'} = '';
+    } else {
+      print "<!-- couldn't open $fnam -->";
+    }
+    sub getline {
+      my ($filedesc, $lineno) = @_;
+      my ($fileline, $lastline) = ($$filedesc{'line'}, $$filedesc{'data'});
+      if ($fileline == $lineno) {
+        return $lastline;
+      }
+      while (++$fileline < $lineno) {
+        my $junk = <FILEREADER>;
+        last if eof FILEREADER;
+      }
+      $lastline = <FILEREADER>;
+      ($$filedesc{'line'}, $$filedesc{'data'}) = ($fileline, $lastline);
+      return $lastline;
+    }
     print("\n <ul>");
     foreach (@fpos) {
       my ($line, @clss) = split(/:/, $_);
@@ -90,8 +113,9 @@ sub list_links
           print("  </ul>");
         }
       }
-      print("\n");
+      print(" -- <span class='p'>" . getline(\%filedesc, $line) . "</span>\n");
     }
+    close FILEREADER if $closefilereader;
     print(" </ul>\n");
   }
 }
