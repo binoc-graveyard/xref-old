@@ -585,7 +585,7 @@ sub freetextmarkup {
   my $tree = $Conf->{'treename'} ne '' ? '/' . $Conf->{'treename'} : '';
 
   $_[0] =~ s#((?:ftp|https?|feed)://[^\s"'\)&<>]+)#<a href="$1">$1</a>#gi;
-  $_[0] =~ s#(chrome)(://)(\w+)(/)(\w+)(/[^&\s]+|)(/[^/\s"'\)&<>]+)#<a href="$tree/search?string=$3&find=contents.rdf">$1$2</a><a href="$tree/search?string=$3&find=chrome.manifest">$3$4</a><a href="$tree/search?string=$5&find=$3.*chrome\.manifest">$5</a><a href="$tree/find?string=$7&hint=$3$6">$6$7</a>#gi;
+  $_[0] =~ s#(chrome)(://)(\w+)(/)(\w+)(/[^&\s]+|)(/[^/\s"'\)&<>]+)#<a href="$tree/search?string=$3&find=contents.rdf">$1$2</a><a href="$tree/search?string=$3&find=chrome\\.manifest">$3$4</a><a href="$tree/search?string=$3&find=chrome\\.manifest&filter=$5">$5</a><a href="$tree/find?string=$7&hint=$3$6">$6$7</a>#gi;
   $_[0] =~ s#(&amp;lt;(?:[Mm][Aa][Ii][Ll][Tt][Oo]:|)([^\s"']*?@[^\s"']*?)&amp;gt;)#<a href=\"mailto:$2\">$1</a>#g;
   $_[0] =~ s#(\((?:[Mm][Aa][Ii][Ll][Tt][Oo]:|)([^\s"']*?@[^\s"']*?)\))#<a href=\"mailto:$2\">$1</a>#g;
   $_[0] =~ s#(\0<(?:[Mm][Aa][Ii][Ll][Tt][Oo]:|)([^\s"']*?@[^\s"']*?)\0>)#<a href=\"mailto:$2\">$1</a>#g;
