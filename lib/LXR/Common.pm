@@ -36,7 +36,7 @@ my @term = (
    '\*/',
   'comment',
   '//',
-   '[\r\n]',
+   '(?:\r?\n|\r)',
   'string',
   '"',
    '"',
@@ -45,7 +45,7 @@ my @term = (
    "'",
   'verb',
   '\\b(?:for|do|while|else|if|throw|return)\\b',
-   '[\s(]',
+   '[\s(;]',
   'verb',
   '\\b(?:true|false|void|unsigned|int|double|float|short|long|bool|char)\\b',
    '[\s();]',
@@ -75,7 +75,7 @@ push @javaterm, (
    '[\s{(]',
   'verb',
   '\\b(?:new|delete|instanceof|null)\\b',
-   '[\s(]',
+   '[\s()},]',
 );
 
 my @cterm = @term;
@@ -110,7 +110,7 @@ push @cppterm, (
    '[\s{(]',
   'verb',
   '\\b(?:new|delete|null)\\b',
-   '[\s(]',
+   '[\s()]',
 );
 
 my @jsterm = @javaterm;
@@ -138,7 +138,7 @@ my @pterm = (
    '',
   'comment',
   '#',
-   '[\r\n]',
+   '(?:\r?\n|\r)',
   'comment',
   '^=(?:begin|pod|head)',
    '=cut',
@@ -1022,7 +1022,7 @@ sub markupfile {
         &freetextmarkup($frag);
         &statustextmarkup($frag);
         $frag = "<span class='c'>$frag</span>";
-        $frag =~ s#\n#</span>\n<span class='c'>#g;
+        $frag =~ s#\r?\n|\r#</span>\n<span class='c'>#g;
       } elsif ($btype eq 'string') {
         # String
         $frag = "<span class='s'>$frag</span>";
@@ -1088,7 +1088,7 @@ sub markupfile {
         $frag =~ s%L\0\0<(.*?)\0_>%L\0<$1\0>%g;
         $frag =~ s%L\0\0<%L\0<%g;
         $frag = "<span class='perldoc c'>$frag</span>";
-        $frag =~ s#\n#</span>\n<span class='perldoc c'>#g;
+        $frag =~ s#(?:\r?\n|\r)#</span>\n<span class='perldoc c'>#g;
       } else {
         # Code
         $frag =~ s#(^|[^a-zA-Z_\#0-9])([a-zA-Z_][a-zA-Z0-9_]*)\b#
