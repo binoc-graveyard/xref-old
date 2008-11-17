@@ -350,21 +350,21 @@ my %alreadywarned = ();
 
 sub warning {
   return if defined $_[1] && $_[1] && defined $alreadywarned{$_[1]};
-  print(STDERR "[",scalar(localtime),"] warning: $_[0]\n");
-  print("<h4 align=\"center\"><i>** Warning: $_[0]</i></h4>\n") if $wwwdebug;
+  print STDERR "[".scalar(localtime)."] warning: $_[0]\n";
+  print "<h4 align=\"center\"><i>** Warning: $_[0]</i></h4>\n" if $wwwdebug;
   $alreadywarned{$_[1]} = 1;
 }
 
 
 sub fatal {
-  print(STDERR "[",scalar(localtime),"] fatal: $_[0]\n");
-  print("<h4 align=\"center\"><i>** Fatal: $_[0]</i></h4>\n") if $wwwdebug;
+  print STDERR "[".scalar(localtime)."] fatal: $_[0]\n";
+  print "<h4 align=\"center\"><i>** Fatal: $_[0]</i></h4>\n" if $wwwdebug;
   exit(1);
 }
 
 
 sub abortall {
-  print(STDERR "[",scalar(localtime),"] abortall: $_[0]\n");
+  print STDERR "[".scalar(localtime)."] abortall: $_[0]\n";
   if ($wwwdebug) {
     print(
 "Content-Type: text/html
