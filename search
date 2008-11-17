@@ -388,15 +388,23 @@ print " files</span></span>
                     next;
                 }
                 if ($line =~ /^[^:]*:[^:]*pattern has some meta-characters interpreted by agrep!/) {
-                    print ("Pattern has some meta-characters. <em>Try moving characters that are not letters (a-z) or numbers (0-9) to the filter field</em><br>\n");
+                    print ("Pattern has some meta-characters.
+<em>Try moving characters that are not letters (a-z) or numbers (0-9) to the filter field</em><br>\n");
                     next;
                 }
                 if ($line =~ /^[^:]*:[^:]*pattern too long/) {
-                    print ("Pattern too long. Use a maximum 29 characters. <em>Try moving extra characters to the filter field.</em>\n");
+                    print ("Pattern too long. Use a maximum of 29 characters.
+<em>Try moving extra characters to the filter field.</em><br>\n");
+                    last;
+                }
+                if ($line =~ /^[^:]*:[^:]*regular expression too long, max is (\d+)/) {
+                    print ("Regular expression pattern too long. Use a maximum of $1 characters.
+<em>Try moving extra characters to the filter field.</em><br>\n");
                     last;
                 }
                 if ($line =~ /^[^:]*:[^:]*pattern '([^']*)' has no characters that were indexed/) {
-                    print ("Pattern does not include any indexed characters. <em>Try adding [a-z] as a regexp.</em>\n");
+                    print ("Pattern does not include any indexed characters.
+<em>Try adding [a-z] as a regexp.</em><br>\n");
                     last;
                 }
             }
