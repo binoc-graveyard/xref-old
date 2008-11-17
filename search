@@ -278,9 +278,14 @@ $hitlimit.'" size=10>';
     if (! -e $Conf->glimpsebin) {
         &fatal("Search isn't available;
 please complain to the webmaster [cite: bad_glimpsebin]");
+    } elsif (($Conf->{'treename'} eq '/search')) {
+        # Bug 465245 MXR search gives error for non tree in tree configuration
     } elsif (! -d $Conf->dbdir) {
         &fatal("Search isn't available;
 please complain to the webmaster [cite: bad_dbdir]");
+    } elsif (! -r $Conf->dbdir . '/.glimpse_index') {
+        &fatal("Search isn't avaliable;
+please complain to the webmaster [cite: bad_glimpseindex]");
     } elsif ($searchtext ne "") {
         print '<hr>
 ';
