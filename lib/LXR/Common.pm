@@ -707,7 +707,7 @@ sub markupstring {
   # Look for identifiers and create links with identifier search query.
   tie (%xref, "DB_File", $Conf->dbdir."/xref", O_RDONLY, 0664, $DB_HASH)
         || &warning("Cannot open xref database.", 'xref-db');
-  $string =~ s#(^|[:.=(),]|\s)([a-zA-Z_~][a-zA-Z0-9_]*)\b#
+  $string =~ s#(^|\W|\s)([a-zA-Z_~][a-zA-Z0-9_]*)\b#
               $1.(is_linkworthy($2) ? &idref($2,$2) : $2)#ge;
   untie(%xref);
 
