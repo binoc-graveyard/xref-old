@@ -8,7 +8,7 @@ use Local;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw($Path &warning &fatal &abortall &fflush &urlargs 
+@EXPORT = qw($Path &warning &fatal &abortall &fflush &urlargs
              &fileref &idref &htmlquote &freetextmarkup &markupfile
              &markspecials &statustextmarkup &markupstring
              markupstring2
@@ -49,7 +49,7 @@ my @term = (
   'verb',
   '\\b(?:true|false|void|unsigned|int|double|float|short|long|bool|char)\\b',
    '[\s();]',
-  'verb',     
+  'verb',
 '^(?:const|static|switch|case|default|break|next|continue|class|struct|union|enum)\\b',
    '\s',
   'include',
@@ -410,7 +410,7 @@ sub urlargs {
     }
   }
   return $#args < 0 ? '' : '?'.join(';',@args);
-} 
+}
 
 
 sub fileref {
@@ -696,7 +696,7 @@ sub linetag {
   return $tag;
 }
 
-# dme: Smaller version of the markupfile function meant for marking up 
+# dme: Smaller version of the markupfile function meant for marking up
 # the descriptions in source directory listings.
 sub markupstring {
   my ($string, $virtp) = @_;
@@ -732,8 +732,8 @@ sub markupstring {
 # dme: Return true if string is in the identifier db and it seems like its
 # use in the sentence is as an identifier and it isn't just some word that
 # happens to have been used as a variable name somewhere. We don't want
-# words like "of", "to" and "a" to get links. The string must be long 
-# enough, and  either contain "_" or have some letter other than the first 
+# words like "of", "to" and "a" to get links. The string must be long
+# enough, and  either contain "_" or have some letter other than the first
 # which is capitalized
 sub is_linkworthy {
   my ($string) = @_;
@@ -781,7 +781,7 @@ sub getnext_fileentry {
     return undef if $file_iterator > $#file_listing;
     my $fileentry = $file_listing[$file_iterator++];
     $fileentry =~ s/^$sourceroot//;
-    return $fileentry; 
+    return $fileentry;
   }
   unless (@file_listing)
   {
@@ -946,7 +946,7 @@ sub markupfile {
 
   $line = 1;
 
-  # A C/C++ file 
+  # A C/C++ file
   my $name = $fname =~ /(.*)\.in$/ ? $1 : $fname;
   if (defined $HTTP->{'param'}->{'handlename'}) {
     $name = $HTTP->{'param'}->{'handlename'};
@@ -1031,7 +1031,7 @@ sub markupfile {
 
           #print "<!-- -->";
         }
-      } elsif ($btype eq 'include') { 
+      } elsif ($btype eq 'include') {
         # Include directive
         if ($frag =~ s#\0(<)(.*?)\0(>)#
             '&lt;'.
@@ -1065,7 +1065,7 @@ sub markupfile {
         $frag =~ s#(use|USE)(\s+)([^\s;]*)#<span class='i'>$1</span>$2$3#;
         my $module = $3;
         my $modulefile = "$module.pm";
-        $modulefile =~ s|::|/|g; 
+        $modulefile =~ s|::|/|g;
         $module = (&filelookup($modulefile, $modulefile, $module));
         $frag =~ s|(</span>\s+)([^\s;]*)|$1$module|;
       } elsif ($btype eq 'perldoc') {
@@ -1216,14 +1216,14 @@ sub fixpaths {
   my $virtf = '/'.shift;
   return unless defined $Conf->sourceroot;
   $Path->{'root'} = $Conf->sourceroot;
-  
+
   while ($virtf =~ s#/[^/]+/\.\./#/#g) {
   }
   $virtf =~ s#/\.\./#/#g;
-         
+
   $virtf .= '/' if (-d $Path->{'root'}.$virtf);
   $virtf =~ s#//+#/#g;
-  
+
   my ($virt, $file) = $virtf =~ m{^(.*/)([^/]*)$};
 
   ($Path->{'virtf'}, $Path->{'virt'}, $Path->{'file'}) = ($virtf, $virt, $file);
@@ -1271,7 +1271,7 @@ dir
 http://src.chromium.org/svn/trunk/src/chrome/browser
 http://src.chromium.org/svn
 =cut
-      my $svnpath = $Path->{'svnvirt'} || undef; 
+      my $svnpath = $Path->{'svnvirt'} || undef;
       my $svnurl;
       my $svnhead = <SVN>;
       if ($svnhead =~ /<\?xml/) {
@@ -1316,7 +1316,7 @@ http://src.chromium.org/svn
   }
 
   @pathelem = $Path->{'virtf'} =~ /([^\/]+$|[^\/]+\/)/g;
-  
+
   $fpath = '';
   foreach (@pathelem) {
     $fpath .= $_;
@@ -1332,7 +1332,7 @@ http://src.chromium.org/svn
   }
   unshift(@pathelem, $Conf->sourcerootname.'/');
   unshift(@addrelem, $fix);
-    
+
   foreach (1..$#pathelem) {
     if (defined($addrelem[$_])) {
 
@@ -1356,7 +1356,7 @@ sub env_or {
 }
 
 sub set_this_url {
-# HTTPS
+  # HTTPS
   my $default_port = env_or('HTTPS', 0) ? 443 : 80;
   my $env_port = env_or('SERVER_PORT', 80);
   my $port = $default_port eq $env_port ? '' : ':'. $env_port;
@@ -1367,12 +1367,12 @@ sub set_this_url {
   $HTTP->{'this_url'} =
     &http_wash(
       join('',
-      $proto,
-      env_or('SERVER_NAME', 'localhost'),
-      $port,
-      env_or('SCRIPT_NAME', 'unknown_script'),
-      env_or('PATH_INFO', ''),
-      $query)
+           $proto,
+           env_or('SERVER_NAME', 'localhost'),
+           $port,
+           env_or('SCRIPT_NAME', 'unknown_script'),
+           env_or('PATH_INFO', ''),
+           $query)
     );
 }
 
@@ -1465,7 +1465,7 @@ sub init_all {
 Link: <' . $baseurl . '/ident>; rel="Glossary"; title="Identifier search"
 Link: <' . $baseurl . '/search>; rel="Search"; title="Text search"
 Link: <' . $baseurl . '/find>; rel="Contents"; title="Find file"
-Link: <' . $parenturl . '>; rel="Up"; title="Parent" 
+Link: <' . $parenturl . '>; rel="Up"; title="Parent"
 ';
 
   $head .= "Content-Type: $ctype\n" if defined $ctype;
@@ -1496,7 +1496,7 @@ Link: <' . $parenturl . '>; rel="Up"; title="Parent"
     # Expires: Thu, 11 Dec 1997 00:55:32 GMT
     $head .= ("Expires: ".(pretty_date(time+1200))."\n");
   }
-    
+
   return ($Conf, $HTTP, $Path, $head);
 }
 
@@ -1506,7 +1506,7 @@ sub expandtemplate {
   my ($expfun, $exppar);
 
   while ($templ =~ s/(\{[^\{\}]*)\{([^\{\}]*)\}/$1\01$2\02/s) {}
-  
+
   $templ =~ s/(\$(\w+)(\{([^\}]*)\}|))/{
     if (defined($expfun = $expfunc{$2})) {
       if ($3 eq '') {
@@ -1817,20 +1817,20 @@ sub modeexpand {
   my $modex = '';
   my @mlist = ();
   local $mode;
-  
+
   if ($who eq 'source' || $who eq 'sourcedir') {
     push(@mlist, "<b><i>source navigation</i></b>");
   } else {
     push(@mlist, &fileref("source navigation", $Path->{'virtf'}));
   }
-  
+
   if ($who eq 'diff') {
     push(@mlist, "<b><i>diff markup</i></b>");
-      
+
   } elsif (($who eq 'source' || $who eq 'sourcedir') && $Path->{'file'}) {
     push(@mlist, &diffref("diff markup", $Path->{'virtf'}));
   }
-    
+
   if ($who eq 'ident') {
     push(@mlist, "<b><i>identifier search</i></b>");
   } else {
@@ -1843,19 +1843,19 @@ sub modeexpand {
     push(@mlist, "<a href=\"$Conf->{virtroot}/search".
          &urlargs."\">freetext search</a>");
   }
-  
+
   if ($who eq 'find') {
     push(@mlist, "<b><i>file search</i></b>");
   } else {
     push(@mlist, "<a href=\"$Conf->{virtroot}/find".
          &urlargs."\">file search</a>");
   }
-  
+
   foreach $mode (@mlist) {
     $modex .= &expandtemplate($templ,
                               ('modelink', sub { return $mode; }));
   }
-    
+
   return $modex;
 }
 
@@ -1867,14 +1867,14 @@ sub varlinks {
   my $vlex = '';
   my ($val, $oldval);
   local $vallink;
-  
+
   $oldval = $allvariable_{$var};
   foreach $val ($Conf->varrange($var)) {
     if ($val eq $oldval) {
       $vallink = "<b><i>$val</i></b>";
     } else {
       if ($who eq 'source' || $who eq 'sourcedir') {
-        $vallink = &fileref($val, 
+        $vallink = &fileref($val,
                             $Conf->mappath($Path->{'virtf'},
                                            "$var=$val"),
                             0,
@@ -1882,16 +1882,16 @@ sub varlinks {
 
       } elsif ($who eq 'diff') {
         $vallink = &diffref($val, $Path->{'virtf'}, "$var=$val");
-          
+
       } elsif ($who eq 'ident') {
         $vallink = &idref($val, $identifier, undef, "$var=$val");
-          
+
       } elsif ($who eq 'search') {
         $vallink = "<a href=\"$Conf->{virtroot}/search".
           &urlargs("$var=$val",
                    "string=".$HTTP->{'param'}->{'string'}).
                      "\">$val</a>";
-        
+
       } elsif ($who eq 'find') {
         $vallink = "<a href=\"$Conf->{virtroot}/find".
           &urlargs("$var=$val",
@@ -1911,10 +1911,10 @@ sub varexpand {
     my $templ = shift;
     my $varex = '';
     local $var;
-    
+
     foreach $var (@allvariables_) {
         $varex .= &expandtemplate($templ,
-                                  ('varname', sub { 
+                                  ('varname', sub {
                                      return $Conf->vardescription($var);
                                    }
                                   ),
@@ -1971,7 +1971,7 @@ sub makeheader {
     $/ = $save;
     close(TEMPL);
   }
-  
+
   print(
 #"<!doctype html public \"-//W3C//DTD HTML 3.2//EN\">\n",
 #          "<html>\n",
@@ -2081,7 +2081,7 @@ sub makefooter {
     $/ = $save;
     close(TEMPL);
   }
-  
+
   print(&expandtemplate($template,
                         ('banner',    \&bannerexpand),
                         ('thisurl',   \&thisurl),
@@ -2095,7 +2095,7 @@ sub makefooter {
 
 sub url_quote {
   my($toencode) = (@_);
-# don't escape / 
+# don't escape /
   $toencode=~s|([^a-zA-Z0-9_/\-.])|uc sprintf("%%%02x",ord($1))|eg;
   return $toencode;
 }
