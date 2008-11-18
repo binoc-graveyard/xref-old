@@ -107,7 +107,7 @@ sub escape_re {
 }
 
 sub search {
-    print(qq{<p align=center>
+    print(qq{<p class=desc>
 Free-text search through the source code, including comments.
 <br>By default, this form treats all characters as literals.
 <br>Search strings can have a maximum of 29 characters.

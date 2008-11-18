@@ -32,7 +32,7 @@ my $lineno;
 
 sub find {
     print '
-<p align=center>
+<p class=desc>
 Search for files (by name) using <a
 href="search-help.html">regular expressions</a>.
 </p>

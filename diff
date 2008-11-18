@@ -84,7 +84,9 @@ sub printdiff {
   my @similartrees = ();
   my @othertrees = ();
   my @treelist = @{$Conf->{'trees'}};
-  print "<form name='diff' id='diff'>
+  print "<p class=desc>
+</p>
+<p><form name='diff' id='diff'>
 <label for='file'>Base file to compare:</label>
 <input id='file' name='file' size=60 value='$virt".$Path->{'file'}."'>
 ";

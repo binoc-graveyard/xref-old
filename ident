@@ -125,7 +125,7 @@ sub list_links
 sub ident {
     my $concise = 0;
 
-    print('<p align=center>
+    print('<p class=desc>
 Type the full name of an identifier
 (a function name, variable name, typedef, etc.)
 <br>to summarize. Matches are <u>case-sensitive</u>.');

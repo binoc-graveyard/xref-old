@@ -1,3 +1,10 @@
+/* if you want to center the headings, uncomment this block.
+.desc {
+ text-align: center;
+ margin-left: auto;
+ margin-right: auto;
+}
+*/
 .c { /* comment */
  font-style: italic;
  font-weight: bold;
