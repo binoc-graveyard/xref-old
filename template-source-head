@@ -20,7 +20,7 @@ $stylesheets</head>
    <nobr><font size="+2"><b><a href="$dotdoturl">Mozilla Cross-Reference</a></b>
 </nobr><i><a href="$baseurl">$treename</a></i>
 </font>
-   <br><B>$banner</B>
+   <br><b>$banner</b>
   </TD>
 
   <td align=right valign=top width="1%">

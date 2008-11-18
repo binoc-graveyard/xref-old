@@ -47,7 +47,7 @@ sub diricon {
 	}
 	$link = $Path->{'virt'}.$filename;
     }
-    return(&fileref("<IMG class='dir icon' ALIGN=ABSBOTTOM BORDER=0 SRC=\"$img\">", $link));
+    return(&fileref("<img class='dir icon' align=absbottom border=0 src=\"$img\">", $link));
 }
 
 sub dirnamehtml {

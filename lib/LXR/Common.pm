@@ -1189,7 +1189,7 @@ sub markupfile {
       $uname =~ s|([^-a-zA-Z0-9.\@/_\r\n])|sprintf("%%%02X", ord($1))|ge;
       my $ctype = get_mime_type($fname);
 
-      &$outfun("<A HREF=\"$Conf->{virtroot}/source".$virtp.$uname.
+      &$outfun("<a href=\"$Conf->{virtroot}/source".$virtp.$uname.
                &urlargs("raw=1").$ctype."\">");
       &$outfun("$fname</a></b>");
       &$outfun("</ul><pre>");

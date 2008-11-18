@@ -277,7 +277,7 @@ sub descexpand {
         # Disallowing embedded spans theoretically removes some flexibility
         # but this seems to be a little used tag and doing this makes lxr 
         # a lot faster.
-        if ($desc =~ /<SPAN CLASS=\"?LXRSHORTDESC\"?>(.*?)<\/SPAN>/is) {
+        if ($desc =~ /<span class=\"?lxrshortdesc\"?>(.*?)<\/span>/is) {
             $short = $1;
             if (!($short =~ /\<span/is)) {
                 return ($short);
@@ -432,15 +432,15 @@ sub descreadmehtml {
     # a non-greedy search for a long desc. assume there are no other stray
     # spans within the description.
     my $shortname = basename $readme;
-    if ($string =~ /<SPAN CLASS=\"?LXRLONGDESC\"?>(.*?<SPAN CLASS=\"?LXRSHORTDESC\"?>.*?<\/SPAN>.*?)<\/SPAN>/is) {
+    if ($string =~ /<span class=\"?lxrlongdesc\"?>(.*?<span class=\"?lxrshortdesc\"?>.*?<\/span>.*?)<\/span>/is) {
         $long = $1;
         if (!($long =~ m{<span.*?</span}is)) {
-            $long .= "<P>\nSEE ALSO: ./$shortname\n";
+            $long .= "<p>\nSEE ALSO: ./$shortname\n";
         }
-    } elsif ($string =~ m{<SPAN CLASS=['"]?LXRLONGDESC['"]?>(.*?)</SPAN>}is) {
+    } elsif ($string =~ m{<span class=['"]?lxrlongdesc['"]?>(.*?)</span>}is) {
         $long = $1;
         if (!($long =~ m{<span}is)) {
-            $long .= "<P>\nSEE ALSO: ./$shortname\n";
+            $long .= "<p>\nSEE ALSO: ./$shortname\n";
         }
     } elsif ($string =~ m{<pre>(.*?)</pre>}is) {
         $long = $1;
@@ -450,7 +450,7 @@ sub descreadmehtml {
         $long = "<pre>" . $long;
 	if ($2) {
             $readme =~ s{^.*/}{./};
-            $long .= "<P>SEE ALSO: $$shortname\n";
+            $long .= "<p>SEE ALSO: $$shortname\n";
         }
         $long .= "\n</pre>";
     }
