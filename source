@@ -27,6 +27,7 @@ use Local;
 use SimpleParse;
 use LXR::Common;
 use LXR::Config;
+use Cwd;
 use File::Basename;
 
 my $force;
@@ -311,9 +312,36 @@ sub printfile {
     my $file = $Path->{'file'};
 
     unless ($file) {
-	&printdir;
+        &printdir;
     } else {
-	if (open(SRCFILE, $Path->{'realf'})) {
+        my ($openresult, $cat);
+        if (defined $HTTP->{'param'}->{'rev'} &&
+            $HTTP->{'param'}->{'rev'} =~ /([a-f0-9]+)/i) {
+            $cat = 'cat -r '.$1;
+        }
+        if ($cat) {
+            my $dir = getcwd;
+            chdir $Path->{'real'};
+            my $verb;
+            if (-d '.svn') {
+                $verb = 'svn';
+            } else {
+                for my $vcs (qw(hg bzr)) {
+                    unless (system("$vcs st $file")) {
+                        $verb = $vcs;
+                        last;
+                    }
+                }
+            }
+            if ($verb) {
+                my $command = "$verb $cat ".$Path->{'realf'}.' |';
+                $openresult = open(SRCFILE, $command);
+            }
+            chdir $dir;
+        } else {
+            $openresult = open(SRCFILE, $Path->{'realf'});
+        }
+        if ($openresult) {
 if (0) {
 print "<!--
 

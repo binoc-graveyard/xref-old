@@ -1628,6 +1628,10 @@ sub hgdehex {
 sub hgversionexpand {
   my $hgroot = gethgroot();
   return 'tip' unless -d $hgroot;
+  if (defined $HTTP->{'param'}->{'rev'} &&
+      $HTTP->{'param'}->{'rev'} =~ /([a-f0-9]+)/i) {
+    return $1;
+  }
   # branch cache is a cache it might not be there
   # if it isn't, we simply offer tip
   # something better may be implemented eventually.
@@ -1984,6 +1988,12 @@ sub makeheader {
   );
 }
 
+sub revoverride {
+  return '' unless defined $HTTP->{'param'}->{'rev'};
+  return '' unless $HTTP->{'param'}->{'rev'} =~ /([a-f0-9]+)/i;
+  return "<h2>Asking version control to show revision $1</h2>";
+}
+
 sub bigexpandtemplate {
   my $template = shift;
   $template = &Local::localexpandtemplate($template);
@@ -1997,6 +2007,7 @@ sub bigexpandtemplate {
     ('thisurl',       \&thisurl),
     ('pathname',      \&filepathname),
     ('filename',      \&filename),
+    ('revoverride',   \&revoverride),
     ('virtfold',      \&virtfold),
     ('virttree',      \&virttree),
     ('urlpath',       \&urlpath),
