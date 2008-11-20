@@ -882,6 +882,10 @@ sub localexpandtemplate
                           ('webhghost',         \&webhghost),
                           ('beginwebhg',        \&beginwebhg),
                           ('endwebhg',          \&endwebhg),
+                          ('oghghost',          \&oghghost),
+                          ('beginoghg',         \&beginoghg),
+                          ('endoghg',           \&endoghg),
+                          ('ogroot',            \&ogroot),
                           ('loggerheadhost',        \&loggerheadhost),
                           ('beginloggerhead',       \&beginwebzr),
                           ('endloggerhead',         \&endloggerhead)
@@ -1061,10 +1065,46 @@ sub webhghost
 sub beginwebhg
 {
     return &beginskip unless checkhg($Path->{'virt'}, $Path->{'real'});
+    return &beginskip if oghghost() eq 'http://src.opensolaris.org';
     return '';
 }
 
 sub endwebhg
+{
+    return &endskip;
+}
+
+sub ogroot
+{
+    my ($virt, $real) = ($Path->{'virt'}, $Path->{'real'});
+    my $path = checkhg($virt, $real);
+    return '' unless $path =~ /^(\d+)/;
+    my $i = $1;
+    while ($i--) {
+      $real =~ s{/[^/]+/?$}{};
+    }
+    $real =~ m{repo.opensolaris.org/(.*)};
+    return $1;
+}
+
+sub oghghost
+{
+    my $og_not_found = 'http://error.opengrok-not-found.tld';
+    my $host = webhghost();
+    if ($host =~ /hg\.opensolaris\.org/) {
+        return 'http://src.opensolaris.org'; 
+    }
+    return $og_not_found;
+}
+
+sub beginoghg
+{
+    my $host = oghghost();
+    return '' if ($host eq 'http://src.opensolaris.org');
+    return &beginskip;
+}
+
+sub endoghg
 {
     return &endskip;
 }

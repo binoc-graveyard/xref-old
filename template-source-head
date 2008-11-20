@@ -72,6 +72,11 @@ $beginwebhg
 <a href="$webhghost/log/$hgversion/$hgpath/$filename">HG Log</a><br>
 <a href="$webhghost/annotate/$hgversion/$hgpath/$filename">HG Blame</a><br>
 $endwebhg
+$beginoghg
+<a href="$oghghost/source/history/$ogroot/$hgpath/$filename">Grok History</a><br>
+<a href="$oghghost/source/xref/$ogroot/$hgpath/$filename?a=true&r=&rev=$hgversion">Grok Blame</a><br>
+$endoghg
+
       <a href="$baseurl/diff?file=$urlpath">Diff file</a><br>
       <a href="$baseurl/source$urlpath?raw=1">Raw file</a><br>
      </TD>
