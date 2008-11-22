@@ -641,10 +641,10 @@ sub c_clean {
     $contents =~ s/[\01\02\03\04\05]//gs;
 
     # Special treatment of enum and struct: inhibit removal of such blocks
-    $contents =~ s/(\s+enum\s+)($ident|)(\s*){([^\}]*)}(\s*)($ident|)/
+    $contents =~ s/(\s+enum\s+)($ident|)(\s*)\{([^\}]*)\}(\s*)($ident|)/
 	"$1 ".($2 ? "\01".$itype{enum}.$2."\02 " : "").$3.&enumval($4).$5.($6 ? "\01".$itype{enum}.$6."\02 " : "")/goes;
 
-    $contents =~ s/(\s+struct\s+)($ident|)(\s*){([^\}]*)}(\s*)($ident|)/
+    $contents =~ s/(\s+struct\s+)($ident|)(\s*)\{([^\}]*)\}(\s*)($ident|)/
 	$1.$2.$3."{}".$4.$5.($6 ? "\01".$itype{typedef}.$6."\02 " : "")/goes;
 
 =pod
@@ -683,17 +683,17 @@ sub java_clean {
 
 sub c_classes {
     my $contents = $_[0];
-
+# XXX this has issues w/ whitespace
     # Find struct, enum and union definitions with params (function returning struct etc)
-    $contents =~ s/((struct|enum|union)\s+($ident|)\s+($ident|)\s*({}|(;)))/
+    $contents =~ s/((struct|enum|union)\s+($ident|)\s+($ident|)\s*(\{\}|(;)))/
 	"$2 ".($3 ? "\01".$itype{$2}.$3."\02 " : " ").$4.$6.&wash($1)/goes;
 
     # Find struct, enum and union definitions.
-    $contents =~ s/((struct|enum|union)\s+($ident|)\s*({}|(;)))/
+    $contents =~ s/((struct|enum|union)\s+($ident|)\s*(\{\}|(;)))/
 	"$2 ".($3 ? "\01".$itype{$2}.$3."\02 " : "").$5.&wash($1)/goes;
 
     # Find class definitions. (C++)
-    $contents =~ s/((class)\s+($ident)\s*(:[^;\{]*|)({}|(;)))/
+    $contents =~ s/((class)\s+($ident)\s*(:[^;\{]*|)(\{\}|(;)))/
 	"$2 "."\01".$itype{$2.($6 ? 'forw' : '')}.
 	    &classes($4).$3."\02 ".$6.&wash($1)/goes;
 
