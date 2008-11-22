@@ -105,7 +105,7 @@ sub stripodd {
 
 sub enumval {
     my $enum_conts = $_[0];
-    $enum_conts =~ s/($ident)[^,]*(,|$)/enum \01$itype{'enum'}$1\02 ;/gs;
+    $enum_conts =~ s/($ident)([^,]*(?:,|$))/"enum \01$itype{'enum'}$1\02 ;".&wash($2)/ges;
     return($enum_conts);
 }
 
