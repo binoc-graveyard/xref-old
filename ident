@@ -159,7 +159,7 @@ value="'.$identifier.'" size=50>
 ');
     if ($Conf->{'treename'} ne '') {
         print '
-<label for="tree">using tree:
+<label for="tree">using tree:</label>
 <select name="tree" id="tree" onchange="changetarget()">
 ';
         my @treelist = @{$Conf->{'trees'}};
