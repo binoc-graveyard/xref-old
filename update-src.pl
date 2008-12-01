@@ -240,6 +240,31 @@ for ($TREE) {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P NSPR $STDERRTOSTDOUT`;
         last;
     };
+    /^l10n-mozilla(1\.9.*)$/ && do {
+        my $ver = $1;
+        my @dirs = <$src_dir/*>;
+        unless (scalar @dirs) {
+            my $base = 'l10n-central';
+            my $orig = $Conf->{'treehash'}{$base};
+            @dirs = hg_get_list("http://hg.mozilla.org/releases/l10n-mozilla-$ver");
+            foreach my $dir (@dirs) {
+                hg_clone_cheap($ver, "l10n-mozilla-$ver", $base, $src_dir, "/" . basename $dir);
+            }
+            @dirs = <$src_dir/*>;
+        }
+        foreach my $dir (@dirs) {
+            print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
+        }
+        last;
+    };
+    /^mozilla(1\.9.*)$/ && do {
+        my $ver = $1;
+        unless (-d "$src_dir/.hg") {
+            hg_clone_cheap($ver, "mozilla-$ver", 'mozilla-central', $src_dir, '');
+        }
+        print LOG `cd $src_dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
+        last;
+    };
     /^(?:seamonkey|(?:aviary(?:101)?|reflow)branch|mozilla1.*)$/ && do {
         print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=all $STDERRTOSTDOUT`;
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
