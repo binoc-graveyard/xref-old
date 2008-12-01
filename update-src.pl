@@ -157,12 +157,12 @@ for ($TREE) {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/webtools $STDERRTOSTDOUT`;
         last;
     };
-    /^bugzilla(\d.*|)$/ && do {
+    /^bugzilla(?:\d.*|)$/ && do {
         chdir '../..';
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/webtools/bugzilla $STDERRTOSTDOUT`;
         last;
     };
-    /^(l10n|l10n-(?:mozilla1\.8|aviarybranch|mozilla1\.8\.0))$/ && do {
+    /^(?:l10n|l10n-(?:mozilla1\.8|aviarybranch|mozilla1\.8\.0))$/ && do {
         print LOG `$TIME $CVS $CVSQUIETFLAGS -d ':pserver:anonymous\@cvs-mirror.mozilla.org:/l10n' $CVSUP -dP $STDERRTOSTDOUT`;
         last;
     };
@@ -185,7 +185,7 @@ for ($TREE) {
         }
         last;
     };
-    /^(build|incubator|l10n|labs|webtools)-central$/ && do {
+    /^(?:build|incubator|l10n|labs|webtools)-central$/ && do {
         my @dirs = <$src_dir/*>;
         foreach my $dir (@dirs) {
             print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
@@ -206,7 +206,7 @@ for ($TREE) {
         print LOG `cd $src_dir; $TIME python2.4 ./client.py checkout $STDERRTOSTDOUT`;
         last;
     };
-    /^(?:.*)-(central|tracing)$/ && do {
+    /^(?:.*)-(?:central|tracing)$/ && do {
         print LOG `cd $src_dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
         last;
     };
@@ -247,7 +247,7 @@ for ($TREE) {
         print LOG `$TIME $SVNCOMMAND $SVNUP`;
         last;
     };
-    /^(.*)$/ && <$src_dir/*/CVS> && do {
+    /^(?:.*)$/ && <$src_dir/*/CVS> && do {
         print LOG `cd $src_dir; $TIME $CVSCOMMAND $CVSUP-d * $STDERRTOSTDOUT`;
         last;
     };
