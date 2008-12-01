@@ -1486,7 +1486,7 @@ Link: <' . $parenturl . '>; rel="Up"; title="Parent"
   if ($file2) { $file2 =~ s{/$}{}; }
 
   my $time1 = 0, $time2 = 0;
-  if ($file1) { $time1 = (stat($file1))[9]; }
+  if ($file1 && -r $file1) { $time1 = (stat($file1))[9]; }
   if ($file2) { $time2 = (stat($file2))[9]; }
 
   my $mod_time = ($time1 > $time2 ? $time1 : $time2);
