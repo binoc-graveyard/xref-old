@@ -23,6 +23,8 @@ my $CVSROOT=':pserver:anonymous@cvs-mirror.mozilla.org:/cvsroot';
 
 $ENV{PATH}='/opt/local/bin:/opt/cvs-tools/bin:'.$ENV{PATH};
 
+my ($lxr_dir, $lxr_conf, $db_dir, $src_dir, $Conf, $HTTP, $Path, $head);
+
 my $TIME = 'time ';
 my $UPTIME = 'uptime ';
 my $DATE = 'date ';
@@ -44,7 +46,52 @@ my $SVNUP = 'update ';
 my $SVNCOMMAND = "$SVN $SVNQUIETFLAGS";
 
 my $HGCOMMAND = 'hg ';
-my $HGUPDATE = 'pull -u ';
+my $HGCLONE = 'clone ';
+my $HGUP = 'up ';
+my $HGUPDATE = 'pull -u -r default';
+
+sub hg_get_list
+{
+    my ($dir) = @_;
+    my @dirs;
+    open LIST, "curl -s -f $dir|" || return @dirs;
+    while (<LIST>) { 
+        if (m{class="list" href="[^"]*/([^"/]+)/"}) {
+            push @dirs, $1;
+        }
+    }
+    return @dirs;
+}
+
+sub hg_clone_cheap
+{
+    my ($ver, $prefix, $base, $dest, $extra) = @_;
+    $extra = '' unless defined $extra;
+    my $orig = $Conf->{'treehash'}{$base}.$extra;
+    my ($destextra, $prefixextra) = ($dest.$extra, $prefix.$extra);
+    if (-d "$orig/.hg") {
+        my $tag = $ver;
+        $tag =~ s/\./_/g;
+        $tag = 'GECKO_'.$tag.'_BASE';
+        my $command =
+          "[ -d $destextra ] && rmdir $destextra; cd $orig;".
+          "$TIME ($HGCOMMAND $HGCLONE .#$tag $destextra || $HGCOMMAND $HGCLONE . $destextra) $STDERRTOSTDOUT;".
+          "cd $destextra;".
+          "perl -pi -e 's!default =.*!default = http://hg.mozilla.org/releases/$prefixextra!' .hg/hgrc;".
+          "$TIME $HGCOMMAND $HGUP $STDERRTOSTDOUT;";
+        print LOG $command;
+        print LOG `$command`;
+        my $rev;
+        while (($rev = `cd $destextra; hg out --template="{node|short}\n" -l 1|head -3|tail -1`)
+               && $rev !~ /no changes found/) {
+             `cd $destextra; hg strip -f -n $rev`;
+        }
+    } else {
+        my $src = basename($dest);
+        print LOG `cd $src; $TIME $HGCOMMAND $HGCLONE http://hg.mozilla.org/releases/$prefixextra $STDERRTOSTDOUT`;
+    }
+}
+
 my $EACHONE = 'xargs -n1 ';
 
 my $BZR = 'bzr ';
@@ -71,14 +118,11 @@ sub process_args {
 
 process_args(@ARGV);
 
-my $lxr_dir = '.';
+$lxr_dir = '.';
 die "can't find $lxr_dir" unless -d $lxr_dir;
-my $lxr_conf = "$lxr_dir/lxr.conf";
+$lxr_conf = "$lxr_dir/lxr.conf";
 
-my $db_dir;
-my $src_dir;
 # let LXR:: handle lxr.conf
-my ($Conf, $HTTP, $Path, $head);
 if (defined $TREE) {
   $ENV{'SCRIPT_NAME'} = "/$TREE/" . basename($0);
   ($Conf, $HTTP, $Path, $head) = &init($0);
