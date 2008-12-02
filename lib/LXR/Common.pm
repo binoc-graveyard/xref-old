@@ -18,7 +18,7 @@ require Exporter;
              &bigexpandtemplate &blamerefs
 );
 
-$wwwdebug = 1;
+$wwwdebug = defined $ENV{'GATEWAY_INTERFACE'} ? 1 : 0;
 
 $SIG{__WARN__} = 'warning';
 $SIG{__DIE__}  = 'fatal';
@@ -349,10 +349,11 @@ my @xmlterm = (
 my %alreadywarned = ();
 
 sub warning {
-  return if defined $_[1] && $_[1] && defined $alreadywarned{$_[1]};
+  my $wclass = defined $_[1] ? $_[1] : '';
+  return if $wclass && defined $alreadywarned{$wclass};
   print STDERR "[".scalar(localtime)."] warning: $_[0]\n";
   print "<h4 align=\"center\"><i>** Warning: $_[0]</i></h4>\n" if $wwwdebug;
-  $alreadywarned{$_[1]} = 1;
+  $alreadywarned{$wclass} = 1 if $wclass;
 }
 
 
@@ -2031,7 +2032,7 @@ sub blamerefs {
   my $template = "";
   if ($Conf->identref) {
     unless (open(TEMPL, $Conf->identref)) {
-      &warning("Template ".$Conf->identref." does not exist.");
+      &warning("Template ".$Conf->identref." does not exist.", 'identref');
     } else {
       local $/;
       $template = <TEMPL>;
