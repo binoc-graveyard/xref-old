@@ -714,12 +714,17 @@ sub java_classes {
     return $contents;
 }
 
+sub idl_decl {
+    return 'NS_DECL_'.(uc shift);
+}
+
 sub idl_interfaces {
     my $contents = $_[0];
     # Find IDL interfaces
 
     $contents =~ s/((interface)\s+($ident)\s*(:[^;\{]*|)(\{|(;)))/
-	"$2 "."\01".$itype{$2.($6 ? 'forw' : '')}.
+	"$2 ".($6 ? '' : "\01".$itype{macro}.idl_decl($3)."\02 ").
+        "\01".$itype{$2.($6 ? 'forw' : '')}.
 	    &classes($4).$3."\02 ".$6.&wash($1)/goes;
 
     return $contents;
@@ -823,7 +828,7 @@ sub findidentIDL {
         my $l = 0;
         foreach ($contents =~ /^(.*)/gm) {
             $l++;
-            while (/\01(.)(?:(.+?)\s*::\s*|)($ident)\02/go) {
+            while (/\01(.)(?:([^\01\02]+?)\s*::\s*|)($ident)\02/go) {
                 $xref{$3} .= "$1$fnum:$l".($2 ? ":$2" : "")."\t";
                 $defs++;
             }
