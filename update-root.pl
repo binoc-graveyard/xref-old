@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w 
+#!/usr/bin/perl -w
 
 use Cwd;
 use File::Basename;
@@ -71,7 +71,7 @@ while ($line = <LXRCONF>) {
   if ($TREE ne '') {
     if ($line =~ /^sourceroot:\s*\Q$TREE\E\s+(\S+)$/) {
       $src_dir = $1;
-      $line = "sourceroot: $TREE $new_src_dir\n"; 
+      $line = "sourceroot: $TREE $new_src_dir\n";
     }
   } else {
     if ($line =~ /^sourceroot:\s*(\S+)$/) {
@@ -146,7 +146,7 @@ glimpseindex -H $mxr_dir_tmp -R
       if (-d "$db_dir/.mxr") {
         $cmd .= "mv $db_dir/.mxr $db_dir/.mxr-0
 mv $mxr_dir_tmp $db_dir/.mxr
-rmdir $db_dir_tmp 
+rmdir $db_dir_tmp
 rm -rf $db_dir/.mxr-0";
       } else {
         $cmd .= "mv $mxr_dir_tmp $db_dir/.mxr";

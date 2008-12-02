@@ -55,7 +55,7 @@ sub hg_get_list
     my ($dir) = @_;
     my @dirs;
     open LIST, "curl -s -f $dir|" || return @dirs;
-    while (<LIST>) { 
+    while (<LIST>) {
         if (m{class="list" href="[^"]*/([^"/]+)/"}) {
             push @dirs, $1;
         }
@@ -136,7 +136,7 @@ if (defined $TREE) {
 } else {
   open LXRCONF, '<', "$lxr_dir/lxr.conf" || die "can't open lxr.conf";
   my %sourceroot = ();
-  do { 
+  do {
     #grab sourceroot from config file indexing only a single tree where
     #format is "sourceroot: dirname"
 
@@ -186,7 +186,7 @@ for ($TREE) {
     };
     /^classic$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P -rMozillaSourceClassic_19981026_BRANCH MozillaSource $STDERRTOSTDOUT`;
-        last; 
+        last;
     };
     /^js$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/js mozilla/js2 mozilla/nsprpub $STDERRTOSTDOUT`;

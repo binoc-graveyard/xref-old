@@ -28,28 +28,28 @@ use File::Glob qw(bsd_glob :globally :nocase);
 # If no description, return the string "\&nbsp\;" to keep the
 # table looking pretty.
 #
-# In mozilla search the beginning of a source file for a short 
-# description. Not all files have them and the ones that do use 
+# In mozilla search the beginning of a source file for a short
+# description. Not all files have them and the ones that do use
 # many different formats. Try to find as many of these without
 # printing gobbledygook or something silly like a file name or a date.
 #
-# Read in the beginning of the file into a string. I chose 60 because the 
-# Berkeley copyright notice is around 40 lines long so we need a bit more 
+# Read in the beginning of the file into a string. I chose 60 because the
+# Berkeley copyright notice is around 40 lines long so we need a bit more
 # than this.
 #
 # It's common for file descriptions to be delimited by the file name or
 # the word "Description" which precedes the description. Search the entire
 # string for these. Sometimes they're put in odd places such as inside
 # the copyright notice or after the code begins. The file name should be
-# followed by a colon or some pattern of dashes. 
+# followed by a colon or some pattern of dashes.
 #
 # If no such description is found then use the contents of the "first"
 # comment as the description. First, strip off the copyright notice plus
 # anything before it. Remove rcs comments. Search for the first bit of
 # code (usually #include) and remove it plus anything after it. In what's
 # left, find the contents of the first comment, and get the first paragraph.
-# If that's too long, use only the first sentence up to a period. If that's 
-# still too long then we probably have a list or something that will look 
+# If that's too long, use only the first sentence up to a period. If that's
+# still too long then we probably have a list or something that will look
 # strange if we print it out so give up and return null.
 #
 # Yes, this is a lot of trouble to go through but its easier than getting
@@ -110,7 +110,7 @@ sub fdescexpand {
 	    }
 	}
 	close(FILE);
-    } 
+    }
     if ($filename =~ /\.html?$/) {
         if ($desc =~ m{<title[^>]*>(.*)?</title}is) {
             $desc = $1;
@@ -127,13 +127,13 @@ sub fdescexpand {
     # save a copy for later
     $copy = $desc;
 
-    # Look for well behaved <filename><separator> formatted 
+    # Look for well behaved <filename><separator> formatted
     # descriptions before we go to the trouble of looking for
-    # one in the first comment. The whitespace between the 
+    # one in the first comment. The whitespace between the
     # delimiter and the description may include a newline.
-    if (($desc =~ s/(?:.*?\Q$filename\E\s*?- ?-*\s*)([^\n]*)(?:.*)/$1/sgi) || 
+    if (($desc =~ s/(?:.*?\Q$filename\E\s*?- ?-*\s*)([^\n]*)(?:.*)/$1/sgi) ||
         ($desc =~ s/(?:.*?\Q$filename\E\s*?:\s*)([^\n]*)(?:.*)/$1/sgi) ||
-        ($desc =~ s/(?:.*?Description:\s*)([^\n]*)(?:.*)/$1/sgi) 
+        ($desc =~ s/(?:.*?Description:\s*)([^\n]*)(?:.*)/$1/sgi)
 	){
         # if the description is non-empty then clean it up and return it
         if ($desc =~ /\w/) {
@@ -151,10 +151,10 @@ sub fdescexpand {
             #htmlify the comments making links to symbols and files
             $desc = markupstring($desc, $Path->{'virt'});
             return($desc);
-        } 
+        }
     }
 
-    # we didn't find any well behaved descriptions above so start over 
+    # we didn't find any well behaved descriptions above so start over
     # and look for one in the first comment
     $desc = $copy;
 
@@ -252,7 +252,7 @@ sub get_readable_file {
 # If no description, return the string "\&nbsp\;" to keep the
 # table looking pretty.
 #
-# In Mozilla, if the directory has a README file look in it for lines 
+# In Mozilla, if the directory has a README file look in it for lines
 # like the ones used in source code: "directoryname --- A short description"
 sub descexpand {
     # use global vars here because the expandtemplate subroutine makes
@@ -271,11 +271,11 @@ sub descexpand {
         $/ = "\n";
         close(DESC);
 
-        # Make sure there is no <span> embedded in our string. If so 
+        # Make sure there is no <span> embedded in our string. If so
         # then we've matched against the wrong /span and this string is junk
         # so we'll throw it away and refrain from writing a description.
         # Disallowing embedded spans theoretically removes some flexibility
-        # but this seems to be a little used tag and doing this makes lxr 
+        # but this seems to be a little used tag and doing this makes lxr
         # a lot faster.
         if ($desc =~ /<span class=\"?lxrshortdesc\"?>(.*?)<\/span>/is) {
             $short = $1;
@@ -285,7 +285,7 @@ sub descexpand {
         }
     }
 
-    $desc = ""; 
+    $desc = "";
     if (open(FILE, $readme)) {
 	$path = $Path->{'virt'}.$filename;
 	$path =~ s#/(.+)/#$1#;
@@ -340,13 +340,13 @@ sub descexpand {
     }
 }
 
-# dme: Print a descriptive blurb in directory listings between 
+# dme: Print a descriptive blurb in directory listings between
 # the document heading and the table containing the actual listing.
 #
 # For Mozilla, we extract this information from the README file if
 # it exists. If the file is short then just print the whole thing.
-# For longer files print the first paragraph or so. As much as 
-# possible make this work for randomly formatted files rather than 
+# For longer files print the first paragraph or so. As much as
+# possible make this work for randomly formatted files rather than
 # inventing strict rules which create gobbledygook when they're broken.
 sub dirdesc {
     my ($path) = @_;
@@ -412,7 +412,7 @@ sub deschtmlfilesfolder {
 sub descreadmehtml {
     my ($path, $readme) = @_;
 
-    my $string = ""; 
+    my $string = "";
     my $rpath = $Path->{'real'};
     $readme = get_readable_file($rpath, $readme) || get_readable_file($rpath, 'README{.html,.htm}');
     if (!$readme || !open(DESC, $readme)) {
@@ -462,9 +462,9 @@ sub descreadmehtml {
 sub descreadme {
     my ($path, $readme) = @_;
 
-    my $string = ""; 
+    my $string = "";
 #    $string =~ s#(</?([^>^\s]+[^>]*)>.*$)#($2~/B|A|IMG|FONT|BR|EM|I|TT/i)?$1:""#sg;
-    my $n; 
+    my $n;
     my $count;
     my $temp;
 
@@ -514,7 +514,7 @@ sub descreadme {
     # Just print it all
     if ($count > $maxlines) {
         # grab the first n paragraphs, with n decreasing until the
-        # string is 10 lines or shorter or until we're down to 
+        # string is 10 lines or shorter or until we're down to
 	# one paragraph.
 	$n = 6;
 	$temp = $string;
@@ -535,13 +535,13 @@ sub descreadme {
 	}
 
 	# if we have more than $maxlines then truncate to $chopto
-	# and add an ellipsis. 
+	# and add an ellipsis.
 	if ($count > $maxlines) {
 	    $string =~ s/^((?:[\S \t]*\n){$chopto}?)(.*)/$1/s;
 	    chomp($string);
 	    $string = $string . "\n...";
-	} 
-	
+	}
+
         # since not all of the README is displayed here,
         # add a link to it.
         chomp($string);
@@ -583,7 +583,7 @@ sub descdebcontrol {
         $string .= $line;
     }
     close(DESC);
-    my $string = descdebcontrol2($Path->{'real'}, $Path->{'virt'}, './', 1); 
+    my $string = descdebcontrol2($Path->{'real'}, $Path->{'virt'}, './', 1);
     chomp($string);
     $string = markupstring($string, $Path->{'virt'});
     $string = convertwhitespace($string, 1);
@@ -747,7 +747,7 @@ sub descmanfile {
             if (-f $dir) {
                 close(DESC);
                 return descmanfile($dir);
-            } 
+            }
         }
         if ($line =~ /^\..*SH \S/) {
             $string = $line;
@@ -1005,7 +1005,7 @@ sub cvswebhost
     }
     return $cvsweb_host;
 }
- 
+
 sub websvnhost
 {
     return '';
@@ -1092,7 +1092,7 @@ sub oghghost
     my $og_not_found = 'http://error.opengrok-not-found.tld';
     my $host = webhghost();
     if ($host =~ /hg\.opensolaris\.org/) {
-        return 'http://src.opensolaris.org'; 
+        return 'http://src.opensolaris.org';
     }
     return $og_not_found;
 }

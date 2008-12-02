@@ -1,4 +1,4 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 use lib 'lib';
 use LXR::Common;
 use LXR::Config;

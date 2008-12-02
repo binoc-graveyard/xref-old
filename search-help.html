@@ -24,7 +24,7 @@ for the<br>
 <blockquote><blockquote>
 <i>
 This text is derived from the Glimpse manual page.
-For more information on glimpse, see the 
+For more information on glimpse, see the
 <a href="http://webglimpse.net/">Glimpse homepage</a>.
 </i>
 </blockquote></blockquote>
@@ -32,7 +32,7 @@ For more information on glimpse, see the
 <a name="Patterns"></a><h2>Patterns</h2>
 <ul>
 glimpse supports a large variety of patterns, including simple
-strings, strings with classes of characters, sets of strings, 
+strings, strings with classes of characters, sets of strings,
 wild cards, and regular expressions (see <a href="#Limitations">Limitations</a>).
 
 </ul>
@@ -66,28 +66,28 @@ newline symbol).
 <p> <h3>Boolean operations</h3>
 <ul>
 
-Glimpse 
-supports an `AND' operation denoted by the symbol `;' 
+Glimpse
+supports an `AND' operation denoted by the symbol `;'
 an `OR' operation denoted by the symbol `,',
 a limited version of a 'NOT' operation (starting at version 4.0B1)
 denoted by the symbol `~',
-or any combination.  
+or any combination.
 For example, pizza;cheeseburger' will output all lines containing
 both patterns.
-'{political,computer};science' will match 'political science' 
+'{political,computer};science' will match 'political science'
 or 'science of computers'.
 
 </ul>
 <p><h3>Wild cards</h3>
 <ul>
 
-The symbol '#' is used to denote a sequence 
-of any number (including 0) 
-of arbitrary characters (see <a href="#Limitations">Limitations</a>).  
+The symbol '#' is used to denote a sequence
+of any number (including 0)
+of arbitrary characters (see <a href="#Limitations">Limitations</a>).
 The symbol # is equivalent to .* in egrep.
 In fact, .* will work too, because it is a valid regular expression
 (see below), but unless this is part of an actual regular expression,
-# will work faster. 
+# will work faster.
 (Currently glimpse is experiencing some problems with #.)
 
 </ul>
@@ -142,7 +142,7 @@ preceded by '\\' to search for them.  The most common
 examples are the characters '.' (which stands for a wild card),
 and '*' (the Kleene closure).
 So, "glimpse ab.de" will match abcde, but "glimpse ab\\.de"
-will not, and "glimpse ab*de" will not match ab*de, but 
+will not, and "glimpse ab*de" will not match ab*de, but
 "glimpse ab\\*de" will.
 The meta character - is translated automatically to a hyphen
 unless it appears between [] (in which case it denotes a range of

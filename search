@@ -16,7 +16,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -134,7 +134,7 @@ function changefindpreset() {
   var find = document.getElementById('find');
   var findi = document.getElementById('findi');
   if (findi.selectedIndex > 0)
-   find.value = findi.value; 
+   find.value = findi.value;
  }
 }
 </script>
@@ -272,7 +272,7 @@ $hitlimit.'" size=10>';
 </form>
 
 ';
-    
+
     $| = 1; print('');
 
     if (! -e $Conf->glimpsebin) {
@@ -465,9 +465,9 @@ print " files</span></span>
             $retval = 0;
         }
 	# The manpage for glimpse says that it returns 2 on syntax errors or
-	# inaccessible files. It seems this is not the case. 
+	# inaccessible files. It seems this is not the case.
 	# We will have to work around it for the time being.
-    
+
 	if ($retval == 0) {
 	    if ($numlines == 0) {
 		print("No matching files<br>\n");
@@ -490,7 +490,7 @@ print " files</span></span>
 
 $openlist = 0;
 		foreach $glimpseline (@glimpselines) {
-		  display_line($glimpseline); 
+		  display_line($glimpseline);
 		}
 print ('</ul>') if $openlist;
 	    }
@@ -525,7 +525,7 @@ $filter =~ s/%(\w\w)/chr(hex $1)/ge;
 
 sub cleanHitlimit {
   my $hitLimit = shift;
-  $hitLimit =~ s/^.*?(\d*).*$/$1/; 
+  $hitLimit =~ s/^.*?(\d*).*$/$1/;
   return $hitLimit;
 }
 

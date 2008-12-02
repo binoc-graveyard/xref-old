@@ -1,4 +1,4 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 # Run this from cron to update the identifier database that lxr uses
 # to turn function names into clickable links.
 # Created 12-Jun-98 by jwz.
@@ -72,7 +72,7 @@ unless (defined $TREE) {
   # need to sniff lxr.conf
   open LXRCONF, "< $lxr_conf" || die "Could not open $lxr_conf";
   while ($line = <LXRCONF>) {
-    #since no tree is defined, assume sourceroot is defined the old way 
+    #since no tree is defined, assume sourceroot is defined the old way
     #grab sourceroot from config file indexing only a single tree where
     #format is "sourceroot: dirname"
     next unless $line =~ /^sourceroot:\s*(\S+)(\s+\S+|)$/;

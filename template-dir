@@ -12,7 +12,7 @@
     <td nowrap valign=top align=left>$namelink </td>
     <td nowrap valign=top align=right>$filesize{$kbytes} </td>
     <td nowrap valign=top align=right><font size="-1">$modtime</font> </td>
-    <td valign=top align=left>$description{<i>$desctext</i>} 
+    <td valign=top align=left>$description{<i>$desctext</i>}
     </td>
   </tr>
   }

@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w 
+#!/usr/bin/perl -w
 # Run this from cron to update the glimpse database that lxr uses
 # to do full-text searches.
 # Created 12-Jun-98 by jwz.
@@ -74,12 +74,12 @@ my $src_dir;
 my $script_prefix = './';
 if (defined $TREE) {
   $script_prefix = "/$TREE/";
-} else { 
+} else {
   # need to sniff lxr.conf
   open LXRCONF, "< $lxr_conf" || die "Could not open $lxr_conf";
   while ($line = <LXRCONF>) {
     warn "trailing whitespace on line $. {$line}" if $line =~ /^\w+:.*\w.*\s+\n$/;
-    #since no tree is defined, assume sourceroot is defined the old way 
+    #since no tree is defined, assume sourceroot is defined the old way
     #grab sourceroot from config file indexing only a single tree where
     #format is "sourceroot: dirname"
     next unless $line =~ /^sourceroot:\s*(\S+)(\s+\S+|)$/;
@@ -129,7 +129,7 @@ mkdir $db_dir unless -d $db_dir;
 =pod
               -e      Exit  immediately  if a simple command (see
                       SHELL GRAMMAR above) exits with a  non-zero
-                      status. 
+                      status.
 
               -x      After  expanding  each  simple command, for
                       command, case command, select  command,  or
@@ -169,7 +169,7 @@ do_log("chdir $db_dir_tmp");
 unless (chdir $db_dir_tmp) {
   do_log("chdir $db_dir_tmp failed");
   exit 6;
-} 
+}
 
 # do index everything in lxrroot
 my @include_paths = qw (
@@ -201,7 +201,7 @@ close GLIMPSEEXCLUDE;
 my $cmd = "($TIME glimpseindex -n -B -M 8 -H . $src_dir $STDERRTOSTDOUT) >> $log";
 do_and_log($cmd);
 my $mxr_dir_tmp = "$db_dir_tmp/.mxr";
--d $mxr_dir_tmp || mkdir $mxr_dir_tmp; 
+-d $mxr_dir_tmp || mkdir $mxr_dir_tmp;
 
 $cmd = "ls -al >> $log
 (cp .glimpse_filenames $mxr_dir_tmp/files $STDERRTOSTDOUT || echo failed to copy .glimpse_filenames) >> $log

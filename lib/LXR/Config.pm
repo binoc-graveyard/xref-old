@@ -81,7 +81,7 @@ if (0) {
         my %rewritehash = split(/\s+/, $self->{'rewriteurl'});
 
         #To compute which tree we're looking at, grab the second to last
-        #component from the script name which will be of the form: 
+        #component from the script name which will be of the form:
         # /seamonkey/source
         $self->{'treename'} = $ENV{'SCRIPT_NAME'};
         $self->{'treename'} =~ s|.*/([^/]+)/[^/]*|$1|;
@@ -112,7 +112,7 @@ if (0) {
         if (defined $path) {
           my @pathdirs = split(/\//, $path);
           my $pathnum = @pathdirs;
-          $self->{'bonsaicvsroot'} = $pathdirs[$pathnum - 1]; 
+          $self->{'bonsaicvsroot'} = $pathdirs[$pathnum - 1];
         }
 
         my %treehashp = split(/\s+/, $self->{'sourceprefix'});
@@ -196,7 +196,7 @@ sub _initialize {
         }
 	$conf .= $confname;
     }
-    
+
     unless (open(CONFIG, $conf)) {
 	&fatal("Couldn't open configuration file \"$conf\".");
     }
@@ -220,7 +220,7 @@ sub _initialize {
 		    push(@{$self->{variables}},$args[0]);
 		    $self->{varrange}->{$args[0]} = [split(/\0/,$args[2])];
 		    $self->{vdefault}->{$args[0]} = $args[3];
-		    $self->{vdefault}->{$args[0]} ||= 
+		    $self->{vdefault}->{$args[0]} ||=
 			$self->{varrange}->{$args[0]}->[0];
 		    $self->{variable}->{$args[0]} =
 			$self->{vdefault}->{$args[0]};
@@ -269,7 +269,7 @@ sub _initialize {
 		}
 	    } else {
 		&warning("Unknown config directive (\"$dir\")");
-	    }			
+	    }
 	    next;
 	}
 	&warning("Noise in config file (\"$_\")");
@@ -473,7 +473,7 @@ sub mappath {
     my ($self, $path, @args) = @_;
     my (%oldvars) = %{$self->{variable}};
     my ($m);
-    
+
     foreach $m (@args) {
 	$self->{variable}->{$1} = $2 if $m =~ /(.*?)=(.*)/;
     }
@@ -489,7 +489,7 @@ sub mappath {
 #sub mappath {
 #    my ($self, $path) = @_;
 #    my ($m);
-#    
+#
 #    foreach $m (@{$self->{maplist}}) {
 #	$path =~ s/$m->[0]/$self->varexpand($m->[1])/e;
 #    }
