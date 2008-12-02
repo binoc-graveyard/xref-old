@@ -66,9 +66,6 @@ sub display_line
     $glimpseline =~ s/$sourceroot//;
     ($file, $line, $text) =
         $glimpseline =~ /(.*?):\s*(\d+)\s*:(.*)/;
-    $text =~ s/&/&amp;/g;
-    $text =~ s/</&lt;/g;
-    $text =~ s/>/&gt;/g;
     my $filepath='';
     my $filename;
     my $skip = $lastfilepath eq $file;
@@ -97,7 +94,7 @@ sub display_line
     }
     print ('<li>');
     print(&fileref("line $line", "$filepath", $line),
-          " -- $text<br>\n");
+          " -- ".markupstring($text)."<br>\n");
 }
 
 sub escape_re {
