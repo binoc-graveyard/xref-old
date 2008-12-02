@@ -148,8 +148,11 @@ if (defined $TREE) {
     $sourceroot{$1} = $2 if $line =~ /^sourceroot:\s*(\S+ |)(.*)/;
   } until eof LXRCONF;
   die "could not find dbdir: directive"  unless defined $db_dir;
-  $db_dir .= "/$TREE" if defined $TREE && $TREE ne '';
-
+  if (defined $TREE) {
+    $db_dir .= "/$TREE" if $TREE ne '';
+  } else {
+    $TREE = '';
+  }
   #since no tree is defined, assume sourceroot is defined the old way
   $src_dir = $sourceroot{$TREE ? "$TREE " : ''};
 }
@@ -180,6 +183,10 @@ chdir '..';
 
 # endico: check out the source
 for ($TREE) {
+    /^$/ && do {
+        warn "You need to fill in your update script here. fixme!";
+        last;
+    };
     /^world-all$/ && do {
         print LOG `$TIME (echo */* | $EACHONE $SVNCOMMAND $SVNUP)`;
         last;
