@@ -103,7 +103,7 @@ push @cppterm, (
   '\\b(?:inline|extern|explicit|new)\\b',
    '[\s]',
   'verb',
-  '\\b(?:public|protected|private|interface|virtual)\\b',
+  '\\b(?:public|protected|private|interface|virtual|friend)\\b',
    '[\s:(]',
   'verb',
   '\\b(?:try|catch|finally|operator)\\b',
