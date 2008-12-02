@@ -227,7 +227,7 @@ sub printdir {
     $template = "<ul>\n\$files{\n<li>\$iconlink \$namelink\n}</ul>\n";
     if ($Conf->htmldir) {
 	unless (open(TEMPL, $Conf->htmldir)) {
-	    &warning("Template ".$Conf->htmldir.unreadable($Conf->htmldir));
+	    &warning("Template ".$Conf->htmldir.unreadable($Conf->htmldir), 'htmldir');
 	} else {
             local $/;
 	    $template = <TEMPL>;
@@ -252,7 +252,7 @@ sub printdir {
 	print("<p align=center>\n<i>This directory".unreadable($Path->{'real'})."</i>\n");
 	if ($Path->{'real'} =~ m#(.+[^/])[/]*$#) {
 	    if (-e $1) {
-		&warning("Unable to open ".$Conf->{'treename'}.$Path->{'virt'});
+		&warning("Unable to open ".$Conf->{'treename'}.$Path->{'virt'}, 'virt');
 	    }
 	}
 	return;
@@ -260,7 +260,7 @@ sub printdir {
 
     if (-f $Path->{'real'}."00-INDEX") {
 	open(INDEX,$Path->{'real'}."00-INDEX") ||
-	    &warning("Existing \"00-INDEX\" could not be opened.");
+	    &warning("Existing \"00-INDEX\" could not be opened.", '00-index');
         local $/;
 	$index = <INDEX>;
 
@@ -432,7 +432,7 @@ my $body = <SRCFILE>;
             }
             print("<p>Maybe you can <a href='".$Conf->baseurl."/find?string=/".$file."&hint=$Path->{virt}'>find it elsewhere</a>.\n");
 	    if (-f $Path->{'realf'}) {
-		&warning("Unable to open ".$Conf->{'treename'}.$Path->{'virtf'});
+		&warning("Unable to open ".$Conf->{'treename'}.$Path->{'virtf'}, 'virtf');
 	    }
 	}
     }

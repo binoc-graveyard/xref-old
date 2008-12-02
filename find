@@ -96,7 +96,7 @@ print "<br>";
     if ($searchtext ne "") {
         my $filename = $Conf->dbdir."/.glimpse_filenames";
         unless (open(FILELLISTING, $filename)) {
-            &warning("Could not open $filename");
+            &warning("Could not open $filename", 'searchfile');
             return;
         }
         print "<p><hr>\n";
@@ -115,7 +115,7 @@ if this was not your <b>intent</b>,
         $sourceroot = $Conf->sourceroot;
         $file = <FILELLISTING>;
         if ($file !~ /^\d+$/) {
-            &warning("glimpse file format doesn't match expectations.");
+            &warning("glimpse file format doesn't match expectations.", 'glimpsedb');
             return;
         }
         my $highscore = 0;
