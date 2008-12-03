@@ -209,18 +209,17 @@ for ($TREE) {
     };
     /^bugzilla(\d.*|)$/ && do {
         my $ver = $1;
-        unless (-d $src_dir) {
-          my $dir = dirname(dirname(dirname($src_dir)));
-          chdir $dir;
+        my $dir = basename($src_dir);
+        unless (-d "$src_dir/CVS") {
+          chdir dirname $src_dir;
           if ($ver) {
             $ver =~ s/\.x//;
             $ver =~ s/\./_/g;
             $ver = "-r BUGZILLA-$ver-BRANCH";
           }
-          print LOG `$TIME $CVSCOMMAND $CVSCO -P $ver mozilla/webtools/bugzilla $STDERRTOSTDOUT`;
+          print LOG `$TIME $CVSCOMMAND $CVSCO -P $ver -d $dir mozilla/webtools/bugzilla $STDERRTOSTDOUT`;
         } else {
-          chdir '../..';
-          print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/webtools/bugzilla $STDERRTOSTDOUT`;
+          print LOG `$TIME $CVSCOMMAND $CVSUP -P -d $dir $STDERRTOSTDOUT`;
         }
         last;
     };
