@@ -334,9 +334,15 @@ for ($TREE) {
         print LOG `$TIME $SVNCOMMAND $SVNUP`;
         last;
     };
-    /^(?:.*)$/ && <$src_dir/*/CVS> && do {
-        print LOG `cd $src_dir; $TIME $CVSCOMMAND $CVSUP-d * $STDERRTOSTDOUT`;
-        last;
+    /^(?:.*)$/ && do {
+        my @dirs = <$src_dir/*/CVS>;
+        if (scalar @dirs) {
+            foreach my $dir (@dirs) {
+                $dir =~ s/CVS$//; $dir =~ s{//+}{/}g;
+                print LOG `cd $dir; $TIME $CVS $CVSQUIETFLAGS $CVSUP-d $STDERRTOSTDOUT`;
+            }
+            last;
+        }
     };
     warn "unrecognized tree. fixme!";
 }
