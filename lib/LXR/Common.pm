@@ -1336,6 +1336,7 @@ http://src.chromium.org/svn
   unshift(@pathelem, $Conf->sourcerootname.'/');
   unshift(@addrelem, $fix);
 
+  my $xref = '';
   foreach (1..$#pathelem) {
     if (defined($addrelem[$_])) {
 
@@ -1345,12 +1346,13 @@ http://src.chromium.org/svn
       # space.  It's somewhat ugly to have these spaces be visible, but
       # not as ugly as getting a horizontal scrollbar...
       #
-      $Path->{'xref'} .= &fileref($pathelem[$_], "/$addrelem[$_]") . " ";
+      $xref .= &fileref($pathelem[$_], "/$addrelem[$_]") . " ";
     } else {
-      $Path->{'xref'} .= $pathelem[$_];
+      $xref .= $pathelem[$_];
     }
   }
-  $Path->{'xref'} =~ s#/</a>#</a>/#gi;
+  $xref =~ s#/</a>#</a>/#gi;
+  $Path->{'xref'} = $xref;
 }
 
 sub env_or {
