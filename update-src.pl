@@ -207,9 +207,21 @@ for ($TREE) {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/webtools $STDERRTOSTDOUT`;
         last;
     };
-    /^bugzilla(?:\d.*|)$/ && do {
-        chdir '../..';
-        print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/webtools/bugzilla $STDERRTOSTDOUT`;
+    /^bugzilla(\d.*|)$/ && do {
+        my $ver = $1;
+        unless (-d $src_dir) {
+          my $dir = dirname(dirname(dirname($src_dir)));
+          chdir $dir;
+          if ($ver) {
+            $ver =~ s/\.x//;
+            $ver =~ s/\./_/g;
+            $ver = "-r BUGZILLA-$ver-BRANCH";
+          }
+          print LOG `$TIME $CVSCOMMAND $CVSCO -P $ver mozilla/webtools/bugzilla $STDERRTOSTDOUT`;
+        } else {
+          chdir '../..';
+          print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/webtools/bugzilla $STDERRTOSTDOUT`;
+        }
         last;
     };
     /^(?:l10n|l10n-(?:mozilla1\.8|aviarybranch|mozilla1\.8\.0))$/ && do {
