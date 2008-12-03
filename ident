@@ -343,8 +343,11 @@ my ($refkind, $reffnum, $refline, $classes) = ($1, $2, $3, $4);
 $identifier = $HTTP->{'param'}->{'i'};
 $identifier =~ s/"/\&quot;/g;
 $filter = $HTTP->{'param'}->{'filter'};
-if ($identifier && !$filter && $identifier =~ /^(.*)::(.*)$/) {
-    ($filter, $identifier) = ($1, $2);
+if ($identifier) {
+    $identifier =~ s/^\+*(.*?)\+*$/$1/;
+    if  (!$filter && $identifier =~ /^(.*)::(.*)$/) {
+        ($filter, $identifier) = ($1, $2);
+    }
 }
 $scriptidly = $HTTP->{'param'}->{'scriptidly'};
 $scriptidly = $scriptidly =~ /1|yes/ ? 1 : 0 if defined $scriptidly;
