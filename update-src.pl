@@ -178,8 +178,7 @@ print LOG `pwd`;
 
 # then update the Mozilla sources
 -d $src_dir || mkdir $src_dir;
-chdir $src_dir;
-chdir '..';
+chdir dirname $src_dir;
 
 # endico: check out the source
 for ($TREE) {
