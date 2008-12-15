@@ -81,11 +81,6 @@ sub hg_clone_cheap
           "$TIME $HGCOMMAND $HGUP $STDERRTOSTDOUT;";
         print LOG $command;
         print LOG `$command`;
-        my $rev;
-        while (($rev = `cd $destextra; hg out --template="{node|short}\n" -l 1|head -3|tail -1`)
-               && $rev !~ /no changes found/) {
-             `cd $destextra; hg strip -f -n $rev`;
-        }
     } else {
         my $src = basename($dest);
         print LOG `cd $src; $TIME $HGCOMMAND $HGCLONE http://hg.mozilla.org/releases/$prefixextra $STDERRTOSTDOUT`;
