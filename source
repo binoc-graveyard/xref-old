@@ -440,6 +440,7 @@ my $body = <SRCFILE>;
 
 ($Conf, $HTTP, $Path, $head) = &init($0);
 
+my $skip_wrap = 0;
 sub http_header_stuff {
 my $exit = 0;
 
@@ -524,7 +525,7 @@ $exit = 1 if $ENV{'REQUEST_METHOD'} eq 'HEAD';
 #if the file is html then don't print a header because the file
 #has its own -dme
 my $strange_inexplicable_check = (-f $Path->{'real'}.$Path->{'file'});
-my $skip_wrap = $Path->{'file'} && noWrap($Path->{'file'});
+$skip_wrap = $Path->{'file'} && noWrap($Path->{'file'});
 print "$head
 " if (!$Path->{'file'} || isHTML($Path->{'file'}) || !$skip_wrap);
 exit if $exit;
