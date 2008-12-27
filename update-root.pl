@@ -8,13 +8,7 @@ use LXR::Common;
 use LXR::Config;
 
 my @paths=qw(
-/opt/local/bin
-/opt/cvs-tools/bin
-/usr/ucb
-/usr/local/apache/html/mxr/glimpse
-/usr/local/glimpse-4.18.1p/bin
-/usr/local/glimpse-3.6/bin
-/home/build/glimpse-3.6.src/bin
+/usr/local/bin
 );
 
 my $STDERRTOSTDOUT = '2>&1';

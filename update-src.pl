@@ -10,18 +10,12 @@ use LXR::Common;
 use LXR::Config;
 
 my @paths=qw(
-/opt/local/bin
-/opt/cvs-tools/bin
-/usr/ucb
-/usr/local/apache/html/mxr/glimpse
-/usr/local/glimpse-4.18.1p/bin
-/usr/local/glimpse-3.6/bin
-/home/build/glimpse-3.6.src/bin
+/usr/local/bin
 );
 
 my $CVSROOT=':pserver:anonymous@cvs-mirror.mozilla.org:/cvsroot';
 
-$ENV{PATH}='/opt/local/bin:/opt/cvs-tools/bin:'.$ENV{PATH};
+$ENV{PATH}='/usr/local/bin:'.$ENV{PATH};
 
 my ($lxr_dir, $lxr_conf, $db_dir, $src_dir, $Conf, $HTTP, $Path, $head);
 
