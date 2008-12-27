@@ -6,7 +6,11 @@ if [ -n "$2" ] && [ "$1" == "-cron" ]; then
     TREE="$2"
     CRON="$1"
 fi
-OUT1=`perl update-src.pl $CRON "$TREE" 2>&1`
+if [ "$TREE" == "mozillasvn" ]; then
+  OUT1=`perl update-src.pl $CRON "${TREE}-all" 2>&1`
+else
+  OUT1=`perl update-src.pl $CRON "$TREE" 2>&1`
+fi
 OUT2=`perl update-xref.pl $CRON "$TREE" 2>&1`
 OUT3=`perl update-search.pl $CRON "$TREE" 2>&1`
 if [ -n "$OUT1" ] || [ -n "$OUT2" ] || [ -n "$OUT3" ]; then
