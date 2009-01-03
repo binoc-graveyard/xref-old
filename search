@@ -137,6 +137,7 @@ function changefindpreset() {
 </script>
 |;
 
+    my $note;
     if ($searchtext =~ /\S/) {
         if ($searchtext !~ /[a-zA-Z0-9]/) {
             $filter = '' if $filter =~ /\$/;
@@ -144,13 +145,13 @@ function changefindpreset() {
             $filter .= $regexp ? $searchtext : escape_re($searchtext);
             $searchtext = $search_sensitive ? '[a-zA-Z]' : '[a-z]';
             $regexp = 1;
-            print "<p><em>Your search did not contain any indexed characters,
-and was converted into a filter.</em></p>\n";
+            $note = "<p><strong>Your search did not contain any indexed characters,
+and was converted into a filter.</strong></p>\n";
         } elsif (!$regexp && $searchtext =~ /\s*(.{29}).+?\s*/) {
             $filter = escape_re($searchtext);
             $searchtext = $1;
-            print "<p><em>Your search was too long, the full search was
-converted into a filter.</em></p>\n";
+            $note = "<p><strong>Your search was too long, the full search was
+converted into a filter.</strong></p>\n";
         }
     }
 
@@ -300,6 +301,7 @@ please complain to the webmaster [cite: bad_glimpseindex]");
             print '<p><i>Searching <a href="find?string=' . $displayedfind . '">these files</a>
 for <a href="search?string=' . $displayedsearch . '">this text</a>.</i></p>';
         }
+        print $note;
 
         if ($regexp) {
             $searchtext =~ s/([~;,><])/\\$1/g;
