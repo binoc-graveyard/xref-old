@@ -120,11 +120,13 @@ if this was not your <b>intent</b>,
         }
         my $highscore = 0;
         my @matches = ();
+        my @hints = ();
 
         if ($hint ne '') {
             $hint =~ s/\./\\./g;
             $hint =~ s/\|/\\b\|\\b/g;
             $hint = "\\b$hint\\b";
+            @hints = sort {length $b <=> length $a} (split /\|/, $hint);
         }
 
         while ($file = <FILELLISTING>) {
@@ -132,7 +134,10 @@ if this was not your <b>intent</b>,
             if ($file =~ /$searchtext/i) {
                 my $filepath='';
                 $filename = $file;
-                my $score = $hint ne '' && ($filename =~ s/$hint//g) || 0;
+                my $score = 0;
+                for $hint (@hints) {
+                    ++$score if ($filename =~ s/$hint//);
+                }
                 ($file, $filename) = split m|/(?!.*/)|, $file;
                 print "<span class='s$score'>";
                 if (length $file) {
