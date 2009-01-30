@@ -380,6 +380,10 @@ print " files</span></span>
         $filter =~ s/`/\\`/g;
         LINE: while (my $line = <GLIMPSE>) {
             if (!$numlines) {
+                if ($line =~ /^in get_table: (table overflow|)/) {
+                    print "Glimpse database is broken";
+                    last;
+                }
                 if ($line =~ /^[^:]*:[^:]*(parse error at|unmatched)|^glimpse: error in searching index$/) {
                     print "Pattern can't be handled today, please file a
 <a href='https://bugzilla.mozilla.org/enter_bug.cgi?product=Webtools&component=MXR&short_desc=glimpse+parse+error&bug_file_loc=please-fill-this-in'
