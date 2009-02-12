@@ -61,11 +61,23 @@ sub toggle_style
 
 sub display_line
 {
-    my ($glimpseline) = @_;
+    my ($glimpseline, $re) = @_;
     $sourceroot = $Conf->sourceroot;
     $glimpseline =~ s/$sourceroot//;
     ($file, $line, $text) =
         $glimpseline =~ /(.*?):\s*(\d+)\s*:(.*)/;
+    if (length($text) > 160) {
+        # the string is way too long
+        # "hello cruel world what time is it this day. We are here to \
+        #  celebrate the beginning of things which no one cares about \
+        #  because it is so very important. When for other reasons it \
+        #  becomes clear that no one really cares. We should stop it."
+        my $context = '.{0,20}';
+        $text =~ s/.*?($context$re$context)/..$1../g;
+        $text =~ s/($re$context)((?!$re).)*$/$1.../;
+        $text = '.' . $text;
+    }
+
     my $filepath='';
     my $filename;
     my $skip = $lastfilepath eq $file;
@@ -341,9 +353,8 @@ print "<!--
                 $search_case =~ s/([\$.\^|\(\){}+*?])/\\$1/g;
             }
         }
-        $searchtext = $displayedsearch;
 
-        print("<h1>$searchtext</h1>\n");
+        print("<h1>$displayedsearch</h1>\n");
 
         my $hit_file_count = 0;
         my $hit_for_current_file = 0;
@@ -381,6 +392,10 @@ print " files</span></span>
         $filter =~ s/`/\\`/g;
         my $glimpse_error_reported = 0;
         LINE: while (my $line = <GLIMPSE>) {
+                if ($line =~ /^in get_table: (table overflow|)/) {
+                    print "Glimpse database is broken";
+                    last;
+                }
             if (!$numlines) {
                 if ($line =~ /^in get_table: (table overflow|)/) {
                     print "Glimpse database is broken";
@@ -457,7 +472,7 @@ Use a maximum of $1 characters.
                 if ($lstyle) {
                     print "$styles$lstyle$stylee";
                 }
-                display_line($line);
+                display_line($line, $searchtext);
                 if ($numlines > $maxhits) {
                     last;
                 }
