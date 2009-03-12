@@ -392,10 +392,6 @@ print " files</span></span>
         $filter =~ s/`/\\`/g;
         my $glimpse_error_reported = 0;
         LINE: while (my $line = <GLIMPSE>) {
-                if ($line =~ /^in get_table: (table overflow|)/) {
-                    print "Glimpse database is broken";
-                    last;
-                }
             if (!$numlines) {
                 if ($line =~ /^in get_table: (table overflow|)/) {
                     print "Glimpse database is broken";
@@ -523,15 +519,13 @@ Use a maximum of $1 characters.
         } elsif ($retval == 1) {
             print "<b>No results found</b>
 <br>";
-            unless ($glimpse_error_reported) {
-                print "Please file a
-<a href='https://bugzilla.mozilla.org/enter_bug.cgi?product=Webtools&component=MXR&short_desc=glimpse+unknown+error&bug_file_loc=please-fill-this-in'
->bug</a>";
-            }
         } elsif ($retval == 2) {
             # searching for '-' triggers this.
         } else {
-            print "Unexpected return value $retval from Glimpse
+            print "Unexpected return value $retval from Glimpse.
+Please file a
+<a href='https://bugzilla.mozilla.org/enter_bug.cgi?product=Webtools&component=MXR&short_desc=glimpse+unknown+retval&bug_file_loc=please-fill-this-in'
+>bug</a>
 ";
         }
     }
