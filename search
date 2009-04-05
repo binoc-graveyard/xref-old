@@ -318,6 +318,7 @@ for <a href="search?string=' . $displayedsearch . '">this text</a>.</i></p>';
         if ($regexp) {
             $searchtext =~ s/([~;,><])/\\$1/g;
         } else {
+            $filter = escape_re($searchtext);
             $searchtext =~ s/([~;,#><\-\$.^*[^|()\!])/\\$1/g;
         }
         @execparams = ($Conf->glimpsebin,"-i","-H",$Conf->dbdir,'-y','-n');
@@ -349,9 +350,6 @@ print "<!--
         my $search_case = undef;
         if ($search_sensitive) {
             $search_case = $searchtext;
-            if (!$regexp) {
-                $search_case =~ s/([\$.\^|\(\){}+*?])/\\$1/g;
-            }
         }
 
         print("<h1>$displayedsearch</h1>\n");
