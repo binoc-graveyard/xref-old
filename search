@@ -111,7 +111,7 @@ sub display_line
 
 sub escape_re {
     $re = shift;
-    $re =~ s/([-.*+{}|()^\\\[\]])/\\$1/g;
+    $re =~ s/([-.*+{}|()^\\\[\]`])/\\$1/g;
     return $re;
 }
 
@@ -150,17 +150,16 @@ function changefindpreset() {
 |;
 
     my $note;
+    my @filters = ();
     if ($searchtext =~ /\S/) {
         if ($searchtext !~ /[a-zA-Z0-9]/) {
-            $filter = '' if $filter =~ /\$/;
-            $filter .= '.*' if $filter;
-            $filter .= $regexp ? $searchtext : escape_re($searchtext);
+            push @filters, ($regexp ? $searchtext : escape_re($searchtext));
             $searchtext = $search_sensitive ? '[a-zA-Z]' : '[a-z]';
             $regexp = 1;
             $note = "<p><strong>Your search did not contain any indexed characters,
 and was converted into a filter.</strong></p>\n";
         } elsif (!$regexp && $searchtext =~ /\s*(.{29}).+?\s*/) {
-            $filter = escape_re($searchtext);
+            push @filters, escape_re($searchtext);
             $searchtext = $1;
             $note = "<p><strong>Your search was too long, the full search was
 converted into a filter.</strong></p>\n";
@@ -315,10 +314,11 @@ for <a href="search?string=' . $displayedsearch . '">this text</a>.</i></p>';
         }
         print $note;
 
+        push @filters, $filter if $filter;
         if ($regexp) {
             $searchtext =~ s/([~;,><])/\\$1/g;
         } else {
-            $filter = escape_re($searchtext);
+            push @filters, escape_re($searchtext) if $search_sensitive;
             $searchtext =~ s/([~;,#><\-\$.^*[^|()\!])/\\$1/g;
         }
         @execparams = ($Conf->glimpsebin,"-i","-H",$Conf->dbdir,'-y','-n');
@@ -387,7 +387,6 @@ print " files</span></span>
 <span class='status matches_max'>Too many hits, displaying the first $maxhits</span>
 </b></p>
 ";
-        $filter =~ s/`/\\`/g;
         my $glimpse_error_reported = 0;
         LINE: while (my $line = <GLIMPSE>) {
             if (!$numlines) {
@@ -430,47 +429,50 @@ Use a maximum of $1 characters.
                     last;
                 }
             }
-            next if $line =~ m|using working-directory '.*' to locate dictionaries|;
+            next if $line =~
+                m|using working-directory '.*' to locate dictionaries|;
             next if $search_sensitive && $line !~ /$search_case/;
-            if (!$filter || $line =~ /$filter/){
-                my ($curr_file, undef, undef) =
-                        $line =~ /(.*?):\s*(\d+)\s*:(.*)/;
-                my $lstyle = '';
-                if ($prev_file ne $curr_file) {
-                    $prev_file = $curr_file;
-                    $hit_for_current_file = 1;
-                    ++$hit_file_count;
-                    if ($hit_file_count == 2) {
-                        $lstyle .= ".matches_f {display: inline;}";
-                    }
-                    $lstyle .= toggle_style($hit_file_count, 'f');
-                } elsif (defined $hitlimit &&
-                         ++$hit_for_current_file > $hitlimit) {
-                    next LINE;
+            my $skip = 0;
+            foreach $filter (@filters) {
+                $skip = 1 unless $line =~ /$filter/;
+            }
+            next if $skip;
+
+            my ($curr_file, undef, undef) =
+                $line =~ /(.*?):\s*(\d+)\s*:(.*)/;
+            my $lstyle = '';
+            if ($prev_file ne $curr_file) {
+                $prev_file = $curr_file;
+                $hit_for_current_file = 1;
+                ++$hit_file_count;
+                if ($hit_file_count == 2) {
+                    $lstyle .= ".matches_f {display: inline;}";
                 }
-                $numlines++;
-                if ($numlines == 1) {
-                    $lstyle .= ".status.matches_one {display: block}
+                $lstyle .= toggle_style($hit_file_count, 'f');
+            } elsif (defined $hitlimit &&
+                     ++$hit_for_current_file > $hitlimit) {
+                next LINE;
+            }
+            $numlines++;
+            if ($numlines == 1) {
+                $lstyle .= ".status.matches_one {display: block}
 ";
-                } elsif ($numlines == 2) {
-                    $lstyle .= ".status.matches_one {display: none}
+            } elsif ($numlines == 2) {
+                $lstyle .= ".status.matches_one {display: none}
 .status.matches_n {display: block}
 ";
-                } else {
-                    $lstyle .= toggle_style($numlines, 'm');
-                }
-                if ($numlines > $maxhits) {
-                    $lstyle .= ".status.matches_n {display: none}
-.status.matches_max {display: block}";
-                }
-                if ($lstyle) {
-                    print "$styles$lstyle$stylee";
-                }
-                display_line($line, $searchtext);
-                if ($numlines > $maxhits) {
-                    last;
-                }
+            } else {
+                $lstyle .= toggle_style($numlines, 'm');
             }
+            if ($numlines > $maxhits) {
+                $lstyle .= ".status.matches_n {display: none}
+.status.matches_max {display: block}";
+            }
+            if ($lstyle) {
+                print "$styles$lstyle$stylee";
+            }
+            display_line($line, $searchtext);
+            last if $numlines > $maxhits;
         }
         my $none = $numlines == 0 ? '.status.matches_zero {display: block}' : '';
         print "$styles $none
