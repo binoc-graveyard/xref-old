@@ -142,7 +142,7 @@ function changetarget() {
 </script>
 %;
     }
-    print('<form id=ident name=ident method=get action="ident">
+    print('<form id=ident name=ident method=get action="ident" class="beforecontent">
 ');
 
     foreach ($Conf->allvariables) {

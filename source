@@ -568,7 +568,8 @@ function changetarget() {
 }
 </script>
 %;
-        print(qq{<form name='source' id='source'>view using tree:
+        print(qq{<form name='source' id='source' class='beforecontent'
+>view using tree:
 <select name='tree' id='tree' onchange='changetarget()'>
 });
 foreach my $othertree (@othertrees) {

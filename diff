@@ -86,7 +86,7 @@ sub printdiff {
   my @treelist = @{$Conf->{'trees'}};
   print "<p class=desc>
 </p>
-<p><form name='diff' id='diff'>
+<form name='diff' id='diff' class='beforecontent'>
 <label for='file'>Base file to compare:</label>
 <input id='file' name='file' size=60 value='$virt".$Path->{'file'}."'>
 ";

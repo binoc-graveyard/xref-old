@@ -50,7 +50,7 @@ function changetarget() {
 </script>
 %;
     }
-    print '<form name=find id=find method=get action="find">
+    print '<form name=find id=find method=get action="find" class="beforecontent">
 ';
 
     foreach ($Conf->allvariables) {

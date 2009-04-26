@@ -166,7 +166,7 @@ converted into a filter.</strong></p>\n";
         }
     }
 
-    print('<form name=search id=search method=get action="search">
+    print('<form name=search id=search method=get action="search" class="beforecontent">
 <table><tr><td>');
 
     foreach ($Conf->allvariables) {
