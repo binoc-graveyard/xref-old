@@ -151,6 +151,8 @@ function changefindpreset() {
 
     my $note;
     my @filters = ();
+    my $displayedsearch = $searchtext;
+
     if ($searchtext =~ /\S/) {
         if ($searchtext !~ /[a-zA-Z0-9]/) {
             push @filters, ($regexp ? $searchtext : escape_re($searchtext));
@@ -177,14 +179,14 @@ converted into a filter.</strong></p>\n";
         }
     }
 
-    $s = $searchtext;
+    $s = $displayedsearch;
     $s =~ s/\&/\&amp;/g;
     $s =~ s/"/\&quot;/g;
     print('<b>
 <label for="string">Search for:</label></b></td>
 <td>
 <input type=text id="string" name="string"
-value="',$s,'" maxlength=29 size=30>
+value="',$s,'" size=30>
 <input type=submit value="search"><br>
 </td></tr><tr><td></td><td>
 <input type="checkbox" id="regexp" name="regexp"');
@@ -298,7 +300,6 @@ please complain to the webmaster [cite: bad_glimpseindex]");
     } elsif ($searchtext ne "") {
         print '<hr>
 ';
-        my $displayedsearch = $searchtext;
         $displayedsearch =~ s/&/&amp;/g;
         $displayedsearch =~ s/</&lt;/g;
         $displayedsearch =~ s/>/&gt;/g;
