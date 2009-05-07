@@ -111,7 +111,7 @@ sub display_line
 
 sub escape_re {
     $re = shift;
-    $re =~ s/([-.*+{}|()^\\\[\]`])/\\$1/g;
+    $re =~ s/([-.*+?{}|()^\\\[\]`])/\\$1/g;
     return $re;
 }
 
