@@ -192,7 +192,6 @@ for ($TREE) {
         last;
     };
     /^webtools$/ && do {
-        chdir '..';
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/webtools $STDERRTOSTDOUT`;
         last;
     };
