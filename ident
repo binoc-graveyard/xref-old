@@ -181,12 +181,13 @@ value="'.$identifier.'" size=50>
 <input type=text id="filter" name="filter" value="'.
 $value.'" size=30>';
 
-    print '<br><input type=checkbox value="1" ';
-    print 'checked="checked" ' if $scriptidly == 1;
-    print 'id="scriptidly" name="scriptidly"
-><label for="scriptidly">Match C++, JS, and IDL variants</label>
+    print "<br>
+<input type='checkbox' value='1' ";
+    print "checked='checked' " if $strict == 1;
+    print "id='strict' name='strict'
+><label for='strict'>Don't match C++, JS, and IDL variants</label>
 </form>
-';
+";
 
     if ($identifier) {
 	tie(%xref, "DB_File", $Conf->dbdir."/xref", 
@@ -196,7 +197,7 @@ $value.'" size=30>';
 	@refs = split(/\t/,$xref{$identifier});
         my $searchId = $identifier;
         my $searchIdFilter;
-        if ($scriptidly) {
+        unless ($strict) {
             my $genident = $identifier;
             my ($identtype, $ufirst, $lfirst);
             if ($genident =~ s/^([GSgs]et)([A-Z])//) {
@@ -349,8 +350,12 @@ if ($identifier) {
         ($filter, $identifier) = ($1, $2);
     }
 }
-$scriptidly = $HTTP->{'param'}->{'scriptidly'};
+my $scriptidly = $HTTP->{'param'}->{'scriptidly'};
 $scriptidly = $scriptidly =~ /1|yes/ ? 1 : 0 if defined $scriptidly;
+$strict = $HTTP->{'param'}->{'strict'};
+$strict = $strict =~ /1|yes/ ? 1 : 0 if defined $strict;
+$strict = 0 if $scriptidly;
+
 my $tree = $HTTP->{'param'}->{'tree'};
 if ($tree && ($tree ne $Conf->{'treename'})) {
     my @treelist = @{$Conf->{'trees'}};
@@ -359,7 +364,7 @@ if ($tree && ($tree ne $Conf->{'treename'})) {
 my @tail = ();
 push @tail, "i=$identifier" if $identifier ne '';
 push @tail, "filter=$filter" if $filter ne '';
-push @tail, "scriptidly=$scriptidly" if $scriptidly ne '';
+push @tail, "strict=1" if $strict;
 my $tail = $#tail >= 0 ? '?' . join "&", @tail : '';
 $head .= "Refresh: 0; url=../$tree/ident$tail
 ";
