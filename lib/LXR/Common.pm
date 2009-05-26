@@ -1637,23 +1637,8 @@ sub hgversionexpand {
       $HTTP->{'param'}->{'rev'} =~ /([a-f0-9]+)/i) {
     return $1;
   }
-  # branch cache is a cache it might not be there
-  # if it isn't, we simply offer tip
-  # something better may be implemented eventually.
   my $sig;
-  if (open(HGCACHE, '<', $hgroot. '/.hg/branch.cache')) {
-    my (%branches, %versions, $line, $ver, $branch);
-    while ($line = <HGCACHE>) {
-      if ($line =~ /^([0-9a-f]{40}) (\S+)/) {
-        ($ver, $branch) = ($1, $2);
-        $versions{$branch} = $ver;
-        $branches{$ver} = $branch unless $branch =~ /^\d+$/;
-        $sig ||= $ver;
-      }
-    }
-    $sig = $versions{$branches{$sig}};
-    close HGCACHE;
-  } elsif (open(HGSTATE, '<', $hgroot . '/.hg/dirstate')) {
+  if (open(HGSTATE, '<', $hgroot . '/.hg/dirstate')) {
     my ($parent1, $parent2);
     read (HGSTATE, $parent1, 20);
     read (HGSTATE, $parent2, 20);
@@ -1670,6 +1655,13 @@ sub hgbranchexpand {
   # if it isn't, we simply offer tip
   # something better may be implemented eventually.
   my $branch;
+  if (open(HGSTATE, '<', $hgroot . '/.hg/dirstate')) {
+    my ($parent1, $parent2);
+    read (HGSTATE, $parent1, 20);
+    read (HGSTATE, $parent2, 20);
+    close HGSTATE;
+    $branch = $sig = hgdehex($parent1).hgdehex($parent2);
+  }
   if (open(HGCACHE, '<', $hgroot . '/.hg/branch.cache')) {
     my (%branches, %versions, $line, $ver, $sig);
     while ($line = <HGCACHE>) {
@@ -1677,17 +1669,10 @@ sub hgbranchexpand {
         ($ver, $branch) = ($1, $2);
         $versions{$branch} = $ver;
         $branches{$ver} = $branch unless $branch =~ /^\d+$/;
-        $sig ||= $ver;
       }
     }
     $branch = $branches{$sig};
     close HGCACHE;
-  } elsif (open(HGSTATE, '<', $hgroot . '/.hg/dirstate')) {
-    my ($parent1, $parent2);
-    read (HGSTATE, $parent1, 20);
-    read (HGSTATE, $parent2, 20);
-    close HGSTATE;
-    $branch = $sig = hgdehex($parent1).hgdehex($parent2);
   }
   return $branch || 'tip';
 }
