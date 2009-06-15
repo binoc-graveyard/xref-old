@@ -206,8 +206,7 @@ $value.'" size=30>';
                 $lfirst = lc $ufirst;
                 $searchIdFilter = "([GSgs]et|\\b)[$ufirst$lfirst]$genident";
                 $searchId = "$lfirst$genident";
-            } else {
-                $genident =~ s/^([a-z])//i;
+            } elsif ($genident =~ s/^([a-z])//i) {
                 $ufirst = uc $1;
                 $lfirst = lc $ufirst;
                 $searchIdFilter = "[$ufirst$lfirst]$genident";
