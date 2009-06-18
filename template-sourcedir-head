@@ -34,9 +34,9 @@ $beginbonsai
          changes to<br>this directory<br>in the last:
         </td>
         <td nowrap>
-         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsversion&amp;dir=$pathname&amp;date=day">day</a><br>
-         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsversion&amp;dir=$pathname&amp;date=week">week</a><br>
-         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsversion&amp;dir=$pathname&amp;date=month">month</a><br>
+         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsversion&amp;dir=$cvspath$filename&amp;date=day">day</a><br>
+         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsversion&amp;dir=$cvspath$filename&amp;date=week">week</a><br>
+         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsversion&amp;dir=$cvspath$filename&amp;date=month">month</a><br>
         </td>
        </tr>
       </table>
