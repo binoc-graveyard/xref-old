@@ -1,6 +1,6 @@
 $beginbonsai
-<span class=bonsailinks>(View <a href="$bonsaihost/cvslog.cgi?file=$pathname&amp;rev=$cvsversion">CVS log</a> or
- <a href="$bonsaihost/cvsblame.cgi?file=$pathname&amp;mark=$fpos&amp;rev=$cvsversion">CVS annotations</a>)</span>
+<span class=bonsailinks>(View <a href="$bonsaihost/cvslog.cgi?file=$cvspath/$filename&amp;rev=$cvsversion">CVS log</a> or
+ <a href="$bonsaihost/cvsblame.cgi?file=$cvspath/$filename&amp;mark=$fpos&amp;rev=$cvsversion">CVS annotations</a>)</span>
 $endbonsai
 $begintrac
 <span class=bonsailinks>(View <a href="$trachost$virttree/log/$virtfold/$filename">SVN log</a>)</span>
