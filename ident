@@ -343,9 +343,13 @@ my ($refkind, $reffnum, $refline, $classes) = ($1, $2, $3, $4);
 $identifier = $HTTP->{'param'}->{'i'};
 $identifier =~ s/"/\&quot;/g;
 $filter = $HTTP->{'param'}->{'filter'};
+if ($filter) {
+    $filter =~ s/^(?:\+|\s|%20)*(.*?)(?:\+|\s|%20)*$/$1/;
+}
 if ($identifier) {
-    $identifier =~ s/^\+*(.*?)\+*$/$1/;
-    if  (!$filter && $identifier =~ /^(.*)::(.*)$/) {
+    $identifier =~ s/^(?:\+|\s|%20)*(.*?)(?:\+|\s|%20)*$/$1/;
+    if (!$filter &&
+        $identifier =~ /^(.*?)(?:\+|\s|%20)*::(?:\+|\s|%20)*(.*)$/) {
         ($filter, $identifier) = ($1, $2);
     }
 }
