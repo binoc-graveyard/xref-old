@@ -295,7 +295,7 @@ please complain to the webmaster [cite: bad_glimpsebin]");
         &fatal("Search isn't available;
 please complain to the webmaster [cite: bad_dbdir]");
     } elsif (! -r $Conf->dbdir . '/.glimpse_index') {
-        &fatal("Search isn't avaliable;
+        &fatal("Search isn't available;
 please complain to the webmaster [cite: bad_glimpseindex]");
     } elsif ($searchtext ne "") {
         print '<hr>
