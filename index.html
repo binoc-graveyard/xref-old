@@ -46,15 +46,22 @@ font-size: 70%;
 <div align="right">
 <br> <b><a href="search">Search for</a>:</b>
               <input type=text name="text" size=29 value="">
-<select name=kind>
-<option value="text">text
-<option value="regexp">regexp
-<option value="ident">ident
-</select>
 <br> <b><a href="find">File path</a>:</b>
               <input type=text name="string" value="" size=29>
 <br>
+<input type="checkbox" id="regexp" name="regexp" value="1"><label for="regexp">search as regexp</label> &nbsp;
 	      <input type=submit value="Find">
+</div>
+</form>
+<p>
+<form method=get action="ident">
+<div align="right">
+<br> <b><a href="ident">Identifier</a>:</b>
+              <input type=text name="i" size=29 value="">
+<br> <b><a href="find">File path</a>:</b>
+              <input type=text name="filter" value="" size=29>
+<br>
+              <input type=submit value="Find">
 </div>
 </form>
 <p>

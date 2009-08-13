@@ -79,7 +79,7 @@ sub fileicon {
     } elsif ($filename =~ /^.*\.[ch]$/) {
 	$img = "/icons/c.gif";
 #	$img = "internal-gopher-text";
-    } elsif ($filename =~ /^.*\.(idl|cpp?|c[cs]|hh|java)$/) {
+    } elsif ($filename =~ /^.*\.(idl|cpp?|c[cs]|hh|java|s)$/) {
 	# TODO: Find a nice icon for c++ files (KDE?)
 	$img = "/icons/c.gif";
 #	$img = "internal-gopher-text";

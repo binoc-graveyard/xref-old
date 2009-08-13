@@ -78,7 +78,7 @@ sub display_line
         $text = '.' . $text;
     }
 
-    my $filepath='';
+    my $path='';
     my $filename;
     my $skip = $lastfilepath eq $file;
     #$skip = 0;
@@ -89,13 +89,13 @@ sub display_line
     }
     ($file,$filename)=split m|/(?!.*/)|, $file;
     foreach my $filepart ($file =~ m{^/?$} ? ('') : split m|/|, $file) {
-        $filepath .= "$filepart/";
+        $path .= "$filepart/";
         unless ($skip) {
-            print(&fileref($filepart ? $filepart : '/', "$filepath"),
+            print(&fileref($filepart ? $filepart : '/', "$path"),
                   $filepart && '/');
         }
     }
-    $filepath = $filepath ? $filepath . $filename : "/$filename";
+    my $filepath = $path ? $path . $filename : "/$filename";
     unless ($skip) {
         print(&fileref("$filename", "$filepath"));
         print(&blamerefs($file.'/'.$filename));
@@ -106,7 +106,7 @@ sub display_line
     }
     print ('<li>');
     print(&fileref("line $line", "$filepath", $line),
-          " -- ".markupstring($text)."<br>\n");
+          " -- ".markupstring($text, "$path")."<br>\n");
 }
 
 sub escape_re {
