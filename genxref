@@ -685,17 +685,17 @@ sub c_classes {
     my $contents = $_[0];
 # XXX this has issues w/ whitespace
     # Find struct, enum and union definitions with params (function returning struct etc)
-    $contents =~ s/((struct|enum|union)\s+($ident|)\s+($ident|)\s*(\{\}|(;)))/
-	"$2 ".($3 ? "\01".$itype{$2}.$3."\02 " : " ").$4.$6.&wash($1)/goes;
+    $contents =~ s/((struct|enum|union)\s+($ident|)\s+($ident|)\s*([{;]))/
+	"$2 ".($3 ? "\01".$itype{$2}.$3."\02 " : " ").$4.$5.&wash($1)/gmoes;
 
     # Find struct, enum and union definitions.
-    $contents =~ s/((struct|enum|union)\s+($ident|)\s*(\{\}|(;)))/
-	"$2 ".($3 ? "\01".$itype{$2}.$3."\02 " : "").$5.&wash($1)/goes;
+    $contents =~ s/((struct|enum|union)\s+($ident|)\s*([{;]))/
+	"$2 ".($3 ? "\01".$itype{$2}.$3."\02 " : "").$4.&wash($1)/gmoes;
 
     # Find class definitions. (C++)
-    $contents =~ s/((class)\s+($ident)\s*(:[^;\{]*|)(\{\}|(;)))/
-	"$2 "."\01".$itype{$2.($6 ? 'forw' : '')}.
-	    &classes($4).$3."\02 ".$6.&wash($1)/goes;
+    $contents =~ s/((class)\s+($ident)\s*(:[^;\{]*|)([{;]))/
+	"$2 "."\01".$itype{$2.($5 eq ';' ? 'forw' : '')}.
+	    &classes($4).$3."\02 ".$5.&wash($1)/gmoes;
 
     return $contents;
 }
