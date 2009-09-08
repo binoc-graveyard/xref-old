@@ -29,6 +29,7 @@ use LXR::Config;
 
 my $hint;
 my $lineno;
+my @args;
 
 sub find {
     print '
@@ -52,6 +53,15 @@ function changetarget() {
     }
     print '<form name=find id=find method=get action="find" class="beforecontent">
 ';
+    my @extras = qw(rev line mark);
+    foreach $extra (@extras) {
+        if (defined $HTTP->{'param'}->{$extra} &&  
+            $HTTP->{'param'}->{$extra} =~ /^([-0-9a-f,]+)$/i) {
+            print("<input type='hidden' value='$1'>
+");
+            push @args, ("&$extra=$1");
+        }
+    }
 
     foreach ($Conf->allvariables) {
         if ($Conf->variable($_) ne $Conf->vardefault($_)) {

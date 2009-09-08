@@ -430,7 +430,8 @@ my $body = <SRCFILE>;
             if (-l $Path->{'realf'}) {
                 print('<br><tt>'.readlink($Path->{'realf'})."</tt></p>\n");
             }
-            print("<p>Maybe you can <a href='".$Conf->baseurl."/find?string=/".$file."&hint=$Path->{virt}'>find it elsewhere</a>.\n");
+            $rev = "&rev=$rev" if ($rev ne '');
+            print("<p>Maybe you can <a href='".$Conf->baseurl."/find?string=/".$file."&hint=$Path->{virt}$rev'>find it elsewhere</a>.\n");
 	    if (-f $Path->{'realf'}) {
 		&warning("Unable to open ".$Conf->{'treename'}.$Path->{'virtf'}, 'virtf');
 	    }

@@ -169,8 +169,18 @@ converted into a filter.</strong></p>\n";
         }
     }
 
-    print('<form name=search id=search method=get action="search" class="beforecontent">
-<table><tr><td>');
+    print('<form name=search id=search method=get action="search" class="beforecontent">');
+    my @extras = qw(rev line mark);
+    foreach $extra (@extras) {
+        if (defined $HTTP->{'param'}->{$extra} &&
+            $HTTP->{'param'}->{$extra} =~ /^([-0-9a-f,]+)$/i) {
+            print("<input type='hidden' value='$1'>
+");
+            $args .= "&$extra=$1";
+        }
+    }
+
+    print('<table><tr><td>');
 
     foreach ($Conf->allvariables) {
         if ($Conf->variable($_) ne $Conf->vardefault($_)) {
