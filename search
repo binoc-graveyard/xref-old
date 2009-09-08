@@ -417,6 +417,11 @@ print " files</span></span>
         my $glimpse_error_reported = 0;
         LINE: while (my $line = <GLIMPSE>) {
             if (!$numlines) {
+                if ($line =~ /^Warning: No files were indexed! Exiting\.\.\./) {
+                    print "No files in search index, please complain to the webmaster [cite: emptyglimpsetarget]<br>\n";
+                    $glimpse_error_reported = 1;
+                    last;
+                }
                 if ($line =~ /^in get_table: (table overflow|)/) {
                     print "Glimpse database is broken";
                     $glimpse_error_reported = 1;
