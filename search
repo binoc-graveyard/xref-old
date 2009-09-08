@@ -152,6 +152,7 @@ function changefindpreset() {
     my $note;
     my @filters = ();
     my $displayedsearch = $searchtext;
+    my $requestedsearch = $searchtext;
 
     if ($searchtext =~ /\S/) {
         if ($searchtext !~ /[a-zA-Z0-9]/) {
@@ -312,6 +313,17 @@ please complain to the webmaster [cite: bad_glimpseindex]");
             $displayedfind =~ s/"/&quot;/g;
             print '<p><i>Searching <a href="find?string=' . $displayedfind . '">these files</a>
 for <a href="search?string=' . $displayedsearch . '">this text</a>.</i></p>';
+        }
+
+        {
+            my @idents = ();
+            foreach my $term (split /[^~a-z_0-9]+/i, $requestedsearch) {
+                push @idents, '<a href="ident?i='.$term.'">'.$term.'</a>';
+            }
+            if (scalar @idents) {
+                print '<p>For faster searches, you could search for these identifiers: '.
+                      join(', ', @idents) . '</p>';
+            }
         }
         print $note;
 
