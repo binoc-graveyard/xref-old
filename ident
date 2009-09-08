@@ -29,16 +29,17 @@ use LXR::Common;
 use LXR::Config;
 use DB_File;
 
-@tyy= (('M', 'preprocessor macro'),
-       ('F', 'function'),
+@tyy= (
        ('I', 'interface'),
-       ('C', 'class'),			# C++
+       ('C', 'class'),                  # C++
+       ('c', '(forwarded) class'),      # C++
+       ('M', 'preprocessor macro'),
+       ('F', 'function'),
+       ('f', 'function prototype'),
        ('T', 'type'),
        ('S', 'struct type'),
        ('E', 'enum type'),
        ('U', 'union type'),
-       ('f', 'function prototype'),
-       ('c', '(forwarded) class'),	# C++
        ('V', 'variable'),
        ('R', 'reference'),
       );
