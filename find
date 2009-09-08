@@ -161,7 +161,8 @@ if this was not your <b>intent</b>,
                     print &fileref('/', "/");
                 }
                 $filepath.=$filename;
-                print &fileref("$filename", "$filepath", $lineno) .
+                push @args, "force=1" if ($filename =~ /\.html?$/);
+                print &fileref("$filename", "$filepath", "$lineno", @args) .
                       '<br>
 ';
 

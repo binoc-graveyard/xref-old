@@ -97,7 +97,11 @@ sub display_line
     }
     my $filepath = $path ? $path . $filename : "/$filename";
     unless ($skip) {
-        print(&fileref("$filename", "$filepath"));
+        if ($filename =~ /\.html?$/) {
+            printf(&fileref("$filename", "$filepath", "", ("force=1")));
+        } else {
+            print(&fileref("$filename", "$filepath"));
+        }
         print(&blamerefs($file.'/'.$filename));
     }
     unless ($skip) {
