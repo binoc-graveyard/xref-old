@@ -207,13 +207,13 @@ value="',$s,'" size=30>
 <input type="checkbox" id="regexp" name="regexp"');
     if ($regexp) {
         print (' checked');
-        print (' value="on"');
+        print (' value="1"');
     }
     print '><label for="regexp">Regular Expression Search</label>
 </td><tr><td><td><input type="checkbox" id="case" name="case"';
     if ($search_sensitive) {
         print (' checked');
-        print (' value="on"');
+        print (' value="1"');
     }
     print '><label for="case">Case sensitive</label>
 ';
