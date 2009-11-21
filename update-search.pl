@@ -198,7 +198,7 @@ close GLIMPSEEXCLUDE;
 #XXX what does |set -e| mean?
 #system ("set -e >> $log");
 #system("time", "glimpseindex", "-H", ".", "$src_dir");
-my $cmd = "($TIME glimpseindex -n -B -M 8 -H . $src_dir $STDERRTOSTDOUT) >> $log";
+my $cmd = "($TIME glimpseindex -n -b -B -M 64 -H . $src_dir $STDERRTOSTDOUT) >> $log";
 do_and_log($cmd);
 my $mxr_dir_tmp = "$db_dir_tmp/.mxr";
 -d $mxr_dir_tmp || mkdir $mxr_dir_tmp;
