@@ -1033,10 +1033,12 @@ sub findusageJS {
     my $start = time;
     my $refs = 0;
     my $f;
+    my $curfnum = 0;
 
     foreach $f (@jsfiles) {
 	$f =~ s/^$realpath//o;
-	$fnum++;
+	++$fnum;
+	++$curfnum;
 	my $lcount = 0;
 	my %tref = ();
 
@@ -1046,7 +1048,7 @@ sub findusageJS {
 
 	print(STDERR
 	      "(Pass 2 JS) $f (",length($contents),
-              "), file $fnum of ",$#jsfiles+1,"...\n");
+              "), file $curfnum of ",$#jsfiles+1,"...\n");
 
 	# Remove comments
 	$contents =~ s/\/\*(.*?)\*\//&wash($1)/ges;
