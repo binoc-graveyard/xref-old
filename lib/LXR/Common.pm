@@ -14,6 +14,7 @@ require Exporter;
              markupstring2
              &checkhg
              &cleanquery
+             &clean_mark
              &init &glimpse_init &makeheader &makefooter &expandtemplate
              &bigexpandtemplate &blamerefs
 );

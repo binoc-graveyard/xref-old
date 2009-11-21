@@ -431,7 +431,25 @@ my $body = <SRCFILE>;
                 print('<br><tt>'.readlink($Path->{'realf'})."</tt></p>\n");
             }
             $rev = "&rev=$rev" if ($rev ne '');
-            print("<p>Maybe you can <a href='".$Conf->baseurl."/find?string=/".$file."&hint=$Path->{virt}$rev'>find it elsewhere</a>.\n");
+            my $hint = $Path->{'virt'};
+            $hint = (defined $hint && $hint ne '/')
+              ? "&amp;hint=$hint"
+              : '';
+            my $markstring = '';
+            if (defined $HTTP->{'param'}->{'mark'}) {
+              my $marks = clean_mark($HTTP->{'param'}->{'mark'});
+              if ($marks ne '') {
+                $markstring = "&amp;mark=$marks";
+              }
+            }
+            print("<p>Maybe you can <a href='" .
+                   $Conf->baseurl .
+                   "/find?string=/" .
+                   $file .
+                   $hint .
+                   $markstring .
+                   $rev .
+                  "'>find it elsewhere</a>.\n");
             if (-f $Path->{'realf'}) {
                 &warning("Unable to open ".$Conf->{'treename'}.$Path->{'virtf'}, 'virtf');
             }

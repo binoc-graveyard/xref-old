@@ -53,13 +53,13 @@ function changetarget() {
     }
     print '<form name=find id=find method=get action="find" class="beforecontent">
 ';
-    my @extras = qw(rev line mark);
+    my @extras = qw(rev mark);
     foreach $extra (@extras) {
         if (defined $HTTP->{'param'}->{$extra} &&  
-            $HTTP->{'param'}->{$extra} =~ /^([-0-9a-f,]+)$/i) {
-            print("<input type='hidden' value='$1'>
-");
-            push @args, ("&$extra=$1");
+            $HTTP->{'param'}->{$extra} =~ /^([-0-9a-f,.]+)$/i) {
+            print qq{<input id="$extra" name="$extra" value="$1" type="hidden">
+};
+            push @args, ("$extra=$1");
         }
     }
 
@@ -72,8 +72,9 @@ function changetarget() {
     }
 
     $searchtext = cleanquery $searchtext;
-    $lineno = $HTTP->{param}->{line};
+    $lineno = $HTTP->{'param'}->{'line'};
     $lineno =~ s/\D+//g;
+
     $hint =~ s%[^\w\.]+%|%g;
     $hint =~ s/\|{2,}/|/g;
     $hint =~ s/^\||\|$//g;
@@ -162,6 +163,7 @@ if this was not your <b>intent</b>,
                 }
                 $filepath.=$filename;
                 push @args, "force=1" if ($filename =~ /\.html?$/);
+                push @args, $markstring if $markstring ne '';
                 print &fileref("$filename", "$filepath", "$lineno", @args) .
                       '<br>
 ';
