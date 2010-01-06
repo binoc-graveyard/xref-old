@@ -673,7 +673,8 @@ sub linetag {
     $nextrange *= 10;
     if ($padding < 2) {
       build_mark_map();
-      my $size = (log10((stat($Path->{'realf'}))[7] / 40) | 0) + 1;
+      my $size = (stat($Path->{'realf'}))[7];
+      $size = (log10($size / 40) | 0) + 1 if $size;
       $padding = $size < 3 ? 3 : $size;
       $tag = csspadding($padding) . $tag;
     } elsif ($x > $padding) {
