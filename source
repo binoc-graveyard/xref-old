@@ -107,7 +107,7 @@ sub fileicon {
 sub filename {
     my $string =
         &fileref($filename, $Path->{'virt'}.$filename);
-    if (isHTML($filename) || isCSS($filename)) {
+    if (isHTML($filename) || isCSS($filename) || isREADME($filename)) {
         $string =~ s/(a href=".*)(")/$1?force=1$2/g;
     }
     return $string;
@@ -300,6 +300,12 @@ sub isImage {
     return $file =~ /\.([jmp][pnm]e?g|gif|ico)$/i;
 }
 
+sub isREADME {
+    return 0 if $force;
+my $file = shift;
+    return $file =~ /README$/i;
+}
+
 sub noWrap {
 my $file = shift;
     return isHTML($file) ||
@@ -378,7 +384,7 @@ $head = "Content-Type: image/$kind\r\n\r\n";
                 local $/ = undef;
 my $body = <SRCFILE>;
                 print $body;
-            } elsif (!$force && $file =~ /README$/i) {
+            } elsif (!$force && isREADME($file)) {
                 print("<pre lang='en'>");
                 while(<SRCFILE>) {
                         $string = $string . $_;
