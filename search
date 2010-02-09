@@ -119,6 +119,35 @@ sub escape_re {
     return $re;
 }
 
+sub print_ident_hints 
+{
+    my ($requestedsearch) = @_;
+    my @idents = ();
+    my @terms = split /[^~a-z_0-9]+/i, $requestedsearch;
+    if (scalar @terms) {
+        my %list = ();
+        foreach my $term (@terms) {
+            $list{$term} = 1;
+        }
+        @terms = keys %list;
+        use DB_File;
+        my %xref;
+        if (tie(%xref, "DB_File", $Conf->dbdir."/xref",
+                O_RDONLY, undef, $DB_HASH)) {
+            foreach my $term (@terms) {
+                if (defined $xref{$term}) {
+                    push @idents, '<a href="ident?i='.$term.'">'.$term.'</a>';
+                }
+            }       
+            if (scalar @idents) {
+                print '<p>For faster searches, you could search for these identifiers: '.
+                    join(', ', @idents) . '</p>'; 
+            }       
+            untie(%xref);
+        }       
+    }       
+}       
+
 sub search {
     print(qq{<p class=desc>
 Free-text search through the source code, including comments.
@@ -329,16 +358,7 @@ please complain to the webmaster [cite: bad_glimpseindex]");
 for <a href="search?string=' . $displayedsearch . '">this text</a>.</i></p>';
         }
 
-        {
-            my @idents = ();
-            foreach my $term (split /[^~a-z_0-9]+/i, $requestedsearch) {
-                push @idents, '<a href="ident?i='.$term.'">'.$term.'</a>';
-            }
-            if (scalar @idents) {
-                print '<p>For faster searches, you could search for these identifiers: '.
-                      join(', ', @idents) . '</p>';
-            }
-        }
+        print_ident_hints($requestedsearch);
         print $note;
 
         push @filters, $filter if $filter;
