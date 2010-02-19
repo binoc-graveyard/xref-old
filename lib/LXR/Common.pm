@@ -350,17 +350,18 @@ my @xmlterm = (
 my %alreadywarned = ();
 
 sub warning {
-  my $wclass = defined $_[1] ? $_[1] : '';
+  my ($wmsg, $wclass) = ($_[0], defined $_[1] ? $_[1] : '');
   return if $wclass && defined $alreadywarned{$wclass};
-  print STDERR "[".scalar(localtime)."] warning: $_[0]\n";
-  print "<h4 align=\"center\"><i>** Warning: ".htmlquote($_[0])."</i></h4>\n" if $wwwdebug;
+  print STDERR "[".scalar(localtime)."] warning: $wmsg\n";
+  print "<h4 align=\"center\"><i>** Warning: ".htmlquote($wmsg)."</i></h4>\n" if $wwwdebug;
   $alreadywarned{$wclass} = 1 if $wclass;
 }
 
 
 sub fatal {
-  print STDERR "[".scalar(localtime)."] fatal: $_[0]\n";
-  print "<h4 align=\"center\"><i>** Fatal: ".htmlquote($_[0])."</i></h4>\n" if $wwwdebug;
+  my ($fmsg) = ($_[0]);
+  print STDERR "[".scalar(localtime)."] fatal: $fmsg\n";
+  print "<h4 align=\"center\"><i>** Fatal: ".htmlquote($fmsg)."</i></h4>\n" if $wwwdebug;
   exit(1);
 }
 
