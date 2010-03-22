@@ -1237,7 +1237,7 @@ while (<FILES>) {
         push(@f, $_);
         next;
     }
-    if (/\.(?:js)(?:\.in|)$/i) {
+    if (/\.(?:jsm?)(?:\.in|)$/i) {
         push(@jsfiles, $_);
         next;
     }
