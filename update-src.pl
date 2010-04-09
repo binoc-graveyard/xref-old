@@ -280,8 +280,13 @@ for ($TREE) {
         print LOG `cd $src_dir; $TIME python2.4 ./client.py checkout $STDERRTOSTDOUT`;
         last;
     };
-    /^(?:.*)-(?:central|tracing)$/ && do {
-        print LOG `cd $src_dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
+    /^(?:(?:.*)-(?:central|tracing)|camino)$/ && do {
+        if (-d "$src_dir/.hg") {
+          print LOG `cd $src_dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
+        } else {
+          my $dir = basename($src_dir);
+          print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/$dir $src_dir`;
+        }
         last;
     };
     /^firefox.*$/ && do {
