@@ -68,14 +68,15 @@ sub hg_clone_cheap
         $tag =~ s/\./_/g;
         $tag = 'GECKO_'.$tag.'_BASE';
         my $command =
-          "[ -d $destextra ] && rmdir $destextra; cd $orig;".
+          "[ -d $destextra ] && rmdir $destextra $STDERRTOSTDOUT; cd $orig;".
           "$TIME ($HGCOMMAND $HGCLONE .#$tag $destextra || $HGCOMMAND $HGCLONE . $destextra) $STDERRTOSTDOUT;".
           "cd $destextra;".
           "perl -pi -e 's!default =.*!default = http://hg.mozilla.org/releases/$prefixextra!' .hg/hgrc;".
           "$TIME $HGCOMMAND $HGUP $STDERRTOSTDOUT;";
         print LOG $command;
         print LOG `$command`;
-    } else {
+    }
+    unless (-d "$destextra/.hg") {
         my $src = basename($dest);
         print LOG `cd $src; $TIME $HGCOMMAND $HGCLONE http://hg.mozilla.org/releases/$prefixextra $STDERRTOSTDOUT`;
     }
@@ -236,8 +237,20 @@ for ($TREE) {
     };
     /^(?:build|incubator|l10n|labs|projects|webtools)-central$/ && do {
         my @dirs = <$src_dir/*>;
+        my $general_root;
         foreach my $dir (@dirs) {
+            unless (defined $general_root) {
+                $general_root = `hg paths default -R $dir`;
+                $general_root =~ s{/[^/]+$}{};
+            }
             print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
+        }
+        chdir $src_dir;
+        @dirs = hg_get_list($general_root);
+        foreach my $dir (@dirs) {
+            unless (-d $dir) {
+                print LOG `$TIME $HGCOMMAND $HGCLONE $general_root/$dir $STDERRTOSTDOUT`;
+            }
         }
         last;
     };
@@ -247,8 +260,8 @@ for ($TREE) {
     };
     /^l10n-mozilla(1\.9.*)$/ && do {
         my $ver = $1;
-        my @dirs = <$src_dir/*>;
-        unless (scalar @dirs) {
+        my @dirs;
+        {
             my $base = 'l10n-central';
             my $orig = $Conf->{'treehash'}{$base};
             @dirs = hg_get_list("http://hg.mozilla.org/releases/l10n-mozilla-$ver");
