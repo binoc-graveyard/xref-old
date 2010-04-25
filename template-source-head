@@ -69,8 +69,21 @@ $beginwebsvn
 <a href="$websvnhost/blame.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Blame</a><br>
 $endwebsvn
 $beginwebhg
+<script>
+function updateHgBlameHash(node, event) {
+  if (!document.location.hash)
+    return;
+  var anchor = document.location.hash;
+  anchor = anchor.replace("#", "#l");
+  node.href =
+    node.href.replace(/#.*|$/, anchor);
+}
+</script>
 <a href="$webhghost/log/$hgversion/$hgpath/$filename">HG Log</a><br>
-<a href="$webhghost/annotate/$hgversion/$hgpath/$filename">HG Blame</a><br>
+<a href="$webhghost/annotate/$hgversion/$hgpath/$filename"
+onfocus='updateHgBlameHash(this, event)'
+onmouseover='updateHgBlameHash(this, event)'
+>HG Blame</a><br>
 $endwebhg
 $beginoghg
 <a href="$oghghost/source/history/$ogroot/$hgpath/$filename">Grok History</a><br>
