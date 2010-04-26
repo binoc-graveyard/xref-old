@@ -726,8 +726,8 @@ sub markupstring {
   # HTMLify email addresses and urls.
   $string =~ s#((ftp|https?|nntp|snews|news)://(\w|\w\.\w|\~|\-|\/|\#)+(?!\.\b))#<a href=\"$1\">$1</a>#g;
   # htmlify certain addresses which aren't surrounded by <>
-  $string =~ s/([\w\-\_]*\@(?:netscape\.com|mozilla\.(?:com|org)|gnome\.org|linux\.no))(?!&gt;)/<a href=\"mailto:$1\">$1<\/a>/g;
-  $string =~ s/(&lt;)(.*@.*)(&gt;)/$1<a href=\"mailto:$2\">$2<\/a>$3/g;
+  $string =~ s/([\w\-\_]*?\@(?:netscape\.com|mozilla\.(?:com|org)|gnome\.org|linux\.no))(?!&gt;)/<a href=\"mailto:$1\">$1<\/a>/g;
+  $string =~ s/(&lt;)(.*?@.*?)(&gt;)/$1<a href=\"mailto:$2\">$2<\/a>$3/g;
 
   # HTMLify file names, assuming file is in the current directory.
   $string =~ s#\b(([\w\-_\/]+\.(cc?|hh?|cc|cpp?|mm?|idl|java|js|p[lm]))|README(?:\.(?:txt|html?)|))\b#<a href=\"$Conf->{virtroot}/source$virtp$1\">$1</a>#g;
