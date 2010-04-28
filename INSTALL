@@ -1,9 +1,10 @@
-This INSTALL file is customized for the version of lxr used by
-mozilla.org. The original version can be found at
+This INSTALL file is customized for the version of MXR used by
+mozilla.org. MXR is derived from LXR, the original LXR can be
+found at:
    http://lxr.linux.no/
 
 
-In order to install LXR, you will need:
+In order to install MXR, you will need:
 
  - Perl version 5 or later.
  - A webserver with cgi-script capabilities.
@@ -23,16 +24,15 @@ If you want Glimpse and the freetext searching facilities, visit
 <URL:http://glimpse.cs.arizona.edu/>.
 
 
-LXR has so far been tested on the GNU/Linux operating system using the
-Apache webserver.  Other unix-like operating systems and decently
-featured webservers should do as well.
+MXR works on GNU/Linux and Solaris with Apache and NES.
+Other unix-like operating systems and decently
+featured webservers should work as well.
 
 
-To install LXR itself:
+To install MXR itself:
 
- - Retrieve the lxr source via anonymous cvs from mozilla.org's
-   server from mozilla/webtools/lxr. Find out about anonymous
-   cvs at mozilla.org at http://www.mozilla.org/cvs.html
+ - Retrieve the mxr source with hg from hg.mozilla.org:
+   hg clone http://hg.mozilla.org/webtools/mxr
 
  - Edit lxr.conf to fit your source code installations and needs.
 
@@ -79,11 +79,20 @@ If it doesn't work:
 
 Multiple Trees
 
- To have the same lxr source directory index multiple trees, use
- a web server (such as apache) that supports virtual hosts and/or
- aliases. At mozilla.org, we set the document root of lxr.mozilla.org
- to the lxr/root directory and for each tree, set up an alias with
- the tree name pointing to the main lxr directory.
+ There are two ways to configure MXR to index multiple trees.
+ The first way relies on configuring virtual host/alias support in
+ your web server. This turns out to be fairly painful for dynamic
+ systems where you're likely to add trees to MXR frequently and
+ your web admin does not like making frequent changes to the web
+ server's configuration.
+
+Virtual Host based configuration for Multiple Trees
+
+ This requires a web server (such as apache) that supports virtual
+ hosts and/or aliases. At mozilla.org, we had set the document root
+ of lxr.mozilla.org to the lxr/root directory and for each tree,
+ and set up an alias with the tree name pointing to the main mxr
+ directory.
 
  From our httpd.conf:
  <VirtualHost 207.200.73.38:80>
@@ -98,28 +107,37 @@ Multiple Trees
         Alias /seamonkey /opt/webtools/lxr.mozilla.org
  </VirtualHost>
 
- Alternatively, you can also use symlinks (mxr.mozilla.org uses them)
+Symlink based coniguration for Multiple Trees
+
+ This requires a file system which supports symlinks (ntfs junctions
+ should also work). This is the approach currently used by
+ mxr.mozilla.org.
+
+ Create symlinks for each root in the MXR directory:
 ln -s . ef
 ln -s . nspr
 ln -s . js
 ln -s . webtools
 
  The more formal way to do this is now:
-./add-root.pl ef /lxr-root/lxr-data/ef/mozilla ef
-./add-root.pl nspr /lxr-root/lxr-data/nspr/mozilla nspr
-./add-root.pl seamonkey /lxr-root/lxr-data/seamonkey/mozilla mozilla
- add-root will both create the symlink and add the appropriate lines to lxr.conf
+./add-root.pl ef /data/mxr/ef/mozilla ef
+./add-root.pl nspr /data/mxr/nspr/mozilla nspr
+./add-root.pl seamonkey /data/mxr/seamonkey/mozilla mozilla
+./add-root.pl mozilla-central /data/mxr/mozilla-central/mozilla-central mozilla
+
+ add-root.pl will both create the symlink and add the appropriate lines
+ to lxr.conf. The third optional argument is roughly speaking the tree's
+ "pretty" name.
 
 Currently root/index.html is not automatically generated,
 it could and should be.
 
 Files you will need to change manually:
- Local.pm
  update-src.pl
   - add pull/checkout rules for each tree
  root/index.html
   - advertise your roots with this file which is the user facing root
-    of the mxr install
+    of the MXR install
 
 Files you can customize:
  template-*
@@ -129,21 +147,24 @@ Files you can customize:
    * ident
    * source
    * diff
+ Local.pm
+  - add support for VCS integration magic
+  - add special directory prefix handling
  index.html
-  * this is the root of a tree
+  * this is the root for all trees
 
 Scripts you will want to run from a cron job (in order)
  ./update-src.pl -cron treename &&
  ./update-search.pl -cron treename &&
  ./update-xref.pl -cron treename
 
-The easiest way to add a tree to your new (or growing) mxr:
+The easiest way to add a tree to your new (or growing) MXR:
  ./add-root.pl treename /path/to/tree/root treeprefix
 e.g.:
  ./add-root.pl bugzilla /data/mxr/bugzilla/webtools/bugzilla mozilla/webtools/bugzilla
 
 the result:
- sourceroot: bugzilla /var/www/html/mxr/lxr-root/lxr-data/bugzilla/mozilla/webtools/bugzilla
+ sourceroot: bugzilla /data/mxr/bugzilla/mozilla/webtools/bugzilla
  sourceprefix: bugzilla mozilla/webtools/bugzilla
 
 Sometimes you may want to change the location of your trees,
@@ -159,17 +180,18 @@ The more common variant:
  [origin mxr-data] $ rsync tree/root host:/newpath/to/tree/root
  [host mxr] ./add-root.pl treename /path/to/tree/root
  [host mxr] ./update-root.pl treename /newpath/to/tree/root
+
 The argument to add-root isn't a valid path on host, but that's
 ok, it's only necessary so that update-root.pl can understand
 how to change the path to match the new file system layout.
 
 The lxr.conf file:
 
- LXR does not care much about your directory structure, all relevant
+ MXR does not care much about your directory structure, all relevant
  paths can be configured from the lxr.conf file. This file is located
  in the same directory as the perl script files.
 
- LXR recognizes the following options in the configuration file.
+ MXR recognizes the following options in the configuration file:
 
  baseurl
   The url for the root directory of your source. Tree name (if any)
