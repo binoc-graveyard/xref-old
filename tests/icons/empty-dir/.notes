@@ -1,0 +1,4 @@
+#!/bin/sh
+# this file should be deleted.
+# it is only here to make hg and friends happy.
+rm -f $0

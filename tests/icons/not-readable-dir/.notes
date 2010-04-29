@@ -1,0 +1,8 @@
+#!/bin/sh
+# this file could be deleted.
+#rm -f $0
+# it's mostly here to make hg and friends happy.
+# when you read this file, please be sure to:
+# chmod -rwx .
+# i.e., remove all access to the not-readable-dir directory.
+chmod -rwx $(dirname $0)
