@@ -1629,7 +1629,7 @@ sub hgdehex {
   my $data = shift;
   return '' if $data =~ /^\0*$/;
   return '' unless $data;
-  $data =~ s/(.)/sprintf("%02x",(ord($1)))/ge;
+  $data =~ s/(.)/sprintf("%02x",(ord($1)))/gems;
   return $data;
 }
 
