@@ -630,6 +630,7 @@ sub clean_mark {
   return $mark;
 }
 
+my @jscol_selected_lines;
 sub build_mark_map {
   return unless (defined $HTTP->{'param'}->{'mark'});
   my $marks = clean_mark($HTTP->{'param'}->{'mark'});
@@ -648,6 +649,7 @@ sub build_mark_map {
       $mark = $begin;
     }
     $marked_lines{$mark} .= 's';
+    push @jscol_selected_lines, $mark;
   }
 }
 
@@ -659,6 +661,8 @@ sub endmark {
   --$marker;
   return '</div>';
 }
+
+my $colorwithjs = 0;
 
 sub linetag {
   my ($file, $line) = @_;
@@ -672,13 +676,7 @@ sub linetag {
     my $x = $y | 0;
     $lastclass = "d$x";
     $nextrange *= 10;
-    if ($padding < 2) {
-      build_mark_map();
-      my $size = (stat($Path->{'realf'}))[7];
-      $size = (log10($size / 40) | 0) + 1 if $size;
-      $padding = $size < 3 ? 3 : $size;
-      $tag = csspadding($padding) . $tag;
-    } elsif ($x > $padding) {
+    if ($x > $padding) {
       $tag = csspadding(++$padding) . $tag;
     }
   }
@@ -696,6 +694,7 @@ sub linetag {
     }
     $class .= ' m' if $mark =~ 's';
   }
+  return $tag if $colorwithjs;
   $tag .= &fileref($line, '', $line).' ';
   $tag =~ s/<a/<a class='l $class' name=$line/;
 #    $_[1]++;
@@ -942,6 +941,54 @@ sub get_mime_type {
   return '';
 }
 
+my $code_print_limit = 16*1024; #   bytes of code at once
+my $code_printed = 0;
+
+sub print_code {
+  my ($code, $outfun) = @_;
+  if ($colorwithjs) {
+    if ($code) {
+      unless ($code_printed) {
+        &$outfun ("<script>" .
+          "addCode" .
+          "(\"" );
+      }
+      # replace <span class="v"> with <V
+      $code =~ s/<span class='([acvsi])'>/<\u$1/g;
+      # replace end tags with ">", valid markup mandatory
+      $code =~ s/<\/[^>]+>/>/g;
+      my $ident_cgi = $Conf->{virtroot}.'/ident';
+      # replace links to identifiers with <Didentifier>
+      $code =~ s/<a class="d" href="$ident_cgi\?i=([^>"]+)">\1>/<D$1>/g;
+      # replace link emphasis
+      $code =~ s/<a href="([^>"]+)">\1>/<L$1>/g;
+      # replace mailto emphasis
+      $code =~ s/<a href="mailto:([^>"]+)">&lt;\1&gt;>/<M$1>/g;
+      # escape special chars for JS strings
+      $code =~ s/\\/\\\\/g;
+      $code =~ s/"/\\"/g;
+      $code =~ s/\n/\\n/g;
+      &$outfun ($code);
+      $code_printed += length $code;
+      if ($code_printed >= $code_print_limit) {
+        end_print_code ($outfun);
+      }
+    }
+  }
+  else
+  {
+    &$outfun ($code);
+  }
+}
+
+sub end_print_code {
+  if ($code_printed) {
+    my $outfun = shift;
+    &$outfun ("\");\n</script>");
+    $code_printed = 0;
+  }
+}
+
 sub markupfile {
   my ($INFILE, $Path, $fname, $outfun, $force) = @_;
   my $virtp = $Path->{'virt'};
@@ -957,10 +1004,38 @@ sub markupfile {
   if (defined $HTTP->{'param'}->{'handlename'}) {
     $name = $HTTP->{'param'}->{'handlename'};
   }
-  if (defined $ENV{'HTTP_COOKIE'} && $ENV{'HTTP_COOKIE'} =~ /handlename/) {
+  if (defined $ENV{'HTTP_COOKIE'}) {
     my %cookie_jar = split('[;=] *',$ENV{'HTTP_COOKIE'});
-    $name = $cookie_jar{'handlename'} if defined $cookie_jar{'handlename'};
+    if($ENV{'HTTP_COOKIE'} =~ /handlename/) {
+      $name = $cookie_jar{'handlename'} if defined $cookie_jar{'handlename'};
+    }
+    if ($ENV{'HTTP_COOKIE'} =~ /colorwithjs/) {
+      $colorwithjs = 0 + $cookie_jar{'colorwithjs'} if defined $cookie_jar{'colorwithjs'};
+    }
   }
+  if (defined $HTTP->{'param'}->{'colorwithjs'}) {
+    $colorwithjs = 0 + $HTTP->{'param'}->{'colorwithjs'};
+  }
+
+  build_mark_map();
+  if ($colorwithjs) {
+    &$outfun ("<script>window.use_js_coloration = true;\n");
+    if (@jscol_selected_lines) {
+        &$outfun ("window.marked_lines=[" . join (',', @jscol_selected_lines) . "];\n");
+    }
+    &$outfun ("window.ident_cgi='".$Conf->{virtroot}."/ident';\n");
+    &$outfun ("</script>");
+    &$outfun ("<noscript>Script has been disabled, please reload the page to see the scriptless version.</noscript>");
+  }
+
+  # estimate padding
+  my $size = (stat($Path->{'realf'}))[7];
+  $size = (log10($size / 40) | 0) + 1 if $size;
+  $padding = $size < 3 ? 3 : $size;
+  &$outfun (csspadding ($padding));
+
+  &$outfun ("<span id='the-code'>");
+
   if ($name =~ /\.(?:java|idl)$/i) {
     @terms = @javaterm;
   } elsif ($name =~ /\.(?:hh?|s|cpp?|c[cs]?|mm?|pch\+?\+?|fin|tbl)$/i) { # Duplicated in genxref.
@@ -1010,16 +1085,13 @@ sub markupfile {
       &warning('Cross reference database is missing its file list'.$tree.'; please complain to the webmaster [cite: fileidx]');
     }
 
-    &$outfun(# "<pre>\n".
-             #"<a name=\"".$line++.'"></a>');
-             &linetag($virtfname, $line++));
+    &print_code (&linetag($virtfname, $line++), $outfun);
 
     ($btype, $frag) = &SimpleParse::nextfrag;
 
     while (defined($frag)) {
 #print "<!--$btype-->" if @terms eq @pterm;
       &markspecials($frag);
-
       if ($btype eq 'verb') {
         $frag = "<span class='v'>$frag</span>";
       } elsif ($btype eq 'comment') {
@@ -1103,7 +1175,7 @@ sub markupfile {
 
       &htmlquote($frag);
       $frag =~ s/(?:\r?\n|\r)/"\n".&linetag($virtfname, $line++)/ge;
-      &$outfun($frag);
+      &print_code ($frag, $outfun);
 
       ($btype, $frag) = &SimpleParse::nextfrag;
     }
@@ -1177,7 +1249,7 @@ sub markupfile {
         goto READFILE;
       }
       $is_binary = 1;
-    } elsif ( m/[\000-\010\013\014\016-\037\200-Ÿ]/ ) {
+    } elsif ( m/[\000-\010\013\014\016-\037\200-\237]/ ) {
       # ctrl or ctrl+
       $is_binary = 1;
     } else {
@@ -1215,6 +1287,10 @@ sub markupfile {
       print endmark() while $marker;
     }
   }
+
+  &print_code (endmark(), $outfun) while $marker;    # just in case
+  end_print_code ($outfun);
+  &$outfun ("</span>");    # end of <span id='the-code'>
 }
 
 
@@ -1504,6 +1580,8 @@ Link: <' . $parenturl . '>; rel="Up"; title="Parent"
     # Expires: Thu, 11 Dec 1997 00:55:32 GMT
     $head .= ("Expires: ".(pretty_date(time+1200))."\n");
   }
+  # remove cookie so that if JS is disabled, reloading the page is enough to get back to "old" JS-less behaviour
+  $head .= "Set-Cookie: colorwithjs=; path=/; expires= Sat, 01-Jan-2000 00:00:00 GMT\n";
 
   return ($Conf, $HTTP, $Path, $head);
 }
