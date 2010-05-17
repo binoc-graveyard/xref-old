@@ -96,12 +96,12 @@ sub display_line
         }
     }
     my $filepath = $path ? $path . $filename : "/$filename";
+    my @frargs = ();
+    if ($filename =~ /\.html?$/) {
+        @frargs = ("force=1");
+    }
     unless ($skip) {
-        if ($filename =~ /\.html?$/) {
-            printf(&fileref("$filename", "$filepath", "", ("force=1")));
-        } else {
-            print(&fileref("$filename", "$filepath"));
-        }
+        print(&fileref("$filename", "$filepath"));
         print(&blamerefs($file.'/'.$filename));
     }
     unless ($skip) {
@@ -109,7 +109,7 @@ sub display_line
         $openlist = 1;
     }
     print ('<li>');
-    print(&fileref("line $line", "$filepath", $line),
+    print(&fileref("line $line", "$filepath", $line, @frargs),
           " -- ".markupstring($text, "$path")."<br>\n");
 }
 
