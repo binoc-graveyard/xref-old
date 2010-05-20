@@ -119,6 +119,16 @@ sub escape_re {
     return $re;
 }
 
+sub escape_comment {
+    my $comment = shift;
+    $comment =~ s/\&/\&amp;/g;
+    $comment =~ s/</\&lt;/g;
+    $comment =~ s/>/\&gt;/g;
+    $comment =~ s/"/\&quot;/g;
+    $comment =~ s/-/\&#45;/g;
+    return $comment;
+}
+
 sub print_ident_hints 
 {
     my ($requestedsearch) = @_;
@@ -184,7 +194,7 @@ function changefindpreset() {
 
     my $note;
     my @filters = ();
-    my $displayedsearch = $searchtext;
+    my $displayedsearch = escape_comment($searchtext);
     my $requestedsearch = $searchtext;
 
     if ($searchtext =~ /\S/) {
@@ -223,14 +233,11 @@ converted into a filter.</strong></p>\n";
         }
     }
 
-    $s = $displayedsearch;
-    $s =~ s/\&/\&amp;/g;
-    $s =~ s/"/\&quot;/g;
     print('<b>
 <label for="string">Search for:</label></b></td>
 <td>
 <input type=text id="string" name="string"
-value="',$s,'" size=30>
+value="',$displayedsearch,'" size=30>
 <input type=submit value="search"><br>
 </td></tr><tr><td></td><td>
 <input type="checkbox" id="regexp" name="regexp"');
@@ -247,11 +254,7 @@ value="',$s,'" size=30>
     print '><label for="case">Case sensitive</label>
 ';
 
-my $value = $find;
-$value =~ s/&/&amp;/g;
-$value =~ s/"/&quot;/g;
-$value =~ s/</&lt;/g;
-$value =~ s/>/&gt;/g;
+my $value = escape_comment($find);
     print('</td>
 <tr><td><label for="find">in files matching:</label></td>
 <td><input type=text id="find" name="find" value="'.
@@ -296,11 +299,7 @@ $findi = cleanFind($findi);
     print '</select>
 ';
 
-$value = $filter;
-$value =~ s/&/&amp;/g;
-$value =~ s/"/&quot;/g;
-$value =~ s/</&lt;/g;
-$value =~ s/>/&gt;/g;
+$value = escape_comment($filter);
 
     print '</td></tr>
 <tr><td><label for="filter">Limit output to pattern:</label></td>
@@ -330,6 +329,28 @@ $hitlimit.'" size=10>';
 
     $| = 1; print('');
 
+    if ($isregexp && $searchtext ne "" && $searchtext =~ /[\[\]{}\\]/) {
+        my $bracketsearchtext = $searchtext;
+        my $doublebackslash = '\\\\';
+        $bracketsearchtext =~ s/$doublebackslash$doublebackslash//g;
+        $bracketsearchtext =~ s/[^\[\]{}\\]/x/g;
+        $bracketsearchtext =~ s/\\[\[\]]/x/g;
+        my @brackets = ();
+        my $start_or_not_escape = '(?:^|[^\\\\])';
+        if (($bracketsearchtext =~ s/$start_or_not_escape\[//g) !=
+            ($bracketsearchtext =~ s/$start_or_not_escape\]//g)) {
+            push @brackets, qw( [ ] );
+        }
+        if (($bracketsearchtext =~ s/$start_or_not_escape\{//g) !=
+            ($bracketsearchtext =~ s/$start_or_not_escape\}//g)) {
+            push @brackets, qw( { } );
+        }
+        if (scalar @brackets) {
+            $searchtext = '';
+            print "<em>Can't search with mismatched brackets: ".join(', ', @brackets)."</em><br>
+";
+        }
+    }
     if (! -e $Conf->glimpsebin) {
         &fatal("Search isn't available;
 please complain to the webmaster [cite: bad_glimpsebin]");
@@ -344,16 +365,8 @@ please complain to the webmaster [cite: bad_glimpseindex]");
     } elsif ($searchtext ne "") {
         print '<hr>
 ';
-        $displayedsearch =~ s/&/&amp;/g;
-        $displayedsearch =~ s/</&lt;/g;
-        $displayedsearch =~ s/>/&gt;/g;
-
         if ($find) {
-            my $displayedfind = $find;
-            $displayedfind =~ s/&/&amp;/g;
-            $displayedfind =~ s/</&lt;/g;
-            $displayedfind =~ s/>/&gt;/g;
-            $displayedfind =~ s/"/&quot;/g;
+            my $displayedfind = escape_comment($find);
             print '<p><i>Searching <a href="find?string=' . $displayedfind . '">these files</a>
 for <a href="search?string=' . $displayedsearch . '">this text</a>.</i></p>';
         }
@@ -366,7 +379,7 @@ for <a href="search?string=' . $displayedsearch . '">this text</a>.</i></p>';
             $searchtext =~ s/([~;,><])/\\$1/g;
         } else {
             push @filters, escape_re($searchtext) if $search_sensitive;
-            $searchtext =~ s/([~;,#><\-\$.^*[^|()\!])/\\$1/g;
+            $searchtext =~ s/([~;,#><\-\$.^*^|()\!\[\]])/\\$1/g;
         }
         @execparams = ($Conf->glimpsebin,"-i","-H",$Conf->dbdir,'-y','-n');
         if ($find) {
@@ -435,6 +448,7 @@ print " files</span></span>
 </b></p>
 ";
         my $glimpse_error_reported = 0;
+        my $glimpse_search_may_fail = 0;
         LINE: while (my $line = <GLIMPSE>) {
             if (!$numlines) {
                 if ($line =~ /^Warning: No files were indexed! Exiting\.\.\./) {
@@ -447,13 +461,28 @@ print " files</span></span>
                     $glimpse_error_reported = 1;
                     last;
                 }
-                if ($line =~ /Warning: pattern has words present in the stop-list: must SEARCH the files/) {
+                if ($line =~ /^Warning: pattern has words present in the stop-list: must SEARCH the files$/) {
+                    next;
+                }
+                if ($line =~ /^Warning! Error in the format of the index!$/) {
+                    next;
+                }
+                if ($line =~ /^[^:]*glimpse: unmatched '\[', '\]' \(use \\\[, \\\] to search for \[, \]\)/) {
+                    $glimpse_search_may_fail = 1;
+                    next;
+                }
+                if ($glimpse_search_may_fail && ($line =~ /^[^:]*glimpse: error in searching index$/)) {
+                    $glimpse_search_may_fail = 0;
                     next;
                 }
                 if ($line =~ /^[^:]*:[^:]*(parse error at|unmatched)|^glimpse: error in searching index$/) {
                     print "Pattern can't be handled today, please file a
 <a href='https://bugzilla.mozilla.org/enter_bug.cgi?product=Webtools&component=MXR&short_desc=glimpse+parse+error&bug_file_loc=please-fill-this-in'
 >bug</a>.<br>";
+                    $line = escape_comment($line);
+                    print "<!--
+$line
+-->";
                     $glimpse_error_reported = 1;
                     next;
                 }
