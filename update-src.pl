@@ -189,7 +189,7 @@ for ($TREE) {
         last;
     };
     /^security$/ && do {
-        print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/security mozilla/nsprpub $STDERRTOSTDOUT`;
+        print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/security mozilla/nsprpub mozilla/dbm $STDERRTOSTDOUT`;
         last;
     };
     /^webtools$/ && do {
