@@ -308,7 +308,8 @@ my $file = shift;
 
 sub noWrap {
 my $file = shift;
-    return isHTML($file) ||
+    return $HTTP->{'param'}->{'raw'} ||
+           isHTML($file) ||
            isImage($file) ||
            isCSS($file);
 }
@@ -391,6 +392,9 @@ my $body = <SRCFILE>;
                 }
                 print(markupstring($string, $Path->{'virt'}));
                 print("</pre>");
+            } elsif ($skip_wrap) {
+                local $/ = undef;
+                print <SRCFILE>;
             } else {
                 if (-e "$Path->{'root'}/client.mk" && ($file =~ /\.idl$/)) {
                   my $base = basename($file, ".idl");

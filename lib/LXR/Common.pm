@@ -1514,6 +1514,7 @@ sub init_all {
   my ($argv_0) = @_;
 
   $HTTP->{'path_info'} = &http_wash(env_or('PATH_INFO', ''));
+  $HTTP->{'http_user_agent'} = env_or('HTTP_USER_AGENT', '');
   $HTTP->{'param'}->{'v'} ||= $HTTP->{'param'}->{'version'};
   $HTTP->{'param'}->{'a'} ||= $HTTP->{'param'}->{'arch'};
   $HTTP->{'param'}->{'i'} ||= $HTTP->{'param'}->{'identifier'};
@@ -1535,6 +1536,11 @@ sub init_all {
 
   my $head = '';
   my $ctype = 'text/html';
+
+  if ($HTTP->{'http_user_agent'} =~ m{^mercurial/}) {
+    $HTTP->{'param'}->{'raw'} = 1;
+    $HTTP->{'param'}->{'ctype'} = 'application/octet-stream';
+  }
 
   if (defined($HTTP->{'param'}->{'raw'})) {
     $ctype = $HTTP->{'param'}->{'ctype'};
