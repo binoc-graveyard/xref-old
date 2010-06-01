@@ -1218,6 +1218,7 @@ sub markupfile {
       &$outfun(&linetag($virtfname, $.).$_);
     }
   } else {
+    $colorwithjs = 0;
     my $is_binary = -1;
     my $keywords;
     (undef,undef,$keywords) = &parsecvsentries;
