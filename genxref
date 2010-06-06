@@ -98,8 +98,7 @@ sub stripodd {
     my $tostrip = $_[0];
     while ($tostrip =~ s/\{([^\{\}]*)\}/\05$1\06/gs) {}
     $tostrip =~ s/[\{\}]//gs; # remove *before* restoring outermost block
-    $tostrip =~ s/\05/\{/gs;
-    $tostrip =~ s/\06/\}/gs;
+    $tostrip =~ tr/\05\06/\{\}/;
     return($tostrip);
 }
 
