@@ -346,7 +346,7 @@ sub findidentPL {
               "), file $curfnum of ",$#plfiles+1,"...\n");
 
         # Remove comments.
-        $contents =~ s/^\s=(?:\w+?\n)(.*?)=cut/&wash($1)&wash($2)/ges; # Perl Pod
+        $contents =~ s/^\s=(?:\w+?\n)(.*?)=cut/&wash($1 . $2)/ges; # Perl Pod
         $contents =~ s/\#[^\n]*//g; # Perl Comment
 
         # Unwrap continuation lines.
@@ -814,7 +814,7 @@ sub findidentIDL {
                                      : $itype{'var'}
                                        # Variable.
                                     )
-                                  )."$4\02 ".&wash($5).&wash($7)/goesx;
+                                  )."$4\02 ".&wash($5 . $7)/goesx;
                 }
 
             $contents .= $_;
@@ -993,7 +993,7 @@ sub findusagePL {
               "), file $curfnum of ",$#plfiles+1,"...\n");
 
         # Remove comments.
-        $contents =~ s/^\s=(?:\w+?\n)(.*?)=cut/&wash($1)&wash($2)/ges; # Perl Pod
+        $contents =~ s/^\s=(?:\w+?\n)(.*?)=cut/&wash($1 . $2)/ges; # Perl Pod
         $contents =~ s/\#[^\n]*//g; # Perl Comment
 
 	# FIXME: "var"
