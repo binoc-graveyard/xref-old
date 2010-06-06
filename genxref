@@ -852,7 +852,7 @@ sub findident {
     my $curfnum = 0;
 
     foreach $f (@f) {
-	my ($java, $idl) = ($ft[$fnum] == 1, $ft[$fnum] == 2);
+	my ($java) = ($ft[$fnum] == 1);
 	$fileidx{++$fnum} = $f;
         ++$curfnum;
 
@@ -899,8 +899,6 @@ sub findident {
 
 	if ($java) {
 	    $contents = java_classes($contents);
-	} elsif ($idl) {
-	    $contents = idl_interfaces($contents);
 	} else {
 	    $contents = c_classes($contents);
 	}
