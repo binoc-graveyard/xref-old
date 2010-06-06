@@ -1220,7 +1220,7 @@ print(STDERR "looking in $realpath.\n");
 
 
 while (<FILES>) {
-    s/^$realpath|\s+$//og;
+    s/^\Q$realpath\E|\s+$//og;
     #   Duplicated in lib/LXR/Common.pm
     if (/\.(hh?|cpp?|c[cs]?|java|fin|tbl)$/i) {
         push(@ft, ($1 eq 'java')?1:0);
