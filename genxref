@@ -90,8 +90,7 @@ my $totalrefs = 0;
 
 sub wash {
     my $towash = $_[0];
-    $towash =~ s/[^\n]+//gs;
-    return($towash);
+    return ("\n" x ($towash =~ tr/\n//));
 }
 
 sub stripodd {
