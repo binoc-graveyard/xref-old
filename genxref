@@ -959,7 +959,7 @@ sub findident {
 		$ldefs++;
 	    }
 	}
-	print(STDERR " ".$ldefs." defs\n");
+	print(STDERR " $ldefs defs\n");
     }
 
     # Remove reserved from xref
