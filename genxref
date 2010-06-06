@@ -1014,7 +1014,7 @@ sub findusagePL {
     $totalrefs = $totalrefs + $refs;
     print(STDERR
 	  "Completed pass 2 (",(time-$start),"s):",
-	  "$refs references to known identifiers found (total: $totalrefs).\n\n");
+	  " $refs references to known identifiers found (total: $totalrefs).\n\n");
 }
 
 sub findusageJS {
@@ -1067,7 +1067,7 @@ sub findusageJS {
     $totalrefs = $totalrefs + $refs;
     print(STDERR
 	  "Completed pass 2 (",(time-$start),"s):",
-	  "$refs references to known identifiers found (total: $totalrefs).\n\n");
+	  " $refs references to known identifiers found (total: $totalrefs).\n\n");
 }
 
 sub findusageIDL {
@@ -1121,7 +1121,7 @@ sub findusageIDL {
     $totalrefs = $totalrefs + $refs;
     print(STDERR
           "Completed pass 2 IDL (",(time-$start),"s):",
-          "$refs references to known identifiers found (total: $totalrefs).\n\n");
+          " $refs references to known identifiers found (total: $totalrefs).\n\n");
 }
 
 sub findusage {
@@ -1174,7 +1174,7 @@ sub findusage {
     $totalrefs = $totalrefs + $refs;
     print(STDERR
 	  "Completed pass 2 C/C++ (",(time-$start),"s):",
-	  "$refs references to known identifiers found (total: $totalrefs).\n\n");
+	  " $refs references to known identifiers found (total: $totalrefs).\n\n");
 }
 
 
@@ -1203,7 +1203,7 @@ sub dumpdb {
     rename("xref.out.$$", "xref") || die "Couldn't rename xref.out.$$ to xref";
     print(STDERR
 	  "Completed pass 3 (",(time-$start),"s):",
-	  "Information on $i identifiers dumped to disk.\n\n");
+	  " Information on $i identifiers dumped to disk.\n\n");
 }
 
 
