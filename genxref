@@ -1213,7 +1213,7 @@ tie (%fileidx, "DB_File", "fileidx.out.$$", O_RDWR|O_CREAT, 0660, $DB_HASH)
     || die("Could not open \"fileidx.out.$$\" for writing");
 
 
-open(FILES, "find $realpath -follow -print |");
+open(FILES, "find $realpath -follow -type f -print |");
 print(STDERR "Starting pass 0: Checking for files to index.\n");
 print(STDERR "looking in $realpath.\n");
 
