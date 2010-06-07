@@ -910,7 +910,7 @@ sub findident {
 	    if (!$java) {
 		my $t = /\n\s*typedef/s;	# Is this a type definition?
 
-		while ( s/(\n\s*)(typedef|struct|enum|union|inline|static|__inline)/$1/ ) {}
+		s/(\n)\s*(?:typedef|struct|enum|union|inline|static|__inline)/$1/g;
 
 		if (/$ident[^a-zA-Z0-9_]+$ident/) { # It takes two, baby.
 
