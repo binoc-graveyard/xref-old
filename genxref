@@ -1216,32 +1216,28 @@ print(STDERR "Starting pass 0: Checking for files to index.\n");
 print(STDERR "looking in $realpath.\n");
 
 
-while (<FILES>) {
-    s/^\Q$realpath\E|\s+$//og;
+while (my $file = <FILES>) {
+    $file =~ s/^\Q$realpath\E|\s+$//og;
     #   Duplicated in lib/LXR/Common.pm
-    if (/\.(hh?|cpp?|c[cs]?|java|fin|tbl)$/i) {
-        push(@ft, ($1 eq 'java')?1:0);
-        push(@f, $_);
-        next;
-    }
-    if (/\.(?:jsm?)(?:\.in|)$/i) {
-        push(@jsfiles, $_);
-        next;
-    }
-    if (/\.(?:p[lm]|cgi)(?:\.in|)$/i) {
-        push(@plfiles, $_);
-        next;
-    }
-    if (/\.idl$/i) {
-        push(@idlfiles, $_);
-        next;
-    }
-    if (/\.xml$/i) {
-        push(@xblfiles, $_);
-        next;
+    if ($file =~ /\.(?:(hh?|cpp?|c[cs]?|fin|tbl)|(java)|(jsm?)(?:\.in|)|(p[lm]|cgi)(?:\.in|)|(idl)|(xml))$/i) {
+        if ($1) {
+            push @ft, 0;
+            push @f, $file;
+        } elsif ($2) {
+            push @ft, 1;
+            push @f, $file;
+        } elsif ($3) {
+            push @jsfiles, $file;
+        } elsif ($4) {
+            push @plfiles, $file;
+        } elsif ($5) {
+            push @idlfiles, $file;
+        } elsif ($6) {
+            push @xblfiles, $file;
+        }
     }
 }
-close(FILES);
+close FILES;
 
 print "Stage 0 IDL file count is : " . scalar(@idlfiles) . "\n";
 print "Stage 0 C/C++ file count is : " . scalar(@f) . "\n";
