@@ -424,8 +424,8 @@ sub findidentPL {
 =useless
             if ($line =~ /($ident)\s*=>/m) {
             }
-=cut
             $l = $bl;
+=cut
             $l += $ct2;
         }
 
