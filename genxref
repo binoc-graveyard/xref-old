@@ -127,7 +127,6 @@ sub findidentXBL {
     my $curfnum = 0;
 
     foreach $f (@xblfiles) {
-        $f =~ s/^$realpath//o;
         $fileidx{++$fnum} = $f;
         ++$curfnum;
 
@@ -332,7 +331,6 @@ sub findidentPL {
     my $curfnum = 0;
 
     foreach $f (@plfiles) {
-        $f =~ s/^$realpath//o;
         $fileidx{++$fnum} = $f;
         ++$curfnum;
 
@@ -463,7 +461,6 @@ sub findidentJS {
     my $curfnum = 0;
 
     foreach $f (@jsfiles) {
-        $f =~ s/^$realpath//o;
         $fileidx{++$fnum} = $f;
         ++$curfnum;
 
@@ -739,7 +736,6 @@ sub findidentIDL {
     my $curfnum = 0;
 
     foreach $f (@idlfiles) {
-        $f =~ s/^$realpath//o;
         $fileidx{++$fnum} = $f;
         ++$curfnum;
 
@@ -857,7 +853,6 @@ sub findident {
     my $curfnum = 0;
 
     foreach $f (@f) {
-	$f =~ s/^$realpath//o;
 	my ($java, $idl) = ($ft[$fnum] == 1, $ft[$fnum] == 2);
 	$fileidx{++$fnum} = $f;
         ++$curfnum;
@@ -983,7 +978,6 @@ sub findusagePL {
     my $curfnum = 0;
 
     foreach $f (@plfiles) {
-	$f =~ s/^$realpath//o;
         ++$fnum;
         ++$curfnum;
 
@@ -1035,7 +1029,6 @@ sub findusageJS {
     my $curfnum = 0;
 
     foreach $f (@jsfiles) {
-	$f =~ s/^$realpath//o;
 	++$fnum;
 	++$curfnum;
 	my $lcount = 0;
@@ -1089,7 +1082,6 @@ sub findusageIDL {
     my $curfnum = 0;
 
     foreach $f (@idlfiles) {
-        $f =~ s/^$realpath//o;
         ++$fnum;
         ++$curfnum;
         my $lcount = 0;
@@ -1144,7 +1136,6 @@ sub findusage {
     my $curfnum = 0;
 
     foreach $f (@f) {
-	$f =~ s/^$realpath//o;
         ++$fnum;
         ++$curfnum;
 	my $lcount = 0;
@@ -1229,7 +1220,7 @@ print(STDERR "looking in $realpath.\n");
 
 
 while (<FILES>) {
-    chop;
+    s/^$realpath|\s+$//og;
     #   Duplicated in lib/LXR/Common.pm
     if (/\.(hh?|cpp?|c[cs]?|java|fin|tbl)$/i) {
         push(@ft, ($1 eq 'java')?1:0);
