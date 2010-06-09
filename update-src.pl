@@ -294,7 +294,7 @@ for ($TREE) {
         print LOG `cd $src_dir; $TIME python2.4 ./client.py checkout $STDERRTOSTDOUT`;
         last;
     };
-    /^(?:(?:.*)-(?:central|tracing)|camino)$/ && do {
+    /^(?:.*)-(?:central|tracing)$/ && do {
         if (-d "$src_dir/.hg") {
           print LOG `cd $src_dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
         } else {
@@ -309,6 +309,18 @@ for ($TREE) {
         }
         print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=browser $STDERRTOSTDOUT`;
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
+        last;
+    };
+    /^camino$/ && do {
+        if (-d "$src_dir/.hg") {
+          print LOG `cd $src_dir; cd ..; mkdir 0; mv camino 0; mv 0 camino`;
+        }
+        if (-d "$src_dir/camino/.hg") {
+          print LOG `cd $src_dir/camino; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
+        } else {
+          my $dir = basename($src_dir);
+          print LOG `mkdir $src_dir/camino; $TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/$dir $src_dir/camino`;
+        }
         last;
     };
     /^thunderbird.*$/ && do {
