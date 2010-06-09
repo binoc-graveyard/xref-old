@@ -243,7 +243,7 @@ for ($TREE) {
         foreach my $dir (@dirs) {
             unless (defined $general_root) {
                 $general_root = `hg paths default -R $dir`;
-                $general_root =~ s{/[^/]+$}{};
+                $general_root =~ s{/[^/]+/?\s*$}{};
             }
             print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT; $HGCOMMAND $HGCHANGESET`;
         }
