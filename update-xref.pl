@@ -20,6 +20,8 @@ uptime
 );
 =cut
 
+my $DEBUGGER = '';
+
 my @paths=qw(
 /usr/local/bin
 /opt/local/bin
@@ -34,6 +36,7 @@ my $STDERRTODEVNUL = '2>/dev/null';
 my $ERROR_OUTPUT = $STDERRTOSTDOUT;
 
 my $TREE;
+my $by_unit = 0;
 
 sub do_mkdir {
   my $dir = shift;
@@ -49,11 +52,17 @@ sub process_args {
     $TREE = shift;
     if ($TREE) {
       if ($TREE eq '-cron') {
+        # run from a cron script, silence error output
         $was_arg = 1;
         $TIME = $UPTIME = '';
         $ERROR_OUTPUT = $STDERRTODEVNUL;
+      } elsif ($TREE eq '--by-unit') {
+        # index each top level directory individually and then merge
+        $was_arg = 1;
+        $by_unit = 1;
+      } else {
+        $TREE =~ s{/$}{};
       }
-      $TREE =~ s{/$}{};
     }
   } while ($TREE && $was_arg);
 }
@@ -136,7 +145,48 @@ chdir $db_tmp_dir || die "can't change to $db_tmp_dir";
 
 #XXX what does |set -e| mean?
 #system ("set -e >> $log");
-if (system("$TIME $lxr_dir/genxref $src_dir >> $log $ERROR_OUTPUT") == 0) {
+my $success = 0;
+if ($by_unit) {
+  chdir $src_dir;
+  my @dirs = sort <*>;
+  chdir $db_tmp_dir;
+  my ($othertree, $otherpath, $skipdb) = ('', '', '');
+  if ($TREE =~ /^(.*)-(?:.*?)$/) {
+    $othertree = $1;
+    $otherpath = $Conf->{'treehash'}{$othertree};
+    for my $tree (keys %{$Conf->{'treehash'}}) {
+      my $path = $Conf->{'treehash'}{$tree};
+      if ($otherpath eq $path) {
+        $skipdb = "$db_dir/../$tree/tmp";
+        last if -d $skipdb;
+      }
+      $skipdb = '';
+    }
+    unless ($otherpath && -d $otherpath && -d $skipdb) {
+      ($othertree, $otherpath, $skipdb) = ('', '', '');
+    }
+  }
+
+  foreach my $dir (@dirs) {
+    my $skip = 0;
+    if ($otherpath) {
+      $skip = 1 if system("$lxr_dir/compare-dir-trees.pl", "$src_dir/$dir", "$otherpath/$dir") == 0;
+    }
+    if ($skip) {
+      foreach my $file ("$skipdb/fileidx.$dir", "$skipdb/xref.$dir") {
+        if (-f $file) {
+          system('cp', '-lf', $file, '.');
+        }
+      }
+    } else {
+      $success = system("$TIME $DEBUGGER $lxr_dir/genxref $src_dir/$dir default $dir >> $log $ERROR_OUTPUT") == 0;
+    }
+  }
+  $success = system("$TIME $DEBUGGER $lxr_dir/genxref $src_dir merge ".join(' ',@dirs)." >> $log $ERROR_OUTPUT") == 0;
+} else {
+  $success = system("$TIME $DEBUGGER $lxr_dir/genxref $src_dir >> $log $ERROR_OUTPUT") == 0;
+}
+if ($success) {
   if (system("chmod", "-R", "a+r", $db_tmp_dir)) {
     die "chmod failed";
   }

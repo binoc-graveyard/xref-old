@@ -63,30 +63,23 @@ my @reserved = ('auto', 'break', 'case', 'char', 'const', 'continue',
 my @reservedJS = ( 'abstract',   'as',   'break',   'case',   'catch',   'class',   'const',   'continue',  'default',   'delete',   'do',   'else',   'export',   'extends',   'false',   'final',   'finally',   'for',   'function',   'if',   'import',   'in',   'instanceof',   'is',   'namespace',   'new',   'null',   'package',   'private',   'public',   'return',   'static',   'super',   'switch',   'this ',  'throw',   'true',   'try',   'typeof',   'use',   'var',   'let',    'void',   'while',   'with');
 
 my @reservedXUL = (''); #nothing yet
-
 my @reservedXBL = (''); #nothing yet
-
-my @ft;
 
 my %xref;
 
-my @f;
-my @jsfiles;
-my @plfiles;
-my @idlfiles;
-my @xblfiles;
+my (@ft, @f, @jsfiles, @plfiles, @idlfiles, @xblfiles);
 
 my $ident = '\~?_*[a-zA-Z][a-zA-Z0-9_]*';
 my $fnum = 1;
 
 my $plidentp = '[$@%&]';
-my $realpath = $ARGV[0];
+my ($realpath, $verb, $fix, @extra) = @ARGV;
 $realpath ||= '.';
 $realpath .= '/';
+$verb = 'default' unless defined $verb;
+my $suffix = defined $fix ? ".$fix" : '';
 
-
-my $totaldefs = 0;
-my $totalrefs = 0;
+my ($totaldefs, $totalrefs) = (0, 0);
 
 sub wash {
     my $towash = $_[0];
@@ -1177,15 +1170,13 @@ sub findusage {
 	  " $refs references to known identifiers found (total: $totalrefs).\n\n");
 }
 
-
 sub dumpdb {
-    print STDERR "Starting pass 3: Dump database to disk.\n";
+    print STDERR "Starting stage 3: Dump database to disk.\n";
 
     my $start = time;
     my %xrefdb;
-
     tie (%xrefdb, "DB_File" , "xref.out.$$", O_RDWR|O_CREAT, 0664, $DB_HASH)
-	|| die("Could not open \"xref\" for writing");
+        || die("Could not open \"xref\" for writing");
 
     my $i = 0;
     my $k;
@@ -1200,81 +1191,183 @@ sub dumpdb {
     }
 
     untie(%xrefdb);
+    rename("xref.out.$$", "xref$suffix") || die "Couldn't rename xref.out.$$ to xref$suffix";
+    print(STDERR
+	  "Completed stage 3 (",(time-$start),"s):",
+	  " Information on $i identifiers dumped to disk.\n\n");
+
+    dbmclose(%fileidx);
+
+    rename("fileidx.out.$$", "fileidx$suffix")
+        || die "Couldn't rename fileidx.out.$$ to fileidx$suffix";
+}
+
+sub renumber {
+    my ($line, $fadjust) = @_;
+#                $xref{$3} .= "$2$fnum:$1\t";
+    my @refs = split /\t/, $line;
+    $line = '';
+    foreach my $v (@refs) {
+       $v =~ /(.)(\d+):(.*)/;
+       my ($kind, $fileno, $lineno) = ($1, $fadjust + $2, $3);
+       $line .= "$kind$fileno:$lineno\t";
+    }
+    return $line;
+}
+
+sub merge {
+    print STDERR "Starting stage 4: Merging database to disk.\n";
+
+    my $start = time;
+    tie (%fileidx, "DB_File", "fileidx.out.$$", O_RDWR|O_CREAT, 0660, $DB_HASH)
+        || die("Could not open \"fileidx.out.$$\" for writing");
+
+    my %xrefdb;
+    tie (%xrefdb, "DB_File" , "xref.out.$$", O_RDWR|O_CREAT, 0664, $DB_HASH)
+        || die("Could not open \"xref\" for writing");
+
+    my ($i, $k, $v);
+    my $fadjust = 0;
+    my $limit = scalar @extra;
+    for (my $e = 0; $e < $limit; ++$e) {
+        my $fix = $extra[$e];
+        my ($prefix, $suffix) = ("$fix/", ".$fix");
+        my %idx;
+        tie (%idx, "DB_File", "fileidx$suffix", O_RDONLY, undef, $DB_HASH)
+            || die("Could not open \"fileidx$suffix\" for reading");
+        my $f = -1;
+        while (($k, $v) = each(%idx)) {
+            $f = $k if ($k > $f);
+            $fileidx{$k + $fadjust} = "$prefix$v";
+            unless ($i % 100) {
+                print(STDERR "(Pass 4) file $i [$fix] of $e / $limit files...\n");
+            }
+        }
+        untie (%idx);
+
+        tie (%xref, "DB_File" , "xref$suffix", O_RDONLY, undef, $DB_HASH)
+            || die("Could not open \"xref$suffix\" for reading");
+
+        while (($k, $v) = each(%xref)) {
+            $i++;
+            $xrefdb{$k} .= renumber($v, $fadjust);
+            unless ($i % 100) {
+                print(STDERR "(Pass 4) identifier $i [$fix] of $e / $limit files...\n");
+            }
+        }
+        untie (%xref);
+        $fadjust += $f + 1;
+    }
+    untie(%xrefdb);
     rename("xref.out.$$", "xref") || die "Couldn't rename xref.out.$$ to xref";
     print(STDERR
-	  "Completed pass 3 (",(time-$start),"s):",
-	  " Information on $i identifiers dumped to disk.\n\n");
-}
-
-
-tie (%fileidx, "DB_File", "fileidx.out.$$", O_RDWR|O_CREAT, 0660, $DB_HASH)
-    || die("Could not open \"fileidx.out.$$\" for writing");
-
-
-open(FILES, "find -L $realpath -type f -print |");
-print(STDERR "Starting pass 0: Checking for files to index.\n");
-print(STDERR "looking in $realpath.\n");
-
-
-while (my $file = <FILES>) {
-    $file =~ s/^\Q$realpath\E|\s+$//og;
-    #   Duplicated in lib/LXR/Common.pm
-    if ($file =~ /\.(?:(hh?|cpp?|c[cs]?|fin|tbl)|(java)|(jsm?)(?:\.in|)|(p[lm]|cgi)(?:\.in|)|(idl)|(xml))$/i) {
-        if ($1) {
-            push @ft, 0;
-            push @f, $file;
-        } elsif ($2) {
-            push @ft, 1;
-            push @f, $file;
-        } elsif ($3) {
-            push @jsfiles, $file;
-        } elsif ($4) {
-            push @plfiles, $file;
-        } elsif ($5) {
-            push @idlfiles, $file;
-        } elsif ($6) {
-            push @xblfiles, $file;
-        }
+          "Completed stage 4 (",(time-$start),"s):",
+          "Information on $i identifiers dumped to disk.\n\n");
+    untie(%fileidx);
+    rename("fileidx.out.$$", "fileidx")
+        || die "Couldn't rename fileidx.out.$$ to fileidx";
+    foreach my $fix (@extra) {
+        my ($suffix) = (".$fix");
     }
 }
-close FILES;
 
-print "Stage 0 IDL file count is : " . scalar(@idlfiles) . "\n";
-print "Stage 0 C/C++ file count is : " . scalar(@f) . "\n";
-print "Stage 0 JS file count is : " . scalar(@jsfiles) . "\n";
-print "Stage 0 PL file count is : " . scalar(@plfiles) . "\n";
+sub buildList {
+    my ($fspre, $fspost) = ('', '');
+    if ($suffix ne '') {
+       $fspost = '! -type l';
+    } else {
+       $fspre = '-L';
+    }
+    open(FILES, "find $fspre $realpath $fspost -type f -print |");
+    print(STDERR "Starting pass 0: Checking for files to index.\n",
+                 "Looking in $realpath.\n");
 
+    while (my $file = <FILES>) {
+        $file =~ s/^\Q$realpath\E|\s+$//og;
+        #   Duplicated in lib/LXR/Common.pm
+       if ($file =~ /\.(?:(hh?|cpp?|c[cs]?|fin|tbl)|(java)|(jsm?)(?:\.in|)|(p[lm]|cgi)(?:\.in|)|(idl)|(xml))$/i) {
+           if ($1) {
+               push @ft, 0;
+               push @f, $file;
+           } elsif ($2) {
+               push @ft, 1;
+               push @f, $file;
+           } elsif ($3) {
+               push @jsfiles, $file;
+           } elsif ($4) {
+               push @plfiles, $file;
+           } elsif ($5) {
+               push @idlfiles, $file;
+           } elsif ($6) {
+               push @xblfiles, $file;
+           }
+        }
+    }
+    close FILES;
+}
 
-$fnum = 0;
+# Stage 0: build file list
+# Stage 1: find identifiers
+# - this is pass 1 over the file content
+# Stage 2: find references
+# - this is pass 2 over the file content
+# Stage 3: dump the database
+# - we run from 0..3 for a "default" action
+# Stage 4: merge databases
+# - we only do this stage for a "merge" action
+sub buildIndex {
+    tie (%fileidx, "DB_File", "fileidx.out.$$", O_RDWR|O_CREAT, 0660, $DB_HASH)
+        || die("Could not open \"fileidx.out.$$\" for writing");
 
-# we need to search for IDL identifiers first because they can be
-# the only prototype
-# XXX i'm not certain this is necessary, oh well.
-&findidentIDL;
-print "Stage 1 IDL XREF keycount is : " . scalar(keys %xref) . "\n";
-&findident;
-print "Stage 1 C/C++ XREF keycount is : " . scalar(keys %xref) . "\n";
-&findidentJS;
-print "Stage 1 C/C++/JS XREF keycount is : " . scalar(keys %xref) . "\n";
-&findidentPL;
-print "Stage 1 C/C++/JS/PL XREF keycount is : " . scalar(keys %xref) . "\n";
-&findidentXBL;
-print "Stage 1 C/C++/JS/PL/XBL XREF keycount is : " . scalar(keys %xref) . "\n";
+    buildList();
+    print 'Stage 0 IDL file count is : ' . scalar(@idlfiles) . '
+Stage 0 C/C++ file count is : ' . scalar(@f) . '
+Stage 0 JS file count is : ' . scalar(@jsfiles) . '
+Stage 0 PL file count is : ' . scalar(@plfiles) . '
+';
 
-$fnum = 0;
+    $fnum = 0;
 
-&findusageIDL;
-print "Stage 2 IDL XREF keycount is : " . scalar(keys %xref) . "\n";
-&findusage;
-print "Stage 2 C/C++ XREF keycount is : " . scalar(keys %xref) . "\n";
-&findusageJS;
-print "Stage 2 C/C++/JS XREF keycount is : " . scalar(keys %xref) . "\n";
-&findusagePL;
-print "Stage 2 C/C++/JS/PL keycount is : " . scalar(keys %xref) . "\n";
+    # we need to search for IDL identifiers first because they can be
+    # the only prototype
+    # XXX i'm not certain this is necessary, oh well.
+    &findidentIDL;
+    print "Stage 1 IDL XREF keycount is : " . scalar(keys %xref) . "\n";
+    &findident;
+    print "Stage 1 C/C++ XREF keycount is : " . scalar(keys %xref) . "\n";
+    &findidentJS;
+    print "Stage 1 C/C++/JS XREF keycount is : " . scalar(keys %xref) . "\n";
+    &findidentPL;
+    print "Stage 1 C/C++/JS/PL XREF keycount is : " . scalar(keys %xref) . "\n";
+    &findidentXBL;
+    print "Stage 1 C/C++/JS/PL/XBL XREF keycount is : " . scalar(keys %xref) . "\n";
 
-&dumpdb;
+    $fnum = 0;
 
-dbmclose(%fileidx);
+    &findusageIDL;
+    print "Stage 2 IDL XREF keycount is : " . scalar(keys %xref) . "\n";
+    &findusage;
+    print "Stage 2 C/C++ XREF keycount is : " . scalar(keys %xref) . "\n";
+    &findusageJS;
+    print "Stage 2 C/C++/JS XREF keycount is : " . scalar(keys %xref) . "\n";
+    &findusagePL;
+    print "Stage 2 C/C++/JS/PL keycount is : " . scalar(keys %xref) . "\n";
 
-rename("fileidx.out.$$", "fileidx")
-    || die "Couldn't rename fileidx.out.$$ to fileidx";
+    &dumpdb;
+}
+
+for ($verb) {
+    /^default$/ && do {
+        # Build database for directory.
+        # Files are parsed using whole file regexp's.
+        # This is SLOW.
+        buildIndex();
+        last;
+    };
+    /^merge$/ && do {
+        # Merge databases
+        unshift @extra, $fix;
+        merge();
+        last;
+    };
+}
