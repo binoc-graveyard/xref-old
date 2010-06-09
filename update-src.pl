@@ -161,6 +161,7 @@ for my $possible_path (keys %pathmap) {
 -d $db_dir || mkdir $db_dir;
 my $log="$db_dir/cvs.log";
 
+rename $log, "$log.old" if -f $log;
 open LOG, '>', $log || die "can't open $log";
 #print LOG `set -x`;
 print LOG `date`;
