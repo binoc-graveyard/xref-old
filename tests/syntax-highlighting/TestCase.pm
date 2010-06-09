@@ -3,21 +3,22 @@ package TestCase;
 use Test;
 require 'foo.pl';
 
-var number = 1;
-var regexp = /this/;
-var regexpi = /InSensitive/i;
-/* simple C style comment - generic file */
-(void) 1;
-// simple C++ style comment
-(void) 2;
-(void)3;
-const constant = 3;
-var single_quoted_string = 'singly quoted string';
-var double_quoted_string = "doubly quoted string";
-var array = [];
-var array2 = [1, , ];
+local $number = 1;
+my $regexp = qr/this/;
+my $regexpi = qr/InSensitive/i;
+=simplepod
+simple Perl POD style comment
+=cut
+# simple Perl style comment
+ 2;
+3;
+$constant = 3;
+$single_quoted_string = 'singly quoted string';
+$double_quoted_string = "doubly quoted string";
+$array = ();
+$array2 = (1, , );
 
-function foo(argument, argument2, argument3,
+sub foo (argument, argument2, argument3,
 
 argument4) {
   if (condition) {
@@ -32,7 +33,7 @@ argument4) {
   }
 }
 
-function exception() {
+sub exception() {
   try {
     throw 1;
   } catch (e) {
@@ -43,19 +44,13 @@ function exception() {
   return not_reached;
 }
 
-function MyClass() {
+sub MyClass() {
   this._foo = 0;
 }
-MyClass.prototype = {
-  constructor: MyClass,
-  foo: function () {
-    return this._foo++;
-  }
-};
 
-var array3 = new Array("a", "big", "bird", "can't" + " fly");
+$array3 = ("a", "big", "bird", "can't" . " fly");
 
-function reserved_words() {
+sub reserved_words() {
   try {} catch (e instanceof Exception) {
     var foo = new Bar;
   } finally {
@@ -73,7 +68,7 @@ function reserved_words() {
   return null;
 }
 
-function not_reserved_words() {
+sub not_reserved_words() {
   tryThis();
   throwThis();
   catchThis();
@@ -87,4 +82,24 @@ function not_reserved_words() {
   elseThis();
   elsif;
   instanceofThis();
+}
+
+=podcommented
+sub exception {
+}
+=cut
+
+sub nextfunc {
+}
+
+=podcommented
+
+exception();
+nextfunc();
+
+sub nextfunc {
+}
+=cut
+
+sub lastfunc {
 }
