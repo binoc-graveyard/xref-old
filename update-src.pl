@@ -237,8 +237,10 @@ for ($TREE) {
         }
         last;
     };
-    /^(?:build|incubator|l10n|labs|projects|webtools)-central$/ && do {
+    /^(?:build|incubator|l10n|labs|projects|services|webtools)-central$/ && do {
         my @dirs = <$src_dir/*>;
+        my $fallback = "http://hg.mozilla.org/$1";
+        $fallback .= '-central' if $1 eq 'l10n';
         my $general_root;
         foreach my $dir (@dirs) {
             unless (defined $general_root) {
@@ -247,6 +249,7 @@ for ($TREE) {
             }
             print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT; $HGCOMMAND $HGCHANGESET`;
         }
+        $general_root = $fallback unless defined $general_root;
         chdir $src_dir;
         @dirs = hg_get_list($general_root);
         foreach my $dir (@dirs) {
