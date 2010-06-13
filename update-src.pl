@@ -237,7 +237,7 @@ for ($TREE) {
         }
         last;
     };
-    /^(?:build|incubator|l10n|labs|projects|services|webtools)-central$/ && do {
+    /^(build|incubator|l10n|labs|projects|services|webtools)-central$/ && do {
         my @dirs = <$src_dir/*>;
         my $fallback = "http://hg.mozilla.org/$1";
         $fallback .= '-central' if $1 eq 'l10n';
