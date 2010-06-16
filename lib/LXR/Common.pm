@@ -1773,11 +1773,11 @@ sub pathname {
 }
 
 sub urlpath {
-  return $Path->{'virtf'};
+  return url_quote ($Path->{'virtf'});
 }
 
 sub pathname_unquoted {
-  return urlpath();
+  return $Path->{'virtf'};
 }
 
 sub filename {
