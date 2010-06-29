@@ -2215,6 +2215,7 @@ sub checkhg {
     while (scalar @dirs) {
       my $dir = '/' . (shift @dirs);
       $real .= $dir;
+      $dir =~ s/_/__/g;
       if ($dir =~ s/([A-Z])/_$1/g) {
         $dir = lc $dir;
       }
