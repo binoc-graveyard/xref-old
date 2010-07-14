@@ -263,7 +263,7 @@ for ($TREE) {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P NSPR $STDERRTOSTDOUT`;
         last;
     };
-    /^l10n-mozilla(1\.9.*)$/ && do {
+    /^l10n-mozilla(1\.9.*|2\.0.*)$/ && do {
         my $ver = $1;
         my @dirs;
         {
@@ -280,7 +280,7 @@ for ($TREE) {
         }
         last;
     };
-    /^mozilla(1\.9.*)$/ && do {
+    /^mozilla(1\.9.*|2\.0.*)$/ && do {
         my $ver = $1;
         unless (-d "$src_dir/.hg") {
             hg_clone_cheap($ver, "mozilla-$ver", 'mozilla-central', $src_dir, '');
