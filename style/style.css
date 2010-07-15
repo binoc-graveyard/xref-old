@@ -1,3 +1,6 @@
+a.l:target {
+  background-color: lightpink;
+}
 /* if you want to center the headings, uncomment this block.
 .desc {
  text-align: center;
