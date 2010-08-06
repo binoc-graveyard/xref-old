@@ -598,8 +598,12 @@ sub freetextmarkup {
 }
 
 sub statustextmarkup {
-  return unless $_[0] =~ /\@status/;
-   $_[0] =~ s#(\@status\s+)(FROZEN|UNDER_REVIEW|DEPRECATED)\b#<span class="idl_$2">$1$2</span>#gi;
+  return unless $_[0] =~ /\@(status|deprecated)/;
+  if ($1 eq 'deprecated') {
+    $_[0] =~ s#(\@deprecated.*)#<span class="idl_DEPRECATED">$1</span>#gi;
+  } else {
+    $_[0] =~ s#(\@status\s+)(FROZEN|UNDER_REVIEW|DEPRECATED)\b#<span class="idl_$2">$1$2</span>#gi;
+  }
 }
 
 my $padding = 0;
