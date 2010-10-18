@@ -15,6 +15,7 @@ require Exporter;
              &checkhg
              &cleanquery
              &clean_mark
+             &url_quote
              &init &glimpse_init &makeheader &makefooter &expandtemplate
              &bigexpandtemplate &blamerefs
 );
@@ -1423,6 +1424,7 @@ http://src.chromium.org/svn
 
   my $xref = '';
   foreach (1..$#pathelem) {
+    my $pathseg = url_quote($pathelem[$_]);
     if (defined($addrelem[$_])) {
 
       # jwz: put a space after each / in the banner so that it's possible
@@ -1431,10 +1433,9 @@ http://src.chromium.org/svn
       # space.  It's somewhat ugly to have these spaces be visible, but
       # not as ugly as getting a horizontal scrollbar...
       #
-      $xref .= &fileref($pathelem[$_], "/$addrelem[$_]") . " ";
-    } else {
-      $xref .= $pathelem[$_];
+      $pathseg = &fileref($pathseg, "/" . url_quote($addrelem[$_])) . " ";
     }
+    $xref .= $pathseg;
   }
   $xref =~ s#/</a>#</a>/#gi;
   $Path->{'xref'} = $xref;

@@ -436,9 +436,9 @@ my $body = <SRCFILE>;
             }
             close(SRCFILE);
         } else {
-            print("<p align=center>\n<i>This file".unreadable($Path->{'realf'})."</i>\n");
+            print("<p align=center>\n<i>This file".unreadable(url_quote($Path->{'realf'}))."</i>\n");
             if (-l $Path->{'realf'}) {
-                print('<br><tt>'.readlink($Path->{'realf'})."</tt></p>\n");
+                print('<br><tt>'.unreadable(url_quote(readlink($Path->{'realf'})))."</tt></p>\n");
             }
             $rev = "&rev=$rev" if ($rev ne '');
             my $hint = $Path->{'virt'};
@@ -455,7 +455,7 @@ my $body = <SRCFILE>;
             print("<p>Maybe you can <a href='" .
                    $Conf->baseurl .
                    "/find?string=/" .
-                   $file .
+                   url_quote($file) .
                    $hint .
                    $markstring .
                    $rev .
@@ -518,6 +518,8 @@ $force = (defined $force && $force =~ /1|on|yes/ ? 1 : 0);
 unless ($exit) {
     my $baseurl = $Conf->{baseurl};
     my $localurl = $baseurl . '/source' . $ENV{'PATH_INFO'};
+    $localurl = url_quote($localurl);
+    $localurl =~ s/%3A/:/;
     $localurl =~ m{(^.*/)/*[^/]+/*(?:|\?.*)$};
     my $parenturl = $1;
     $head .=
