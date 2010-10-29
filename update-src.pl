@@ -83,6 +83,14 @@ sub hg_clone_cheap
     }
 }
 
+sub hg_update {
+    my ($dir, $branch, $origin) = @_;
+    $branch = 'default' unless defined $branch;
+    $origin = 'default' unless defined $origin;
+    # $branch isn't used yet.
+    print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT || pwd; $HGCOMMAND $HGCHANGESET`;
+}
+
 my $EACHONE = 'xargs -n1 ';
 
 my $BZR = 'bzr ';
@@ -233,7 +241,7 @@ for ($TREE) {
     /^mozillausers-central$/ && do {
         my @dirs = <$src_dir/*/*>;
         foreach my $dir (@dirs) {
-            print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT; $HGCOMMAND $HGCHANGESET`;
+            hg_update($dir);
         }
         last;
     };
@@ -247,7 +255,7 @@ for ($TREE) {
                 $general_root = `hg paths default -R $dir`;
                 $general_root =~ s{/[^/]+/?\s*$}{};
             }
-            print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT; $HGCOMMAND $HGCHANGESET`;
+            hg_update($dir);
         }
         $general_root = $fallback unless defined $general_root;
         chdir $src_dir;
@@ -276,7 +284,7 @@ for ($TREE) {
             @dirs = <$src_dir/*>;
         }
         foreach my $dir (@dirs) {
-            print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT; $HGCOMMAND $HGCHANGESET`;
+            hg_update($dir);
         }
         last;
     };
@@ -285,7 +293,7 @@ for ($TREE) {
         unless (-d "$src_dir/.hg") {
             hg_clone_cheap($ver, "mozilla-$ver", 'mozilla-central', $src_dir, '');
         }
-        print LOG `cd $src_dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT; $HGCOMMAND $HGCHANGESET`;
+        hg_update($src_dir);
         last;
     };
     /^(?:seamonkey|(?:aviary(?:101)?|reflow)branch|mozilla1.*)$/ && do {
@@ -300,7 +308,7 @@ for ($TREE) {
     };
     /^(?:.*)-(?:central|tracing)$/ && do {
         if (-d "$src_dir/.hg") {
-          print LOG `cd $src_dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT; $HGCOMMAND $HGCHANGESET`;
+          hg_update($src_dir);
         } else {
           my $dir = basename($src_dir);
           print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/$dir $src_dir`;
@@ -320,7 +328,7 @@ for ($TREE) {
           print LOG `cd $src_dir; cd ..; mkdir 0; mv camino 0; mv 0 camino`;
         }
         if (-d "$src_dir/camino/.hg") {
-          print LOG `cd $src_dir/camino; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT; $HGCOMMAND $HGCHANGESET`;
+          hg_update("$src_dir/camino");
         } else {
           my $dir = basename($src_dir);
           print LOG `mkdir $src_dir/camino; $TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/$dir $src_dir/camino`;
