@@ -16,7 +16,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -152,7 +152,7 @@ function changetarget() {
                   "value=\"", $Conf->variable($_), "\">\n");
         }
     }
-    
+
     print('<b><label for="i">Identifier:</label></b>
 <input type=text id="i" name="i"
 value="'.$identifier.'" size=50>
@@ -191,8 +191,8 @@ $value.'" size=30>';
 ";
 
     if ($identifier) {
-	tie(%xref, "DB_File", $Conf->dbdir."/xref", 
-	    O_RDONLY, undef, $DB_HASH) || 
+	tie(%xref, "DB_File", $Conf->dbdir."/xref",
+	    O_RDONLY, undef, $DB_HASH) ||
 		&fatal('No cross reference database is available for "'.$Conf->{'treename'}.'" please complain to the webmaster [cite: xref]');
 
 	@refs = split(/\t/,$xref{$identifier});
@@ -258,8 +258,8 @@ $Conf->{'treename'}.'" please complain to the webmaster [cite: nofileidx]');
 'Cross reference database file list is not readable for "'.
 $Conf->{'treename'}.'" please complain to the webmaster [cite: norfileidx]');
 
-	    tie(%fileidx, "DB_File", $Conf->dbdir."/fileidx", 
-		O_RDONLY, undef, $DB_HASH) || 
+	    tie(%fileidx, "DB_File", $Conf->dbdir."/fileidx",
+		O_RDONLY, undef, $DB_HASH) ||
 		    &fatal('Error opening Cross reference file list for "'.
 $Conf->{'treename'}.'" please complain to the webmaster [cite: fileidx]');
 
@@ -317,10 +317,10 @@ my ($refkind, $reffnum, $refline, $classes) = ($1, $2, $3, $4);
                     if (defined $normal_refh{$1}) {
                         $normal_refh{$1} .= ",$2";
                     } else {
-                        $normal_refh{$1} = $2; 
+                        $normal_refh{$1} = $2;
                     }
                 }
-            } 
+            }
             @normal_refs = ();
             my $ref_count = scalar(keys %normal_refh);
             print('Referenced '.($ref_count > 1 ? "(in $ref_count files total) " : '')."in:\n",

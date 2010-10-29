@@ -55,7 +55,7 @@ function changetarget() {
 ';
     my @extras = qw(rev mark);
     foreach $extra (@extras) {
-        if (defined $HTTP->{'param'}->{$extra} &&  
+        if (defined $HTTP->{'param'}->{$extra} &&
             $HTTP->{'param'}->{$extra} =~ /^([-0-9a-f,.]+)$/i) {
             print qq{<input id="$extra" name="$extra" value="$1" type="hidden">
 };

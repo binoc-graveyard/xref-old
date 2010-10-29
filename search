@@ -129,7 +129,7 @@ sub escape_comment {
     return $comment;
 }
 
-sub print_ident_hints 
+sub print_ident_hints
 {
     my ($requestedsearch) = @_;
     my @idents = ();
@@ -148,15 +148,15 @@ sub print_ident_hints
                 if (defined $xref{$term}) {
                     push @idents, '<a href="ident?i='.$term.'">'.$term.'</a>';
                 }
-            }       
+            }
             if (scalar @idents) {
                 print '<p>For faster searches, you could search for these identifiers: '.
-                    join(', ', @idents) . '</p>'; 
-            }       
+                    join(', ', @idents) . '</p>';
+            }
             untie(%xref);
-        }       
-    }       
-}       
+        }
+    }
+}
 
 sub search {
     print(qq{<p class=desc>
@@ -488,7 +488,7 @@ $line
                 }
                 if ($line =~ /^[^:]*:[^:]*pattern has some meta-characters interpreted by agrep!/) {
                     print ("Pattern has some meta-characters.
-<em>Try moving characters that are not letters (a-z) or numbers (0-9) 
+<em>Try moving characters that are not letters (a-z) or numbers (0-9)
 to the filter field</em><br>\n");
                     $glimpse_error_reported = 1;
                     next;
@@ -500,7 +500,7 @@ to the filter field</em><br>\n");
                     last;
                 }
                 if ($line =~ /^[^:]*:[^:]*regular expression too long, max is (\d+)/) {
-                    print ("Regular expression pattern too long. 
+                    print ("Regular expression pattern too long.
 Use a maximum of $1 characters.
 <em>Try moving extra characters to the filter field.</em><br>\n");
                     $glimpse_error_reported = 1;
