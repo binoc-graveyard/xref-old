@@ -1052,7 +1052,7 @@ sub webhghost
             next;
           }
         }
-        if ($line =~ m{^\s*default\s*=\s*(\S+?)/?$}) {
+        if ($line =~ m{^\s*default\s*=\s*(\S+?)/?(#.*|)$}) {
           $hgroot = $1;
           last;
         }
