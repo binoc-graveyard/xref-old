@@ -270,27 +270,29 @@ my @dtdterm = (
 );
 
 my @shterm = (
-  #'atom',
-  #'\\\\.',
-  # '',
+  # The atom entry needs to exist. We aren't using it to find things.
+  'atom',
+  '^$',
+   '',
   'comment',
-  '\\bdnl\\b|#',
+   'dnl',
+   '$',
+  'comment',
+  '#',
    '$',
   'verb',
   '\\b(?:if|fi|case|esac|in|then|test|else|for|do|done|exit|export)\\b',
    '(?:\\s|$)',
-);
-=broken
   'string',
   '"',
-   '"',
+   '(?:"|\\n|\\r)',
   'string',
   "'",
-   "'",
+   "(?:'|\\n|\\r)",
   'string',
-  '`',
-   '`',
-=cut
+  "`",
+   "(?:`|\\n|\\r)",
+);
 
 my @pyterm = (
   'atom',
