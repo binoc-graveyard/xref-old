@@ -1664,7 +1664,7 @@ sub cvsentriesexpand {
 
 sub cvstagexpand {
   my $entrybranch;
-  if (open(CVSTAG, " $Path->{'real'}/CVS/Tag")) {
+  if (open(CVSTAG, "$Path->{'real'}/CVS/Tag")) {
     while (<CVSTAG>) {
       next unless m|^T(.*)$|;
       $entrybranch = $1;
