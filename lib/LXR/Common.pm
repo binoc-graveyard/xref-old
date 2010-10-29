@@ -1065,10 +1065,22 @@ sub markupfile {
   } elsif ($name =~ /\.(?:xml)$/) {
     @terms = @xmlterm;
   } else {
-    open HEAD_HANDLE, $fname;
+    open HEAD_HANDLE, $Path->{'real'}.$fname;
     my $file_head = <HEAD_HANDLE>;
-    @terms = @pterm if $file_head =~ /^#!.*perl/;
-    @terms = @shterm if $file_head =~ /^dnl( |$)/;
+    for ($file_head) {
+      /^\s*#\s*include/ && do {
+        @terms = @cppterm;
+        last;
+      };
+      /^#!.*perl$/ && do {
+        @terms = @pterm;
+        last;
+      };
+      m{^\s*dnl(\s|$)|^#!\s*/bin/sh|^#!.*make} && do {
+        @terms = @shterm;
+        last;
+      };
+    }
     close HEAD_HANDLE;
   }
   if (@terms) {
