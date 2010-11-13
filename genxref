@@ -539,7 +539,7 @@ sub findidentJS {
                 }
             }
             $l = $bl;
-            if ($line =~ /^(.*\n|)(.*?\s*)((?:$ident\s*[:=]*\s*)*)function(\s+)($ident|)(\s*.*)(\n|$)/s) {
+            if ($line =~ /^(.*\n|)(.*?\s*)((?:$ident\s*[:=]*\s*)*)(?:function|[gs]et)(\s+)($ident|)(\s*.*)(\n|$)/s) {
                 my ($decl, $impl, $ws1, $ws2, $ws3, $ws0) = ($3, $5, $2, $4, $6, $1);
                 $l += $ws0 =~ s/\n//g;
                 $l += $ws1 =~ s/\n//g;

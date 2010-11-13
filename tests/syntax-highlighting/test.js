@@ -43,12 +43,22 @@ function MyClass() {
 }
 MyClass.prototype = {
   constructor: MyClass,
+  get myGetter() {
+    return null;
+  },
+  set mySetter(rhs) {
+    let localVar = null;
+  },
   foo: function () {
     return this._foo++;
   }
 };
 
 var array3 = new Array("a", "big", "bird", "can't" + " fly");
+var globalObj = {
+};
+let globalObj2 = {
+};
 
 function reserved_words() {
   try {} catch (e instanceof Exception) {
