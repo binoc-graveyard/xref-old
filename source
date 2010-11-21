@@ -99,7 +99,7 @@ sub fileicon {
 #        $img = "internal-gopher-unknown";
     }
 
-    return(&fileref("<$tag 'class='file icon' ALIGN=ABSBOTTOM BORDER=0 SRC=\"$img\">",
+    return(&fileref("<$tag class='file icon' ALIGN=ABSBOTTOM BORDER=0 SRC=\"$img\">",
                     $Path->{'virt'}.$filename));
 }
 
