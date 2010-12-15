@@ -74,6 +74,8 @@ sub treeoption {
 sub cleanhtml {
   my $text = shift;
   $text =~ s/"/&quot;/g;
+  $text =~ s/'/&#039;/g;
+  $text =~ s/&/&amp;/g;
   $text =~ s/</&lt;/g;
   $text =~ s/>/&gt;/g;
   return $text;
@@ -88,7 +90,7 @@ sub printdiff {
 </p>
 <form name='diff' id='diff' class='beforecontent'>
 <label for='file'>Base file to compare:</label>
-<input id='file' name='file' size=60 value='$virt".$Path->{'file'}."'>
+<input id='file' name='file' size=60 value='$virt$file'>
 ";
   if (scalar @treelist > 0) {
     foreach my $othertree (@treelist) {
