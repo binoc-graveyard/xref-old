@@ -445,6 +445,8 @@ my $body = <SRCFILE>;
             if (defined $hint && $hint ne '/') {
               $hint = clean_hint($hint);
               $hint = "&amp;hint=$hint";
+            } else {
+              $hint = '';
             }
             my $markstring = '';
             if (defined $HTTP->{'param'}->{'mark'}) {
