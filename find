@@ -74,10 +74,7 @@ function changetarget() {
     $searchtext = cleanquery $searchtext;
     $lineno = $HTTP->{'param'}->{'line'};
     $lineno =~ s/\D+//g;
-
-    $hint =~ s%[^\w\.]+%|%g;
-    $hint =~ s/\|{2,}/|/g;
-    $hint =~ s/^\||\|$//g;
+    $hint = clean_hint $hint;
 
     print qq{
 <b><label for="string">Find file:</label></b>

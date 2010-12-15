@@ -442,9 +442,10 @@ my $body = <SRCFILE>;
             }
             $rev = "&rev=$rev" if ($rev ne '');
             my $hint = $Path->{'virt'};
-            $hint = (defined $hint && $hint ne '/')
-              ? "&amp;hint=$hint"
-              : '';
+            if (defined $hint && $hint ne '/') {
+              $hint = clean_hint($hint);
+              $hint = "&amp;hint=$hint";
+            }
             my $markstring = '';
             if (defined $HTTP->{'param'}->{'mark'}) {
               my $marks = clean_mark($HTTP->{'param'}->{'mark'});

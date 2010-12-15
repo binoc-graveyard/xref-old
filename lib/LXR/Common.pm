@@ -15,6 +15,7 @@ require Exporter;
              &checkhg
              &cleanquery
              &clean_mark
+             &clean_hint
              &url_quote
              &init &glimpse_init &makeheader &makefooter &expandtemplate
              &bigexpandtemplate &blamerefs
@@ -636,6 +637,14 @@ sub clean_mark {
   $mark =~ s/,{2,}/,/g;
   $mark =~ s/^,|,$//g;
   return $mark;
+}
+
+sub clean_hint {
+  my $hint = shift;
+  $hint =~ s%[^\w\.]+%|%g;
+  $hint =~ s/\|{2,}/|/g;
+  $hint =~ s/^\||\|$//g;
+  return $hint;
 }
 
 my @jscol_selected_lines;
