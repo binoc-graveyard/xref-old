@@ -481,8 +481,8 @@ sub findidentJS {
         $contents =~ s/(\05+)([^\n]*)/"$2"."\n" x length($1)/gse;
 
         # Remove nested parentheses.
-        while ($contents =~ s/\(([^\)]*)\(/\($1\05/g ||
-               $contents =~ s/\05([^\(\)]*)\)/ $1 /g) {}
+        # while ($contents =~ s/\(([^\)]*)\(/\($1\05/g ||
+        #        $contents =~ s/\05([^\(\)]*)\)/ $1 /g) {}
 
         # Some heuristics here: Try to recognize "code" and delete
         # everything up to the next block delimiter.
@@ -492,8 +492,8 @@ sub findidentJS {
         #       "$1".&wash($2)/goes;
 
         # Parentheses containing commas are probably not interesting.
-        $contents =~ s/\(([^\)]*\,[^\)]*)\)/
-            "()".&wash($1)/ges;
+        # $contents =~ s/\(([^\)]*\,[^\)]*)\)/
+        #    "()".&wash($1)/ges;
 
         # This operator-stuff messes things up. (C++)
         $contents =~ s/operator[\<\>\=\!\+\-\*\%\/]{1,2}/operator/g;
@@ -521,44 +521,48 @@ sub findidentJS {
         foreach (@contents) {
             my $line = $ct = $_;
             $ct2 = ($ct =~ s/\n//g) || 0;
-            my $bl = $l;
-            if ($line =~ /^(.*\n|)(\s*(?:var|let|const)\s+)($ident(?:\s*(?:=[^,;]*|),\s*$ident)*)(.*?)(\n|$)/s) {
-                ($pre, $ct, $ids, $junk) = ($1, $2, $3, $4);
-                $l += ($pre =~ s/\n//g) || 0;
-                $l += ($ct =~ s/\n//g) || 0;
-                my @idds = split /\b/, $ids;
-                while (@idds) {
-                    my $lid = shift @idds;
-                    $lid =~ /($ident)/;
-                    $contents .= "\04$l\01".$itype{'var'}."$1\02";
-                    my $spc;
-                    do {
-                        $spc = shift @idds;
-                        $l += $spc =~ s/[\r\n]//g;
-                    } while ($spc =~ /[,=]/);
-                }
-            }
-            $l = $bl;
-            if ($line =~ /^(.*\n|)(.*?\s*)((?:$ident\s*[:=]*\s*)*)(?:function|[gs]et)(\s+)($ident|)(\s*.*)(\n|$)/s) {
-                my ($decl, $impl, $ws1, $ws2, $ws3, $ws0) = ($3, $5, $2, $4, $6, $1);
-                $l += $ws0 =~ s/\n//g;
-                $l += $ws1 =~ s/\n//g;
-                if ($decl) {
-                    my @idds = split /\b/, $decl;
+            if ($line && $line =~ /(var|let|const)|(function|[gs]et)/) {
+                my ($var_let_const, $function_get_set) = ($1, $2);
+                my $bl = $l;
+                if ($var_let_const &&
+                    $line =~ /^(.*\b(?:var|let|const)\s+)($ident(?:\s*(?:=[^,;]*|),\s*$ident)*)(.*?(?:\n|$))/s) {
+                    ($pre, $ids, $junk) = ($1, $2, $3);
+                    $l += ($pre =~ s/\n//g) || 0;
+                    my @idds = split /\b/, $ids;
                     while (@idds) {
                         my $lid = shift @idds;
-                        if ($lid =~ /($ident)/) {
-                            $contents .= "\04$l\01".$itype{'function'}."$1\02";
-                        } else {
-                            $l += $lid =~ s/\n//g;
+                        $lid =~ /($ident)/;
+                        $contents .= "\04$l\01".$itype{'var'}."$1\02";
+                        my $spc;
+                        do {
+                            $spc = shift @idds;
+                            $l += $spc =~ s/[\r\n]//g;
+                        } while ($spc =~ /[,=]/);
+                    }
+                    $l = $bl;
+                }
+                if ($function_get_set &&
+                    $line =~ /^(.*\n|)(.*?\s*)((?:$ident\s*[:=]*\s*)*)(?:function|[gs]et)(\s+)($ident|)(\s*.*)(\n|$)/s) {
+                    my ($decl, $impl, $ws1, $ws2, $ws3, $ws0) = ($3, $5, $2, $4, $6, $1);
+                    $l += $ws0 =~ s/\n//g;
+                    $l += $ws1 =~ s/\n//g;
+                    if ($decl) {
+                        my @idds = split /\b/, $decl;
+                        while (@idds) {
+                            my $lid = shift @idds;
+                            if ($lid =~ /($ident)/) {
+                                $contents .= "\04$l\01".$itype{'function'}."$1\02";
+                            } else {
+                                $l += $lid =~ s/\n//g;
+                            }
                         }
                     }
+                    $l += $ws2 =~ s/\n//g;
+                    $contents .= "\04$l\01".$itype{'function'}."$impl\02" if $impl;
+                    $l += $ws3 =~ s/\n//g;
+                    $l = $bl;
                 }
-                $l += $ws2 =~ s/\n//g;
-                $contents .= "\04$l\01".$itype{'function'}."$impl\02" if $impl;
-                $l += $ws3 =~ s/\n//g;
             }
-            $l = $bl;
             $l += $ct2;
         }
 
