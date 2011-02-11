@@ -1297,11 +1297,7 @@ sub buildList {
                push @ft, 1;
                push @f, $file;
            } elsif ($3) {
-               if ($file =~ m!/Regress/!) {
-                   print(STDERR "Skipping $file\n");
-               } else {
-                   push @jsfiles, $file;
-               }
+               push @jsfiles, $file;
            } elsif ($4) {
                push @plfiles, $file;
            } elsif ($5) {
