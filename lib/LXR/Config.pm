@@ -80,32 +80,41 @@ if (0) {
 
         my %rewritehash = split(/\s+/, $self->{'rewriteurl'});
 
-        #To compute which tree we're looking at, grab the second to last
-        #component from the script name which will be of the form:
-        # /seamonkey/source
-        $self->{'treename'} = $ENV{'SCRIPT_NAME'};
-        $self->{'treename'} =~ s|.*/([^/]+)/[^/]*|$1|;
-
         my @treelist = sort keys %treehash;
         $self->{'trees'} = \@treelist;
-        #Match the tree name against our list of trees and extract the proper
-        #directory. Set "sourceroot" to this directory.
-        $self->{'sourceroot'} = $treehash{$self->{'treename'}};
 
-        #set srcrootname to tree name
-        $self->{'srcrootname'} = $self->{'treename'};
+        {
+            # To compute which tree we're looking at, grab the second to last
+            # component from the script name which will be of the form:
+            # /seamonkey/source
+            my $treename = $ENV{'SCRIPT_NAME'};
+            $treename =~ s|.*/([^/]+)/[^/]*|$1|;
+            my $root = $treehash{$treename};
+            if (defined $root) {
+                $self->{'treename'} = $treename;
+                # Match the tree name against our list of trees and extract
+                # the proper directory. Set "sourceroot" to this directory.
+                $self->{'sourceroot'} = $root;
 
-        #set rewriteurl to tree name
-        $self->{'rewriteurl'} = $rewritehash{$self->{'treename'}};
+                #set srcrootname to tree name
+                $self->{'srcrootname'} = $treename;
 
-        #append tree name to virtroot
-        $self->{'virtroot'} .= '/' . $self->{'treename'};
+                #set rewriteurl to tree name
+                $self->{'rewriteurl'} = $rewritehash{$treename};
 
-        #append tree name to baseurl
-        $self->{'baseurl'} .= $self->{'treename'};
+                #append tree name to virtroot
+                $self->{'virtroot'} .= '/' . $treename;
 
-        #append tree name to dbdir
-        $self->{'dbdir'} .= "/" . (resolvealias($self->{'treename'}));
+                #store the original baseurl as realbaseurl for use by index.cgi
+                $self->{'realbaseurl'} = $self->{'baseurl'};
+
+                #append tree name to baseurl
+                $self->{'baseurl'} .= $treename;
+
+                #append tree name to dbdir
+                $self->{'dbdir'} .= "/" . (resolvealias($treename));
+            }
+        }
 
         #find the cvsroot to sed in proper bonsai url
         my $path = $self->{'sourceroot'};
@@ -328,6 +337,10 @@ sub baseurl {
     return varexpandit($self, 'baseurl');
 }
 
+sub realbaseurl {
+    my $self = shift;
+    return varexpandit($self, 'realbaseurl') || varexpandit($self, 'baseurl');
+}
 
 sub sourceroot {
     my $self = shift;

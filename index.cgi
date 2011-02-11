@@ -7,16 +7,13 @@ use LXR::Config;
 print "$head
 ";
 
-# this can be calculated from lxr.conf's baseurl parameter
-# unless of course there are two urls which could map here
-# http://konigsberg.mozilla.org/mxr-test/
-# http://mxr-test.konigsberg.bugzilla.org/
-
-my $myserver = $ENV{'HTTP_HOST'} || $ENV{'SERVER_NAME'};
-my $depth = ($myserver =~ /[lm]xr.*\./) ? 2 : 3;
-if ($ENV{SCRIPT_NAME}=~m%(?:/[^/]+){$depth,}%) {
+unless (defined $Conf->{'trees'} &&
+        $Conf->baseurl eq $Conf->realbaseurl) {
+# this is the root of an individual tree
+# or the root of the only tree
 open INDEX, "<index.html";
 } else {
+# this is a list of published trees
 open INDEX, "<root/index.html";
 }
 
@@ -29,4 +26,3 @@ print &expandtemplate($template,
                      );
 }
 close INDEX;
-
