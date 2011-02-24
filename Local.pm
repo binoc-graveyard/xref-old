@@ -340,7 +340,8 @@ sub descexpand {
 
     if ($desc){
         #htmlify the comments making links to symbols and files
-        $desc = markupstring($desc, $Path->{'virt'});
+        my $tail = ($filename =~ m!/!) ? $filename : '';
+        $desc = markupstring($desc, $Path->{'virt'}.$tail);
 
         return($desc);
     } else {
