@@ -1264,7 +1264,7 @@ sub merge {
     }
     untie(%xrefdb);
     rename("xref.out.$$", "xref") || die "Couldn't rename xref.out.$$ to xref";
-    print(STDERR
+    print(
           "Completed stage 4 (",(time-$start),"s):",
           "Information on $i identifiers dumped to disk.\n\n");
     untie(%fileidx);
