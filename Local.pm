@@ -1078,7 +1078,7 @@ sub webhghost
     my $hgpath = checkhg($virt, $real);
     return $hg_not_found unless $hgpath =~ m{^0 (\S+)/store/data$};
     my $hgrc = "$1/hgrc";
-    return $hg_not_found unless open (HGRC, "<$hgrc");
+    return $hg_not_found unless open (HGRC, '<', $hgrc);
     my $line;
     my $scanstate = 0;
     my $hgroot;
