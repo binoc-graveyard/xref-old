@@ -39,17 +39,7 @@ href="search-help.html">regular expressions</a>.
 </p>
 ';
     if ($Conf->{'treename'} ne '') {
-        print qq%
-<script>
-function changetarget() {
- if (document.getElementById) {
-  var form = document.getElementById('find');
-  var target = document.getElementById('tree');
-  form.action='../'+target.value+'/find';
- }
-}
-</script>
-%;
+        print &bigexpandtemplate('<script src="$dotdoturl/script.js"></script>');
     }
     print '<form name=find id=find method=get action="find" class="beforecontent">
 ';

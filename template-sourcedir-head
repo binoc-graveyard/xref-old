@@ -4,7 +4,10 @@
 <meta name="GENERATOR" content="lxr-1998-06-10: http://lxr.linux.no">
 <link rel="icon" href="/mxr.png" type="image/png">
 <title>$title</title>
-$stylesheets</head>
+$stylesheets
+
+<script src='$dotdoturl/script.js'></script>
+</head>
 
 <body   bgcolor="#FFFFFF" text="#000000"
 	link="#0000EE" vlink="#551A8B" alink="#FF0000">
@@ -82,3 +85,6 @@ $endwebhg
 <input type=submit value="search">
 </form>
 </p>
+
+$treepicker
+<p>

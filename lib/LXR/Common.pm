@@ -2107,7 +2107,7 @@ sub revoverride {
 sub bigexpandtemplate {
   my $template = shift;
   $template = &Local::localexpandtemplate($template);
-  return expandtemplate($template,
+  my @expanders = (
     ('title',         \&titleexpand),
     ('banner',        \&bannerexpand),
     ('baseurl',       \&baseurl),
@@ -2130,7 +2130,10 @@ sub bigexpandtemplate {
     ('hgpath',        \&hgpathexpand),
     ('hgversion',     \&hgversionexpand),
     ('hgbranch',      \&hgbranchexpand),
-    ('variables',     \&varexpand));
+    ('treepicker',    \&treepicker),
+    ('variables',     \&varexpand),
+    @_);
+  return expandtemplate($template, @expanders);
 }
 
 sub blamerefs {
@@ -2149,9 +2152,9 @@ sub blamerefs {
     }
   }
 
-  return bigexpandtemplate(&expandtemplate($template,
+  return &bigexpandtemplate($template,
                            ('fpos', sub { return $lines; })
-                           ));
+                           );
 }
 
 sub makefooter {
@@ -2203,14 +2206,7 @@ sub makefooter {
     close(TEMPL);
   }
 
-  print(&expandtemplate($template,
-                        ('banner',    \&bannerexpand),
-                        ('thisurl',   \&thisurl),
-                        ('modes',     \&modeexpand),
-                        ('variables', \&varexpand),
-                        ('baseurl',   \&baseurl),
-                        ('dotdoturl', \&dotdoturl),
-                       ),
+  print(&bigexpandtemplate($template),
         "</html>\n");
 }
 
@@ -2261,6 +2257,52 @@ sub checkhg {
   $real = $oreal;
   $real =~ s{/$}{};
   return $hgcache{$real};
+}
+
+sub treepicker {
+  return unless $Conf->treechooser;
+  my @othertrees = ();
+  my @treelist = @{$Conf->{'trees'}};
+  foreach my $othertree (@treelist) {
+    my $otherpath = $Conf->{'treehash'}{$othertree}.'/'.$Path->{'virt'}.'/'.$Path->{'file'};
+    push @othertrees, $othertree if -e $otherpath;
+  }
+  return '' unless scalar @othertrees > 1;
+
+  my $template = '<option value="$othertree"$selected>$othertree</option>
+';
+  if ($Conf->treeentry) {
+    unless (open(TEMPL, $Conf->treeentry)) {
+      &warning("Template ".$Conf->treeentry.unreadable($Conf->treeentry), 'treeentry');
+    } else {
+      local $/;
+      $template = <TEMPL>;
+      close(TEMPL);
+    }
+  }
+  return '' unless $template;
+  my @treelisthtml = ();
+  foreach my $othertree (@othertrees) {
+    my $otherpath = $Conf->{'treehash'}{$othertree}.'/'.$Path->{'virt'}.'/'.$Path->{'file'};
+    my $default = $othertree eq $Conf->{'treename'} ? ' selected=1' : '';
+    push @treelisthtml, &expandtemplate($template,
+                                    ('othertree', sub { return $othertree; }),
+                                    ('selected', sub { return $default; }),
+                                   );
+  }
+
+  unless (open(TEMPL, $Conf->treechooser)) {
+    &warning("Template ".$Conf->treechooser.unreadable($Conf->treechooser), 'treechooser');
+    return '';
+  }
+
+  local $/;
+  $template = <TEMPL>;
+  close(TEMPL);
+
+  return &bigexpandtemplate($template,
+                           ('treelist', sub { return join ('', @treelisthtml); }),
+                           );
 }
 
 1;

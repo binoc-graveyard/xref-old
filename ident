@@ -131,17 +131,7 @@ Type the full name of an identifier
 (a function name, variable name, typedef, etc.)
 <br>to summarize. Matches are <u>case-sensitive</u>.');
     if ($Conf->{'treename'} ne '') {
-        print qq%
-<script>
-function changetarget() {
- if (document.getElementById) {
-  var form = document.getElementById('ident');
-  var target = document.getElementById('tree');
-  form.action='../'+target.value+'/ident';
- }
-}
-</script>
-%;
+        print &bigexpandtemplate('<script src="$dotdoturl/script.js"></script>');
     }
     print('<form id=ident name=ident method=get action="ident" class="beforecontent">
 ');

@@ -167,30 +167,7 @@ Free-text search through the source code, including comments.
  for help with glimpse's regular expression syntax,
 });
     my $changetarget = '';
-    if ($Conf->{'treename'} ne '') {
-        $changetarget = qq|
-function changetarget() {
- if (document.getElementById) {
-  var form = document.getElementById('search');
-  var target = document.getElementById('tree');
-  form.action='../'+target.value+'/search';
- }
-}
-|;
-    }
-    print qq|
-<script>$changetarget
-
-function changefindpreset() {
- if (document.getElementById) {
-  var find = document.getElementById('find');
-  var findi = document.getElementById('findi');
-  if (findi.selectedIndex > 0)
-   find.value = findi.value;
- }
-}
-</script>
-|;
+    print &bigexpandtemplate('<script src="$dotdoturl/script.js"></script>');
 
     my $note;
     my @filters = ();
