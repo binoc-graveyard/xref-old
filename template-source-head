@@ -29,6 +29,12 @@ $stylesheets
    <table border cellpadding=12 cellspacing=0>
     <tr>
      <td nowrap bgcolor="#FAFAFA">
+$begingitorious
+      <a href="$gitorioushost/blobs/$gitrev$gitpath/$filename"
+>Gitorious</a>
+      <a href="$gitorioushost/blobs/history/$gitrev$gitpath/$filename"
+>History</a><br>
+$endgitorious
 $beginbonsai
 <script>
 function updateBonsaiBlameHash(node, event) {

@@ -927,6 +927,11 @@ sub localexpandtemplate
                           ('webhghost',         \&webhghost),
                           ('beginwebhg',        \&beginwebhg),
                           ('endwebhg',          \&endwebhg),
+                          ('gitorioushost',     \&gitorioushost),
+                          ('gitrev',            \&gitrev),
+                          ('gitpath',           \&gitpath),
+                          ('begingitorious',    \&begingitorious),
+                          ('endgitorious',      \&endgitorious),
                           ('oghghost',          \&oghghost),
                           ('beginoghg',         \&beginoghg),
                           ('endoghg',           \&endoghg),
@@ -1083,7 +1088,7 @@ sub endwebsvn
     return &endskip;
 }
 
-sub webhghost
+sub rawhghost
 {
     my $hg_not_found = 'http://error.hg-not-found.tld';
     my ($virt, $real) = ($Path->{'virt'}, $Path->{'real'});
@@ -1123,6 +1128,15 @@ sub webhghost
     return $hgroot || $hg_not_found;
 }
 
+sub webhghost
+{
+    my $host = rawhghost();
+    my $gitorious_hg_not_found = 'http://error.gitorious-hg-not-found.tld';
+    my $git_hg_host = $gitorious_hg_not_found;
+    $host =~ s!git://gitorious\.org/[^/]+/(.*)\.git!$git_hg_host/hgweb.cgi/$1!;
+    return $host;
+}
+
 sub beginwebhg
 {
     return &beginskip unless checkhg($Path->{'virt'}, $Path->{'real'});
@@ -1131,6 +1145,53 @@ sub beginwebhg
 }
 
 sub endwebhg
+{
+    return &endskip;
+}
+
+sub gitorioushost
+{
+    my $host = rawhghost();
+    $host =~ s!^git://(.*gitorious\.org.*)\.git!http://$1!;
+    return $host;
+}
+
+sub gitrev
+{
+    my $git_rev_unknown = 'master';
+    my $hgrev = bigexpandtemplate('$hgversion');
+    return 'master' if $hgrev eq 'tip';
+    my ($virt, $real) = ($Path->{'virt'}, $Path->{'real'});
+    my $path = checkhg($virt, $real);
+    return $git_rev_unknown unless $path =~ m{^\d+ (.+)/store/data(.*)};
+    my $gitmap = "$1/git-mapfile";
+    return $git_rev_unknown unless open (GITMAP, '<', $gitmap);
+    my $line;
+    my $gitrev;
+    local $/ = "\n";
+    while ($line = <GITMAP>) {
+      next unless $line =~ /(\w+) \Q$hgrev\E/;
+      $gitrev = $1;
+    }
+    close GITMAP;
+    return $gitrev || $git_rev_unknown.$hgrev;
+}
+
+sub gitpath
+{
+    my ($virt, $real) = ($Path->{'virt'}, $Path->{'real'});
+    my $path = checkhg($virt, $real);
+    return $hg_not_found unless $path =~ m{^\d+ (.+)/store/data(.*)};
+    return $2;
+}
+
+sub begingitorious
+{
+    return &beginskip unless rawhghost() =~ /gitorious\.org/;
+    return '';
+}
+
+sub endgitorious
 {
     return &endskip;
 }
