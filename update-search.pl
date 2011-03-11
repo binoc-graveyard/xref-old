@@ -99,6 +99,10 @@ if (defined $TREE) {
 $ENV{'SCRIPT_NAME'} = $script_prefix . basename($0);
 my ($Conf, $HTTP, $Path, $head) = &init($0);
 
+{
+  my @trees = @{$Conf->{'trees'}};
+  die "Could not find tree $TREE" if scalar @trees > 1 && !(grep /^\Q$TREE\E$/, @trees);
+}
 die "dbdir not set" unless defined $Conf->dbdir;
 $db_dir = $Conf->dbdir;
 $src_dir = $Conf->sourceroot;
