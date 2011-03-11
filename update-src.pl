@@ -231,7 +231,7 @@ for ($TREE) {
         last;
     };
     /^mobile-browser$/ && do {
-        print LOG `cd $src_dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT`;
+        hg_update($src_dir);
         last;
     };
     /^mozilla$/ && do {
