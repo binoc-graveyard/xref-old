@@ -31,6 +31,16 @@ function changefindpreset() {
  }
 }
 
+function changerev() {
+ var form = document.getElementById('revs');
+ var target = document.getElementById('rev');
+ var newrev = target.value;
+ var oldquery = document.location.search;
+ var newquery = oldquery.replace(/^\?/, '').replace(/((?:^|[&;])rev=)(?:[^&;]*(?:[&;]+|$))/, '');
+ newquery = 'rev='+newrev + (newquery != '' ? '&' + newquery : '');
+ document.location.search = newquery;
+}
+
 function updateBonsaiBlameHash(node, event) {
   if (!document.location.hash)
     return;

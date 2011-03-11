@@ -263,7 +263,10 @@ sub _initialize {
 		     $dir eq 'searchtail' ||
 		     $dir eq 'htmldir' ||
 		     $dir eq 'treechooser' ||
-		     $dir eq 'treeentry') {
+		     $dir eq 'treeentry' ||
+		     $dir eq 'revchooser' ||
+		     $dir eq 'reventry' ||
+		     0) {
 		if ($arg =~ /([^\n]+)/) {
 	            if ($dir eq 'sourceroot' ||
                         $dir eq 'sourceprefix' ||
@@ -491,6 +494,16 @@ sub treechooser {
 sub treeentry {
     my $self = shift;
     return varexpandit($self, 'treeentry');
+}
+
+sub revchooser {
+    my $self = shift;
+    return varexpandit($self, 'revchooser');
+}
+
+sub reventry {
+    my $self = shift;
+    return varexpandit($self, 'reventry');
 }
 
 sub mappath {

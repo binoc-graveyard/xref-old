@@ -1,0 +1,7 @@
+<form name='revs' id='revs' class='aftercontent'
+>view $webhghost/rev/
+<select name='rev' id='rev' onchange='changerev()'>
+$revisions
+</select>/$hgpath/$filename
+</form>
+</p>

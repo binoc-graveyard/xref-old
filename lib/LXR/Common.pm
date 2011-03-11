@@ -2131,6 +2131,7 @@ sub bigexpandtemplate {
     ('hgversion',     \&hgversionexpand),
     ('hgbranch',      \&hgbranchexpand),
     ('treepicker',    \&treepicker),
+    ('revpicker',     \&revpicker),
     ('variables',     \&varexpand),
     @_);
   return expandtemplate($template, @expanders);
@@ -2305,4 +2306,59 @@ sub treepicker {
                            );
 }
 
+sub revpicker {
+  return unless $Conf->revchooser;
+  my $hgroot = gethgroot();
+  return '' unless $hgroot;
+
+  my $template = '<option value="$otherrev"$selected>$otherrev [$author on $date]$iscurrent</option>
+';
+  if ($Conf->reventry) {
+    unless (open(TEMPL, $Conf->reventry)) {
+      &warning("Template ".$Conf->reventry.unreadable($Conf->reventry), 'reventry');
+    } else {
+      local $/;
+      $template = <TEMPL>;
+      close(TEMPL);
+    }
+  }
+  return '' unless $template;
+
+  my @revlist = ();
+  my $repoparent = &hgversionexpand();
+  my $hg = 'hg --config ui.report_untrusted=false';
+  my $currentver = `$hg log --template='{node|short}' -r $repoparent -R $hgroot $Path->{'realf'}` ||
+                   `$hg parents --template='{node|short}' -r $repoparent -R $hgroot $Path->{'realf'}`;
+  open HGLOG, "$hg -R $hgroot log --template='{node|short}\n{author|firstline|escape}\n{date|isodate}\n\n' $Path->{'realf'} |";
+  {
+    local $/ = "\n\n";
+    while (<HGLOG>) {
+      my ($node, $author, $date) = split /\n/;
+      my $selected = $currentver eq $node;
+      push @revlist, &bigexpandtemplate($template,
+                                        ('otherrev', sub { return $node; }),
+                                        ('selected', sub { return $selected ? ' selected="1"' : ''; }),
+                                        ('iscurrent', sub { return $selected ? ' (current version)' : ''; }),
+                                        ('author', sub { return $author; }),
+                                        ('date', sub { return $date; }),
+                                       );
+
+    }
+    close HGLOG;
+  }
+  return '' unless scalar @revlist > 1;
+
+  unless (open(TEMPL, $Conf->revchooser)) {
+    &warning("Template ".$Conf->revchooser.unreadable($Conf->revchooser), 'revchooser');
+    return '';
+  }
+
+  local $/;
+  $template = <TEMPL>;
+  close(TEMPL);
+
+  return &bigexpandtemplate($template,
+                           ('revisions', sub { return join ('', @revlist); }),
+                           );
+}
 1;
