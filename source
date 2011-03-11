@@ -236,7 +236,7 @@ sub printdir {
     }
 
     if (opendir(DIR, $Path->{'real'})) {
-        foreach $f (sort(grep/^[^\.]/,readdir(DIR))) {
+        foreach $f (sort {lc $a cmp lc $b} (grep/^[^\.]/,readdir(DIR))) {
             if (-d $Path->{'real'}.$f) {
                 if ($f =~ /(^CVS|^\.svn|_files)$/) {
                     #skip it
