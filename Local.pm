@@ -908,6 +908,9 @@ sub localexpandtemplate
                           ('bonsaihost',        \&bonsaihost),
                           ('beginbonsai',       \&beginbonsai),
                           ('endbonsai',         \&endbonsai),
+                          ('bonsaihghost',      \&bonsaihghost),
+                          ('beginbonsaihg',     \&beginbonsaihg),
+                          ('endbonsaihg',       \&endbonsaihg),
                           ('trachost',          \&trachost),
                           ('begintrac',         \&begintrac),
                           ('endtrac',           \&endtrac),
@@ -967,6 +970,22 @@ sub beginbonsai
 }
 
 sub endbonsai
+{
+    return &endskip;
+}
+
+sub bonsaihghost
+{
+    return "http://bonsai-hg.example.com";
+}
+
+sub beginbonsaihg
+{
+    return &beginskip unless checkhg($Path->{'virt'}, $Path->{'real'});
+    return '';
+}
+
+sub endbonsaihg
 {
     return &endskip;
 }
