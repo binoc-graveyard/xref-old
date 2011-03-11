@@ -285,6 +285,10 @@ for ($TREE) {
         }
         last;
     };
+    /^(.*\.gitorious\.org)$/ && do {
+        pull_gitorious($1);
+        last;
+    };
     /^nspr$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P NSPR $STDERRTOSTDOUT`;
         last;
@@ -401,6 +405,74 @@ for ($TREE) {
         }
     };
     warn "unrecognized tree. fixme!";
+}
+
+sub get_gitorious_repos {
+  my ($root) = @_;
+  open GITORIOUS, "curl -s $root|";
+  my @repos = ();
+  while (<GITORIOUS>) {
+    next unless /^git clone/;
+    push @repos, $_;
+  }
+  close GITORIOUS;
+  return @repos;
+}
+
+sub get_gitorious_roots {
+  my ($host) = @_;
+  open GITORIOUS_ROOTS, "curl -s $host|";
+  my $state = 0;
+  while (<GITORIOUS_ROOTS>) {
+    if ($state == 0) {
+      next unless /site_overview/;
+      $state = 1;
+    } elsif ($state == 1) {
+      if (/id="right"/) {
+        $state = 2;
+        next;
+      }
+      next unless m!<strong><a href="(/.*)">!;
+      push @repos, "$host$1";
+    }
+  }
+  close GITORIOUS_ROOTS;
+  my @git_repos = ();
+  foreach my $repo (@repos) {
+    push @git_repos, get_gitorious_repos($repo);
+  }
+  return @git_repos;
+}
+
+sub pull_gitorious {
+  my ($host) = @_;
+
+  # $src_dir is a global variable
+  chdir $src_dir;
+  my @dirs = sort <*>;
+  foreach my $dir (@dirs) {
+    # we pass '' to mean "don't use 'default' with update magic"
+    # we could try doing something fancier like master/origin
+    hg_update($dir, '');
+  }
+  $host = "http://$host" unless $host =~ m!://!;
+  my @git_cmds = get_gitorious_roots($host);
+  foreach my $git_cmd (@git_cmds) {
+    $git_cmd =~ /git clone (\S+)\s+(\S+)/;
+    $dir = $2;
+    my $repo = $1;
+    next if -d $dir;
+    if (-e $dir) {
+      print LOG "Found object $dir while trying to git clone $repo\n";
+      next;
+    }
+    if ($repo !~ m!\w+://(.*$)! ||
+        "$1$dir" =~ m![^-+a-z0-9_./]!i) {
+      print LOG "Unexpected characters for git clone $repo $dir\n";
+      next;
+    }
+    print LOG `$TIME $HGCOMMAND $HGCLONE '$repo' '$dir' $STDERRTOSTDOUT`;
+  }
 }
 
 print LOG `$DATE $STDERRTOSTDOUT`;
