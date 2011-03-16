@@ -81,11 +81,11 @@ function updateHgBlameHash(node, event) {
     node.href.replace(/#.*|$/, anchor);
 }
 </script>
-<a href="$webhghost/filelog/$hgversion/$hgpath/$filename">HG Log</a><br>
+<a href="$webhghost/filelog/$hgversion/$hgpath/$filename">Hg Log</a><br>
 <a href="$webhghost/annotate/$hgversion/$hgpath/$filename"
 onfocus='updateHgBlameHash(this, event)'
 onmouseover='updateHgBlameHash(this, event)'
->HG Blame</a><br>
+>Hg Blame</a><br>
 $endwebhg
 $beginoghg
 <a href="$oghghost/source/history/$ogroot/$hgpath/$filename">Grok History</a><br>
