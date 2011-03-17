@@ -304,6 +304,13 @@ sub descexpand {
             } elsif (/\Q$filename\E\s*:\s*/i){
                 $desc = (split(/ \Q$filename\E\s*:\s*/i))[1];
                 if ($desc) {last};
+            } elsif (/^[A-Z ]+$/) {
+                my $i = 0;
+                while ($i++ < 5 && <FILE>) {
+                    $linecount++;
+                    $desc = $_ if /[a-z]{4}/;
+                }
+                if ($desc) {last};
             }
         }
         close(FILE);
