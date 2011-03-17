@@ -319,6 +319,7 @@ sub descexpand {
     if ($filename =~ m%^debian/$%i) {
         $desc ||= descdebcontrol2($rpath, $Path->{'virt'}, './', 0);
     }
+    $desc ||= descrpmspec($rpath, $Path->{'virt'}, $filename, 0);
 # git would be one of the following, but it doesn't work
 # because the file {git}/description or {git}/.git/description
 # doesn't seem to actually appear in checkouts...
@@ -645,6 +646,24 @@ sub descdebcontrol2 {
     return $descriptions{$collection{Source}}
         || $descriptions{$directory}
         || $descriptions{$package};
+}
+
+sub descrpmspec {
+    my ($rpath, $directory, $filename, $multiline) = @_;
+    my $path = $rpath . $filename;
+    my $desc;
+    foreach my $spec (<$path/*.spec>) {
+        open SPEC, '<', $spec;
+        while (<SPEC>) {
+            next unless /^Summary:\s+(\S.*)/;
+            $desc = $1;
+            last;
+        }
+        close SPEC;
+        next unless defined $desc;
+        return $desc;
+    }
+    return undef;
 }
 
 sub descmozrdf {
