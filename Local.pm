@@ -264,7 +264,7 @@ sub descexpand {
     local $desc= "";
 
     my $rpath = $Path->{'real'};
-    my $readme = get_readable_file($rpath . $filename, '{README,ReadMe}{.html,.htm,.txt,.TXT,}');
+    my $readme = get_readable_file($rpath . $filename, '{README,ReadMe}{.html,.htm,.txt,.TXT,.markdown,}');
     if ($readme =~ /\.html?$/ && open(DESC, $readme)) {
         undef $/;
         $desc = <DESC>;
