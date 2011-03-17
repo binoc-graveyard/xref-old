@@ -315,6 +315,7 @@ sub descexpand {
         }
         close(FILE);
     }
+    $desc = descmakefilepl($rpath, $Path->{'virt'}, $filename, 0) || $desc;
     $desc ||= descdebcontrol2($rpath, $Path->{'virt'}, $filename, 0);
     if ($filename =~ m%^debian/$%i) {
         $desc ||= descdebcontrol2($rpath, $Path->{'virt'}, './', 0);
@@ -482,7 +483,7 @@ sub descreadme {
     my $chopto = 10;    # Truncate long READMEs to this length
 
     my $rpath = $Path->{'real'};
-    $readme = get_readable_file($rpath, $readme) || get_readable_file($rpath, '{README,ReadMe}{.txt,.TXT,}');
+    $readme = get_readable_file($rpath, $readme) || get_readable_file($rpath, '{README,ReadMe}{.txt,.TXT,.markdown,}');
 
     if (!(open(DESC, $readme))) {
 	return;
@@ -665,6 +666,20 @@ sub descrpmspec {
         return $desc;
     }
     return undef;
+}
+
+sub descmakefilepl {
+    my ($rpath, $directory, $filename, $multiline) = @_;
+    my $path = $rpath . $filename;
+    my $desc;
+    if (open(SPEC, '<', "$path/Makefile.PL")) {
+        while (<SPEC>) {
+            next unless /^\s*['"]?ABSTRACT['"]?\s+=>['"](.*)['"](?:,|$)/;
+            $desc = $1;
+        }
+        close SPEC;
+    }
+    return $desc;
 }
 
 sub descmozrdf {
