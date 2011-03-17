@@ -112,7 +112,7 @@ sub fdescexpand {
 	close(FILE);
     }
     if ($filename =~ /\.html?$/) {
-        if ($desc =~ m{<title[^>]*>(.*)?</title}is) {
+        if ($desc =~ m{<title[^>]*>(.*?)</title}is) {
             $desc = $1;
             $desc =~ s/<[^>].*>//g;
             return $desc;
