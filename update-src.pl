@@ -42,7 +42,7 @@ my $SVNCOMMAND = "$SVN $SVNQUIETFLAGS";
 my $HGCOMMAND = 'hg ';
 my $HGCLONE = 'clone ';
 my $HGUP = 'up ';
-my $HGUPDATE = 'pull -u -r default';
+my $HGUPDATE = 'pull -u';
 my $HGCHANGESET = 'parents --template="{node|short}\n"';
 
 sub hg_get_list
@@ -85,10 +85,14 @@ sub hg_clone_cheap
 
 sub hg_update {
     my ($dir, $branch, $origin) = @_;
+    # If no branch argument is specified, 'default' is used
     $branch = 'default' unless defined $branch;
+    # Unless empty is specified, we specify the branch (either default
+    # or the one which was passed as branch).
+    $branch = "-r $branch" if $branch;
     $origin = 'default' unless defined $origin;
-    # $branch isn't used yet.
-    print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $STDERRTOSTDOUT || pwd; $HGCOMMAND $HGCHANGESET`;
+    # $origin isn't used yet.
+    print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $branch $STDERRTOSTDOUT || pwd; $HGCOMMAND $HGCHANGESET`;
 }
 
 my $EACHONE = 'xargs -n1 ';
