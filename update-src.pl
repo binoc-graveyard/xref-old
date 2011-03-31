@@ -9,6 +9,7 @@ use Fcntl;
 use lib 'lib';
 use LXR::Common;
 use LXR::Config;
+use LXR::Shell;
 
 my @paths=qw(
 /usr/local/bin
@@ -20,12 +21,13 @@ $ENV{PATH}='/usr/local/bin:'.$ENV{PATH};
 
 my ($lxr_dir, $lxr_conf, $db_dir, $src_dir, $Conf, $HTTP, $Path, $head);
 
-my $TIME = 'time ';
-my $UPTIME = 'uptime ';
-my $DATE = 'date ';
 my $STDERRTOSTDOUT = '2>&1';
 my $STDERRTODEVNUL = '2>/dev/null';
 my $ERROR_OUTPUT = $STDERRTOSTDOUT;
+
+my $TIME;
+my $UPTIME;
+my $DATE;
 
 my $CVS = 'cvs ';
 my $CVSQUIETFLAGS = '-Q ';
@@ -103,6 +105,11 @@ my $BZRQUIETFLAGS = '-q ';
 my $BZRUPDATE = 'update $BZRQUIETFLAGS';
 
 my $TREE;
+my %defaults = qw(
+  TIME time
+  UPTIME uptime
+  DATE date
+);
 
 sub process_args {
   my $was_arg;
@@ -112,7 +119,7 @@ sub process_args {
     if ($TREE) {
       if ($TREE eq '-cron') {
         $was_arg = 1;
-        $TIME = $UPTIME = '';
+        $defaults{TIME} = $defaults{UPTIME} = '';
         $ERROR_OUTPUT = $STDERRTODEVNUL;
       }
       $TREE =~ s{/$}{};
@@ -121,6 +128,11 @@ sub process_args {
 }
 
 process_args(@ARGV);
+
+check_defaults(\%defaults);
+$DATE = $defaults{DATE};
+$TIME = $defaults{TIME};
+$UPTIME = $defaults{UPTIME};
 
 $lxr_dir = '.';
 die "can't find $lxr_dir" unless -d $lxr_dir;
@@ -383,7 +395,7 @@ for ($TREE) {
         last;
     };
     /^(?:.*)-all$/ && do {
-        print LOG `$TIME $SVNCOMMAND $SVNUP`;
+        print LOG `$TIME $SVNCOMMAND $SVNUP $STDERRTOSTDOUT`;
         last;
     };
     /^addons$/ && do {
@@ -476,7 +488,7 @@ sub pull_gitorious {
 }
 
 print LOG `$DATE $STDERRTOSTDOUT`;
-print LOG `$UPTIME $STDERRTOSTDOUT`;
+print LOG `$UPTIME $STDERRTOSTDOUT` if $UPTIME =~ /\w/;
 close LOG;
 unlink $pid_lock;
 exit 0;

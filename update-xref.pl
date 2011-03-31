@@ -9,6 +9,7 @@ use File::Basename;
 use lib 'lib';
 use LXR::Common;
 use LXR::Config;
+use LXR::Shell;
 
 # we use:
 =notes
@@ -28,14 +29,16 @@ my @paths=qw(
 /usr/ucb
 );
 
-my $TIME = 'time ';
-my $UPTIME = 'uptime ';
-my $DATE = 'date ';
 my $STDERRTOSTDOUT = '2>&1';
 my $STDERRTODEVNUL = '2>/dev/null';
 my $ERROR_OUTPUT = $STDERRTOSTDOUT;
 
 my $TREE;
+my %defaults = qw(
+  TIME time
+  UPTIME uptime
+  DATE date
+);
 my $by_unit = 0;
 
 sub do_mkdir {
@@ -54,7 +57,7 @@ sub process_args {
       if ($TREE eq '-cron') {
         # run from a cron script, silence error output
         $was_arg = 1;
-        $TIME = $UPTIME = '';
+        $defaults{TIME} = $defaults{UPTIME} = '';
         $ERROR_OUTPUT = $STDERRTODEVNUL;
       } elsif ($TREE eq '-g') {
         $was_arg = 1;
@@ -71,6 +74,11 @@ sub process_args {
 }
 
 process_args(@ARGV);
+
+check_defaults(\%defaults);
+my $DATE = $defaults{DATE};
+my $TIME = $defaults{TIME};
+my $UPTIME = $defaults{UPTIME};
 
 my $lxr_dir = '.';
 die "can't find $lxr_dir" unless -d $lxr_dir;
@@ -208,6 +216,6 @@ if ($success) {
 }
 chdir "../..";
 system ("$DATE >> $log");
-system ("$UPTIME >> $log");
+system ("$UPTIME >> $log") if $UPTIME =~ /\w/;
 
 exit 0;

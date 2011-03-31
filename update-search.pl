@@ -9,6 +9,7 @@ use File::Basename;
 use lib 'lib';
 use LXR::Common;
 use LXR::Config;
+use LXR::Shell;
 
 my @paths=qw(
 /usr/local/bin
@@ -21,12 +22,13 @@ my @paths=qw(
 /home/build/glimpse-3.6.src/bin
 );
 
-my $TIME = 'time ';
-my $UPTIME = 'uptime ';
-my $DATE = 'date ';
 my $STDERRTOSTDOUT = '2>&1';
-
 my $TREE;
+my %defaults = qw(
+  TIME time
+  UPTIME uptime
+  DATE date
+);
 
 sub do_log {
   my $msg = shift;
@@ -50,7 +52,7 @@ sub process_args {
     if ($TREE) {
       if ($TREE eq '-cron') {
         $was_arg = 1;
-        $TIME = $UPTIME = '';
+        $defaults{TIME} = $defaults{UPTIME} = '';
       }
       $TREE =~ s{/$}{};
     }
@@ -58,6 +60,11 @@ sub process_args {
 }
 
 process_args(@ARGV);
+
+check_defaults(\%defaults);
+my $DATE = $defaults{DATE};
+my $TIME = $defaults{TIME};
+my $UPTIME = $defaults{UPTIME};
 
 $ENV{'LANG'} = 'C';
 
@@ -246,6 +253,6 @@ do_log(
 '.localtime()."
 $UPTIME
 ");
-system ("$UPTIME >> $log");
+system ("$UPTIME >> $log") if $UPTIME =~ /\w/;
 
 exit 0;
