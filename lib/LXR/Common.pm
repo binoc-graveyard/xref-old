@@ -466,9 +466,10 @@ sub diffref {
 my %id_cache = ();
 my %id_cache2 = ();
 my %id_cache3 = ();
+my $filenum = undef;
 
 sub maybe_idref {
-  my ($desc, $filenum, $line) = @_;
+  my ($desc, $filename, $line) = @_;
   return $id_cache2{$desc} if defined $id_cache2{$desc};
   my $refed = $id_cache3{$desc};
   unless (defined $refed) {
@@ -531,7 +532,19 @@ sub maybe_idref {
     }
   } elsif (1) {
     --$line;
-    if ($xref{$ident} =~ /(?:^|\t)(.)$filenum:$line(?:$|\t)/) {
+    my $idline = $xref{$ident};
+    unless (defined $filenum) {
+      while ($idline =~ /(?:^|\t).(\d+):$line(?:$|\t)/g) {
+        my $key = $1;
+        my $val = $fileidx{$key};
+        if (($filename eq $val) ||
+            ($filename eq '/'.$val)) {
+          $filenum = $key, last;
+        }
+      }
+    }
+    if (defined $filenum &&
+        ($idline =~ /(?:^|\t)(.)$filenum:$line(?:$|\t)/)) {
       my ($refkind) = ($1);
       $class = $ty{$refkind};
     }
@@ -1015,7 +1028,6 @@ sub markupfile {
   my $virtp = $Path->{'virt'};
   my $virtfname = $virtp.$fname;
   my @terms;
-  my $filenum;
   $force = 0 unless defined $force;
 
   $line = 1;
@@ -1103,17 +1115,8 @@ sub markupfile {
     $hash_params->{'cachesize'} = 30000;
     tie (%xref, "DB_File", $Conf->dbdir."/xref", O_RDONLY, 0664, $hash_params)
         || &warning("Cannot open xref database.", 'xref-db');
-    if (tie(%fileidx, "DB_File", $Conf->dbdir."/fileidx",
+    unless (tie(%fileidx, "DB_File", $Conf->dbdir."/fileidx",
             O_RDONLY, undef, $hash_params)) {
-      foreach my $key (keys %fileidx) {
-        my $val = $fileidx{$key};
-        if (($virtfname eq $val) ||
-            ($virtfname eq '/'.$val)) {
-          $filenum = $key, last;
-        }
-      }
-      untie(%fileidx);
-    } else {
       my $tree = $Conf->{'treename'} ne '' ? ' for "'.$Conf->{'treename'}.'"' : '';
       &warning('Cross reference database is missing its file list'.$tree.'; please complain to the webmaster [cite: fileidx]');
     }
@@ -1203,7 +1206,7 @@ sub markupfile {
       } else {
         # Code
         $frag =~ s#(^|[^a-zA-Z_\#0-9])([a-zA-Z_][a-zA-Z0-9_]*)\b#
-                    $1.($id_cache3{$2} || ($id_cache3{$2} = ($xref{$2} || '')) ? &maybe_idref($2, $filenum, $line) : &atomref($2))#ge;
+                    $1.($id_cache3{$2} || ($id_cache3{$2} = ($xref{$2} || '')) ? &maybe_idref($2, $virtfname, $line) : &atomref($2))#ge;
       }
 
       &htmlquote($frag);
@@ -1215,6 +1218,7 @@ sub markupfile {
 =skip
     &$outfun("</pre>\n");
 =cut
+    untie(%fileidx);
     untie(%xref);
 
   } elsif (Local::isImage($fname, 1)) {
