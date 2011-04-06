@@ -135,6 +135,7 @@ unless (defined $src_dir) {
 }
 
 do_mkdir $db_dir;
+my $pid_lock = get_lock($db_dir, 'xref');
 $log = "$db_dir/genxref.log";
 
 #exec > $log 2>&1
@@ -218,4 +219,5 @@ chdir "../..";
 system ("$DATE >> $log");
 system ("$UPTIME >> $log") if $UPTIME =~ /\w/;
 
+unlink $pid_lock;
 exit 0;

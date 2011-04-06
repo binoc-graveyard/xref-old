@@ -131,9 +131,8 @@ $ENV{'PATH'} = "$possible_path:$ENV{'PATH'}" if -d $possible_path;
 }
 
 mkdir $db_dir unless -d $db_dir;
+my $pid_lock = get_lock($db_dir, 'xref');
 $log = "$db_dir/glimpseindex.log";
-
-mkdir $db_dir unless -d $db_dir;
 #exec > $log 2>&1
 #XXX what does |set -x| mean?
 #system ("set -x > $log");
@@ -255,4 +254,5 @@ $UPTIME
 ");
 system ("$UPTIME >> $log") if $UPTIME =~ /\w/;
 
+unlink $pid_lock;
 exit 0;

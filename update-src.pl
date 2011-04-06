@@ -5,7 +5,6 @@
 
 use Cwd;
 use File::Basename;
-use Fcntl;
 use lib 'lib';
 use LXR::Common;
 use LXR::Config;
@@ -185,19 +184,7 @@ for my $possible_path (keys %pathmap) {
 }
 
 -d $db_dir || mkdir $db_dir;
-my $pid_lock = "$db_dir/update-src.pid";
-sysopen(PID, $pid_lock, O_RDWR | O_CREAT) ||
-  die "could not open lock file $db_dir/update-src.pid";
-my $pid = <PID>;
-if (defined $pid) {
-  chomp $pid;
-  die "update process is probably already running as pid $pid\n" if (kill 0, $pid);
-}
-seek(PID, 0, 0) ||
-  die "could not rewind lock file $db_dir/update-src.pid";
-print PID $$;
-close PID;
-
+my $pid_lock = get_lock($db_dir, 'src');
 my $log="$db_dir/cvs.log";
 
 rename $log, "$log.old" if -f $log;
