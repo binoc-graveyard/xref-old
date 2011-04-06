@@ -48,10 +48,10 @@ sub init {
 
 
 sub untabify {
-    my $t = $_[1] || 8;
-    return($_[0]) unless $_[0] =~ /\t/;
-    $_[0] =~ s/([^\t]*)\t/$1.(' ' x ($t - (length($1) % $t)))/ge;
-    return($_[0]);
+    my $l = shift;
+    my $t = shift || 8;
+    $l =~ s/([^\t]*)\t/$1.(' ' x ($t - (length($1) % $t)))/ge;
+    return $l;
 }
 
 sub nextfrag {
