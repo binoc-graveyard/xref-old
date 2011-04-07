@@ -1583,14 +1583,16 @@ sub init_all {
   my $localurl = $baseurl . '/source' . env_or('PATH_INFO', '/');
   $localurl =~ m{(^.*/)/*[^/]+/*(?:|\?.*)$};
   my $parenturl = $1;
+  my $treename = $Conf->{'treename'};
+  if (defined $treename) {
   $head .=
-'Link: <' . $baseurl . '>; rel="Index"; title="' . $Conf->{'treename'} .'"
+'Link: <' . $baseurl . '>; rel="Index"; title="' . $treename .'"
 Link: <' . $baseurl . '/ident>; rel="Glossary"; title="Identifier search"
 Link: <' . $baseurl . '/search>; rel="Search"; title="Text search"
 Link: <' . $baseurl . '/find>; rel="Contents"; title="Find file"
 Link: <' . $parenturl . '>; rel="Up"; title="Parent"
 ';
-
+  }
   $head .= "Content-Type: $ctype\n" if defined $ctype;
 
   #

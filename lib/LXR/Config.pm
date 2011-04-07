@@ -134,11 +134,12 @@ if (0) {
             }
             $treehashp{$alias} = $treehash{resolvealias($alias, \%treehashp)};
         }
-        my $sourceprefix = $treehashp{resolvealias($self->{'treename'}, \%treehashp)};
-        $self->{'sourceprefix'} = defined $sourceprefix
-                                ? $sourceprefix
-                                : undef;
-
+        my $treename = $self->{'treename'};
+        my $sourceprefix;
+        if (defined $treename) {
+            $sourceprefix = $treehashp{resolvealias($treename, \%treehashp)};
+        }
+        $self->{'sourceprefix'} = $sourceprefix;
     } else {
         $self->{'treename'} = '';
     }
