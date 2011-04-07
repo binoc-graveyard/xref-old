@@ -56,6 +56,9 @@ sub process_args {
         $was_arg = 1;
         $TIME = $UPTIME = '';
         $ERROR_OUTPUT = $STDERRTODEVNUL;
+      } elsif ($TREE eq '-g') {
+        $was_arg = 1;
+        $DEBUGGER = 'perl -d';
       } elsif ($TREE eq '--by-unit') {
         # index each top level directory individually and then merge
         $was_arg = 1;
