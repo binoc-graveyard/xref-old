@@ -1088,24 +1088,32 @@ sub endwebsvn
     return &endskip;
 }
 
+my %hghostcache = ();
+sub hgcachehost {
+  my ($key, $val) = @_;
+  return $hghostcache{$key} = $val;
+}
+
 sub rawhghost
 {
     my $hg_not_found = 'http://error.hg-not-found.tld';
     my ($virt, $real) = ($Path->{'virt'}, $Path->{'real'});
+    my $key = "$virt\n$real";
+    my $hgroot = $hghostcache{$key};
+    return $hgroot if defined $hgroot;
     my $path = checkhg($virt, $real);
-    return $hg_not_found unless $path =~ /^(\d+)/;
+    return hgcachehost($key, $hg_not_found) unless $path =~ /^(\d+)/;
     my $i = $1;
     while ($i--) {
       $virt =~ s{/[^/]+/?$}{};
       $real =~ s{/[^/]+/?$}{};
     }
     my $hgpath = checkhg($virt, $real);
-    return $hg_not_found unless $hgpath =~ m{^0 (\S+)/store/data$};
+    return hgcachehost($key, $hg_not_found) unless ($hgpath =~ m{^0 (\S+)/store/data$});
     my $hgrc = "$1/hgrc";
-    return $hg_not_found unless open (HGRC, '<', $hgrc);
+    return hgcachehost($key, $hg_not_found) unless open (HGRC, '<', $hgrc);
     my $line;
     my $scanstate = 0;
-    my $hgroot;
 #[paths]
 #default = http://hg.mozilla.org/mozilla-central
     while ($line = <HGRC>) {
@@ -1125,7 +1133,7 @@ sub rawhghost
       }
     }
     close HGRC;
-    return $hgroot || $hg_not_found;
+    return hgcachehost($key, $hgroot || $hg_not_found);
 }
 
 sub webhghost
