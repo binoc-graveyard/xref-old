@@ -52,8 +52,27 @@ sub treeify {
     $self->{'sourceroot'} =~ s/^\s+//;
     $self->{'sourceprefix'} =~ s/^\s+//;
     $self->{'rewriteurl'} =~ s/^\s+//;
+    my $baseurl = $self->{'baseurl'};
+    if ($baseurl =~ m!^https?://([^/]+)(/.*)!) {
+      my ($hostport, $path) = ($1, $2);
+      my $https = env_or('HTTPS', 0);
+      my $server_name = env_or('SERVER_NAME', 'localhost');
+      my $default_port = $https ? 443 : 80;
+      my $env_port = env_or('SERVER_PORT', '80');
+      my $port = $default_port eq $env_port ? '' : ':' . $env_port;
+      my $proto = $default_port == 443 ? 'https://' : 'http://';
+      $baseurl = join('',
+           $proto,
+           $server_name,
+           $port,
+           $path);
+    } else {
+      my $https = env_or('HTTPS', 0);
+      $baseurl = ($https ? 'https://' : 'http://') . $baseurl;
+    }
+    $self->{'baseurl'} = $baseurl;
     if ((($self->{'virtroot'} || '') eq '') &&
-        $self->{'baseurl'} =~ m{https?://[^/]*?(/.+?)/?$}) {
+        $baseurl =~ m{https?://[^/]*?(/.+?)/?$}) {
         # auto detect virtroot
         $self->{'virtroot'} = $1;
     }

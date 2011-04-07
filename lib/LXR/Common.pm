@@ -17,6 +17,7 @@ require Exporter;
              &clean_mark
              &clean_hint
              &url_quote
+             &env_or
              &init &glimpse_init &makeheader &makefooter &expandtemplate
              &bigexpandtemplate &blamerefs
 );
