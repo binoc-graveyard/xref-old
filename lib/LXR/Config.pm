@@ -219,8 +219,8 @@ sub _initialize {
     }
 
     while (<CONFIG>) {
-	s/\#.*//;
-	next if /^\s*$/;
+	s/\s*\#.*|\s+$//;
+	next if /^$/;
 	if (($dir, $arg) = /^\s*(\S+):\s*(.*)/) {
 	    if ($dir eq 'variable') {
 		@args = &parseconf($arg);
