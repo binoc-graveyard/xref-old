@@ -262,10 +262,11 @@ for ($TREE) {
         }
         last;
     };
-    /^(build|incubator|l10n|labs|projects|services|webtools)-central$/ && do {
+    /^(?:(build|incubator|l10n|labs|projects|services|webtools)-central|(l10n)-(mozilla-\D.*))$/ && do {
         my @dirs = <$src_dir/*>;
-        my $fallback = "http://hg.mozilla.org/$1";
-        $fallback .= '-central' if $1 eq 'l10n';
+        my $fallback = defined $1 ? $1 : "$2/$3";
+        $fallback .= '-central' if $fallback eq 'l10n';
+        $fallback = "http://hg.mozilla.org/$fallback";
         my $general_root;
         foreach my $dir (@dirs) {
             unless (defined $general_root) {
@@ -327,21 +328,12 @@ for ($TREE) {
         print LOG `cd $src_dir; $TIME python2.4 ./client.py checkout $STDERRTOSTDOUT`;
         last;
     };
-    /^(?:.*)-(?:central|tracing)$/ && do {
+    /^(?:.*-(?:central|tracing)|mozilla-\D.*)$/ && do {
         if (-d "$src_dir/.hg") {
           hg_update($src_dir);
         } else {
           my $dir = basename($src_dir);
           print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/$dir $src_dir`;
-        }
-        last;
-    };
-    /^mozilla-\D*$/ && do {
-        if (-d "$src_dir/.hg") {
-          hg_update($src_dir);
-        } else {
-          my $dir = basename($src_dir);
-          print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/$dir#default $src_dir`;
         }
         last;
     };
