@@ -336,6 +336,15 @@ for ($TREE) {
         }
         last;
     };
+    /^mozilla-\D*$/ && do {
+        if (-d "$src_dir/.hg") {
+          hg_update($src_dir);
+        } else {
+          my $dir = basename($src_dir);
+          print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/$dir#default $src_dir`;
+        }
+        last;
+    };
     /^firefox.*$/ && do {
         unless (-f 'client.mk') {
           print LOG `$TIME $CVSCOMMAND $CVSCO mozilla/client.mk $STDERRTOSTDOUT`;
