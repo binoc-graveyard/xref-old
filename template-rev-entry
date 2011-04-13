@@ -1,1 +1,1 @@
-<option value="$otherrev"$selected>$otherrev [$author on $date]$iscurrent</option>
+<option value="$otherrev"$selected>$otherrev ($date) $author$iscurrent</option>

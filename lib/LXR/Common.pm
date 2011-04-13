@@ -2336,7 +2336,7 @@ sub revpicker {
   my $hg = 'hg --config ui.report_untrusted=false';
   my $currentver = `$hg log --template='{node|short}' -r $repoparent -R $hgroot $Path->{'realf'}` ||
                    `$hg parents --template='{node|short}' -r $repoparent -R $hgroot $Path->{'realf'}`;
-  open HGLOG, "$hg -R $hgroot log --template='{node|short}\n{author|firstline|escape}\n{date|isodate}\n\n' $Path->{'realf'} |";
+  open HGLOG, "$hg -R $hgroot log --template='{node|short}\n{author|person|escape}\n{date|isodate}\n\n' $Path->{'realf'} |";
   {
     local $/ = "\n\n";
     while (<HGLOG>) {
