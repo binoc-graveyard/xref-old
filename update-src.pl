@@ -328,7 +328,7 @@ for ($TREE) {
         print LOG `cd $src_dir; $TIME python2.4 ./client.py checkout $STDERRTOSTDOUT`;
         last;
     };
-    /^(?:.*-(?:central|tracing)|mozilla-(\D.*))$/ && do {
+    /^(?:.*-(?:central|tracing)|(mozilla-\D.*))$/ && do {
         if (-d "$src_dir/.hg") {
           hg_update($src_dir);
         } else {
