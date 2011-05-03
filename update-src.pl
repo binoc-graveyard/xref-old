@@ -328,11 +328,11 @@ for ($TREE) {
         print LOG `cd $src_dir; $TIME python2.4 ./client.py checkout $STDERRTOSTDOUT`;
         last;
     };
-    /^(?:.*-(?:central|tracing)|mozilla-\D.*)$/ && do {
+    /^(?:.*-(?:central|tracing)|mozilla-(\D.*))$/ && do {
         if (-d "$src_dir/.hg") {
           hg_update($src_dir);
         } else {
-          my $dir = basename($src_dir);
+          my $dir = $1 ? "releases/$1" : basename($src_dir);
           print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/$dir $src_dir`;
         }
         last;
