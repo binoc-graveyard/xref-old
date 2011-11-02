@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="GENERATOR" content="lxr-1998-06-10: http://lxr.linux.no">
+<link rel="icon" href="/mxr.png" type="image/png">
+<title>$title</title>
+$stylesheets
+<script src='$dotdoturl/coloration.js'></script>
+<script src='$dotdoturl/script.js'></script>
+</head>
+
+<body   bgcolor="#FFFFFF" text="#000000"
+	link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<table class=banner bgcolor="#000000" width="100%" border=0 cellpadding=0 cellspacing=0>
+<tr><td><a class="logo" href="//www.mozilla.org/"><img
+ src="//www.mozilla.org/images/mozilla-banner.gif" alt=""
+ border=0 width=600 height=58></a></td></tr></table>
+
+<table class=header border=0 cellpadding=12 cellspacing=0 width="100%">
+ <tr>
+  <td align=left valign=middle>
+   <nobr><font size="+2"><b><a href="$dotdoturl">Mozilla Cross-Reference</a></b>
+</nobr><i><a href="$baseurl">$treename</a></i>
+</font>
+   <br><b>$banner</b>
+  </TD>
+
+  <td align=right valign=top width="1%">
+   <table border cellpadding=12 cellspacing=0>
+    <tr>
+     <td nowrap bgcolor="#FAFAFA">
+$begingitorious
+      <a href="$gitorioushost/blobs/$gitrev$gitpath/$filename"
+>Gitorious</a>
+      <a href="$gitorioushost/blobs/history/$gitrev$gitpath/$filename"
+>History</a><br>
+$endgitorious
+$beginbonsai
+      <a href="$bonsaihost/cvslog.cgi?file=$cvspath/$filename&amp;rev=$cvsbranch&amp;mark=$cvsversion"
+>CVS Log</a><br>
+      <a href="$bonsaihost/cvsblame.cgi?file=$cvspath/$filename&amp;rev=$cvsversion"
+onfocus='updateBonsaiBlameHash(this, event)'
+onmouseover='updateBonsaiBlameHash(this, event)'
+>CVS Blame</a><br>
+      <a href="$bonsaihost/cvsgraph.cgi?file=$cvspath/$filename&amp;rev=$cvsversion"
+>CVS Graph</a><br>
+$endbonsai
+$begintrac
+      <a href="$trachost/$virttree/log$virtfold/$filename">Trac Log</a><br>
+      <a href="$trachost/$virttree/browser$virtfold/$filename">Trac View</a><br>
+$endtrac
+$beginviewvc
+<a href="$viewvchost$virtfold/$filename$viewvctail">VC Log</a><br>
+<a href="$viewvchost$virtfold/$filename$viewvctail&view=annotate">VC Blame</a><br>
+$endviewvc
+$begincvsweb
+<a href="$cvswebhost/$cvspath/$filename">CVS Log</a><br>
+<a href="$cvswebhost/$cvspath/$filename?annotate=$cvsversion">CVS Blame</a><br>
+$endcvsweb
+$beginwebsvn
+<a href="$websvnhost/log.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Log</a><br>
+<a href="$websvnhost/blame.php?repname=$virttree&amp;path=$virtfold/$filename&amp;rev=$cvsversion">SVN Blame</a><br>
+$endwebsvn
+$beginwebhg
+<script>
+function updateHgBlameHash(node, event) {
+  if (!document.location.hash)
+    return;
+  var anchor = document.location.hash;
+  anchor = anchor.replace("#", "#l");
+  node.href =
+    node.href.replace(/#.*|$/, anchor);
+}
+</script>
+<a href="$webhghost/filelog/$hgversion/$hgpath/$filename">Hg Log</a><br>
+<a href="$webhghost/annotate/$hgversion/$hgpath/$filename"
+onfocus='updateHgBlameHash(this, event)'
+onmouseover='updateHgBlameHash(this, event)'
+>Hg Blame</a><br>
+$endwebhg
+$beginoghg
+<a href="$oghghost/source/history/$ogroot/$hgpath/$filename">Grok History</a><br>
+<a href="$oghghost/source/xref/$ogroot/$hgpath/$filename?a=true&r=&rev=$hgversion">Grok Blame</a><br>
+$endoghg
+
+      <a href="$baseurl/diff?file=$urlpath">Diff file</a><br>
+      <a href="$baseurl/source$urlpath?raw=1">Raw file</a><br>
+     </TD>
+    </TR>
+   </table>
+  </TD>
+
+$beginbonsai
+  <td align=right valign=top width="1%">
+   <table border cellpadding=6 cellspacing=0>
+    <tr>
+     <td bgcolor="#FAFAFA">
+      <table border=0 cellpadding=6 cellspacing=0>
+       <tr>
+        <td nowrap align=left>
+         changes to<br>this file in<br>the last:
+        </TD>
+        <td nowrap>
+         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsbranch&amp;file=$cvspath/$filename&amp;date=day">day</a><br>
+         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsbranch&amp;file=$cvspath/$filename&amp;date=week">week</a><br>
+         <a href="$bonsaihost/cvsquery.cgi?branch=$cvsbranch&amp;file=$cvspath/$filename&amp;date=month">month</a><br>
+        </TD>
+       </TR>
+      </table>
+     </TD>
+    </TR>
+   </table>
+  </TD>
+$endbonsai
+
+ </TR>
+</table>
+
+$treepicker
+$revoverride

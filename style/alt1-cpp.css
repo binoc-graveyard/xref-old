@@ -1,0 +1,33 @@
+@import url(style.css);
+
+.f {
+border: 1px dotted green;
+}
+
+.c {
+border: 1px dotted yellow;
+}
+
+.u {
+border: 1px dotted purple;
+}
+
+.p {
+border: 1px dotted black;
+}
+
+.d {
+border: 1px dotted pink;
+}
+
+.v {
+border: 1px dotted teal;
+}
+
+.i {
+border: 1px dotted magenta;
+}
+
+.r {
+border: 1px dotted red;
+}

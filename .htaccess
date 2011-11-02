@@ -1,0 +1,20 @@
+<Files ~ (find|search|source|ident|diff)$>
+SetHandler cgi-script
+order Allow,Deny
+allow from all
+#allow from 10.251.0.10
+#allow from 66.227.241.236
+#allow from localhost
+#deny from agni.nut.roche.com
+#deny from user198.anilam.com
+deny from 65.55.165.
+deny from 207.46.98.
+#deny from *.search.live.com
+#deny from *.phx.gbl
+deny from 65.55.209.
+deny from 65.55.210.
+#deny from all
+</Files>
+DirectoryIndex index.cgi
+Options +ExecCGI +FollowSymlinks
+RewriteEngine On

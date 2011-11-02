@@ -1,0 +1,6 @@
+<form name='source' id='source' class='beforecontent'
+>view using tree:
+<select name='tree' id='tree' onchange='changetarget("$baseurl/", "$treename/")'>
+$treelist
+</select></form>
+
