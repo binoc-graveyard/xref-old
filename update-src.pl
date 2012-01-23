@@ -329,7 +329,7 @@ for ($TREE) {
         print LOG `cd mozilla; $TIME $CVSCOMMAND $CVSUP-d tools` if /^seamonkey$/;
         last;
     };
-    /^comm-(?:central|1\.9\.\d+)$/ && do {
+    /^comm-(?:central|1\.9\.\d+|2\.0|release|aurora|beta)$/ && do {
         print LOG `cd $src_dir; $TIME python2.4 ./client.py checkout $STDERRTOSTDOUT`;
         last;
     };
