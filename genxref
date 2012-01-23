@@ -665,10 +665,10 @@ sub java_clean {
     $contents =~ s/\05/\{\}/gs;
 
     # Remove imports
-    $contents =~ s/^\s*import.*;/&wash($&)/gem;
+    $contents =~ s/(^\s*import.*;)/&wash($1)/gem;
 
     # Remove packages
-    $contents =~ s/^\s*package.*;/&wash($&)/gem;
+    $contents =~ s/(^\s*package.*;)/&wash($1)/gem;
 
     return $contents;
 }
@@ -1264,7 +1264,7 @@ sub merge {
     }
     untie(%xrefdb);
     rename("xref.out.$$", "xref") || die "Couldn't rename xref.out.$$ to xref";
-    print(
+    print(STDERR
           "Completed stage 4 (",(time-$start),"s):",
           "Information on $i identifiers dumped to disk.\n\n");
     untie(%fileidx);
@@ -1297,7 +1297,11 @@ sub buildList {
                push @ft, 1;
                push @f, $file;
            } elsif ($3) {
-               push @jsfiles, $file;
+               if (($file =~ m!/Regress/!) || ($file =~ m!kraken/tests/kraken!)) {
+                   print(STDERR "Skipping $file\n");
+               } else {
+                   push @jsfiles, $file;
+               }
            } elsif ($4) {
                push @plfiles, $file;
            } elsif ($5) {

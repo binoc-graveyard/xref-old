@@ -97,6 +97,7 @@ sub hg_update {
     print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $branch $STDERRTOSTDOUT || pwd; $HGCOMMAND $HGCHANGESET`;
 }
 
+
 my $EACHONE = 'xargs -n1 ';
 
 my $BZR = 'bzr ';
@@ -264,16 +265,18 @@ for ($TREE) {
     };
     /^(?:(build|incubator|l10n|labs|projects|services|webtools)-central|(l10n)-(mozilla-\D.*))$/ && do {
         my @dirs = <$src_dir/*>;
-        my $fallback = defined $1 ? $1 : "$2/$3";
+        my $fallback = defined $1 ? $1 : "releases/$2/$3";
         $fallback .= '-central' if $fallback eq 'l10n';
         $fallback = "http://hg.mozilla.org/$fallback";
         my $general_root;
         foreach my $dir (@dirs) {
-            unless (defined $general_root) {
-                $general_root = `hg paths default -R $dir`;
-                $general_root =~ s{/[^/]+/?\s*$}{};
+            if ( -d $dir ) {
+                unless (defined $general_root) {
+                    $general_root = `hg paths default -R $dir`;
+                    $general_root =~ s{/[^/]+/?\s*$}{};
+                }
+                hg_update($dir);
             }
-            hg_update($dir);
         }
         $general_root = $fallback unless defined $general_root;
         chdir $src_dir;
@@ -306,7 +309,9 @@ for ($TREE) {
             @dirs = <$src_dir/*>;
         }
         foreach my $dir (@dirs) {
-            hg_update($dir);
+            if ( -d $dir ) {
+                hg_update($dir);
+            }
         }
         last;
     };
@@ -387,11 +392,16 @@ for ($TREE) {
         last;
     };
     /^addons$/ && do {
-        print LOG `cd /data/amo-code/bin; $TIME python26 -S latest_addon_extractor.py /data/addons /data/mxr-data/amo/amo`;
+        print LOG `rm -rf /data/mxr-data/addons/incoming; mkdir /data/mxr-data/addons/incoming`; # should be unnecessary
+        print LOG `cd /data/amo-code/bin; $TIME python26 -S latest_addon_extractor.py /data/addons /data/mxr-data/addons/incoming`;
+	print LOG `mv /data/mxr-data/addons/addons /data/mxr-data/addons/old`;
+	print LOG `mv /data/mxr-data/addons/incoming /data/mxr-data/addons/addons`;
+	print LOG `mkdir /data/mxr-data/addons/incoming`;
+	system("rm -rf /data/mxr-data/addons/old &"); # do this in the background... doesn't need to block other stuff
         last;
     };
-    /^amo-stage$/ && do {
-        print LOG `cd /data/amo-code/bin; $TIME python26 -S latest_addon_extractor.py /data/addons /data/mxr-data/amo-stage/amo`;
+    /^addons-stage$/ && do {
+        print LOG `cd /data/amo-code/bin; $TIME python26 -S latest_addon_extractor.py /data/addons /data/mxr-data/addons-stage/addons`;
         last;
     };
     /^(?:.*)$/ && do {
