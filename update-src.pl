@@ -293,7 +293,9 @@ for ($TREE) {
         last;
     };
     /^nspr$/ && do {
-        print LOG `$TIME $CVSCOMMAND $CVSCO -P NSPR $STDERRTOSTDOUT`;
+	# Seems wrong, per bug 730010
+        # print LOG `$TIME $CVSCOMMAND $CVSCO -P NSPR $STDERRTOSTDOUT`;
+	print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/nsprpub $STDERRTOSTDOUT`;
         last;
     };
     /^l10n-mozilla(1\.9.*|2\.0.*)$/ && do {
