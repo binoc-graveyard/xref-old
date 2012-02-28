@@ -325,24 +325,40 @@ for ($TREE) {
         hg_update($src_dir);
         last;
     };
-    /^(?:seamonkey|reflowbranch|mozilla1.*)$/ && do {
+    /^mozilla1\.7$/ && do {
+        print LOG `$TIME $CVSCOMMAND $CVSCO -r MOZILLA_1_7_BRANCH mozilla/client.mk $STDERRTOSTDOUT`;
         print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=all $STDERRTOSTDOUT`;
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
-        print LOG `cd mozilla; $TIME $CVSCOMMAND $CVSUP-d tools` if /^seamonkey$/;
+        last;
+    }; 
+    /^mozilla1\.8$/ && do {
+        print LOG `$TIME $CVSCOMMAND $CVSCO -r MOZILLA_1_8_BRANCH mozilla/client.mk $STDERRTOSTDOUT`;
+        print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=all $STDERRTOSTDOUT`;
+        print LOG `cat cvsco.log $STDERRTOSTDOUT`;
+        last;
+    }; 
+    /^mozilla1\.8\.0$/ && do {
+        print LOG `$TIME $CVSCOMMAND $CVSCO -r MOZILLA_1_8_0_BRANCH mozilla/client.mk $STDERRTOSTDOUT`;
+        print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=all $STDERRTOSTDOUT`;
+        print LOG `cat cvsco.log $STDERRTOSTDOUT`;
+        last;
+    }; 
+    /^seamonkey$/ && do {
+        # does not pull from a specific branch/tag?
+        print LOG `$TIME $CVSCOMMAND $CVSCO mozilla/client.mk $STDERRTOSTDOUT`;
+        print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=all $STDERRTOSTDOUT`;
+        print LOG `cat cvsco.log $STDERRTOSTDOUT`;
+        print LOG `cd mozilla; $TIME $CVSCOMMAND $CVSUP-d tools`;
         last;
     };
     /^aviarybranch$/ && do {
-        unless (-f 'client.mk') {
-          print LOG `$TIME $CVSCOMMAND $CVSCO -r AVIARY_1_0_20040515_BRANCH mozilla/client.mk $STDERRTOSTDOUT`;
-        }
+        print LOG `$TIME $CVSCOMMAND $CVSCO -r AVIARY_1_0_20040515_BRANCH mozilla/client.mk $STDERRTOSTDOUT`;
         print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=all $STDERRTOSTDOUT`;
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
         last;
     }; 
     /^aviary101branch$/ && do {
-        unless (-f 'client.mk') {
-          print LOG `$TIME $CVSCOMMAND $CVSCO -r AVIARY_1_0_1_20050124_BRANCH mozilla/client.mk $STDERRTOSTDOUT`;
-        }
+        print LOG `$TIME $CVSCOMMAND $CVSCO -r AVIARY_1_0_1_20050124_BRANCH mozilla/client.mk $STDERRTOSTDOUT`;
         print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=all $STDERRTOSTDOUT`;
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
         last;
