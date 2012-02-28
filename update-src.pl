@@ -325,12 +325,28 @@ for ($TREE) {
         hg_update($src_dir);
         last;
     };
-    /^(?:seamonkey|(?:aviary(?:101)?|reflow)branch|mozilla1.*)$/ && do {
+    /^(?:seamonkey|reflowbranch|mozilla1.*)$/ && do {
         print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=all $STDERRTOSTDOUT`;
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
         print LOG `cd mozilla; $TIME $CVSCOMMAND $CVSUP-d tools` if /^seamonkey$/;
         last;
     };
+    /^aviarybranch$/ && do {
+        unless (-f 'client.mk') {
+          print LOG `$TIME $CVSCOMMAND $CVSCO -r AVIARY_1_0_20040515_BRANCH mozilla/client.mk $STDERRTOSTDOUT`;
+        }
+        print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=all $STDERRTOSTDOUT`;
+        print LOG `cat cvsco.log $STDERRTOSTDOUT`;
+        last;
+    }; 
+    /^aviary101branch$/ && do {
+        unless (-f 'client.mk') {
+          print LOG `$TIME $CVSCOMMAND $CVSCO -r AVIARY_1_0_1_20050124_BRANCH mozilla/client.mk $STDERRTOSTDOUT`;
+        }
+        print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=all $STDERRTOSTDOUT`;
+        print LOG `cat cvsco.log $STDERRTOSTDOUT`;
+        last;
+    }; 
     /^comm-(?:central|1\.9\.\d+|2\.0|release|aurora|beta)$/ && do {
         print LOG `cd $src_dir; $TIME python2.4 ./client.py checkout $STDERRTOSTDOUT`;
         last;
