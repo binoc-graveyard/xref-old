@@ -376,9 +376,17 @@ for ($TREE) {
         }
         last;
     };
-    /^firefox.*$/ && do {
+    /^firefox$/ && do {
         unless (-f 'client.mk') {
           print LOG `$TIME $CVSCOMMAND $CVSCO mozilla/client.mk $STDERRTOSTDOUT`;
+        }
+        print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=browser $STDERRTOSTDOUT`;
+        print LOG `cat cvsco.log $STDERRTOSTDOUT`;
+        last;
+    };
+    /^firefox2$/ && do {
+        unless (-f 'client.mk') {
+          print LOG `$TIME $CVSCOMMAND $CVSCO -r MOZILLA_1_8_BRANCH mozilla/client.mk $STDERRTOSTDOUT`;
         }
         print LOG `$TIME make -C mozilla -f client.mk pull_all MOZ_CO_PROJECT=browser $STDERRTOSTDOUT`;
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
