@@ -363,11 +363,20 @@ for ($TREE) {
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
         last;
     }; 
-    /^comm-(?:central|1\.9\.\d+|2\.0|release|aurora|beta)$/ && do {
+    /^comm-(?:central|1\.9\.\d+|2\.0|release|aurora|beta|esr10)$/ && do {
         print LOG `cd $src_dir; $TIME python2.4 ./client.py checkout $STDERRTOSTDOUT`;
         last;
     };
     /^(?:.*-(?:central|tracing)|(mozilla-\D.*))$/ && do {
+        if (-d "$src_dir/.hg") {
+          hg_update($src_dir);
+        } else {
+          my $dir = $1 ? "releases/$1" : basename($src_dir);
+          print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/$dir $src_dir`;
+        }
+        last;
+    };
+    /^mozilla-esr10$/ && do {
         if (-d "$src_dir/.hg") {
           hg_update($src_dir);
         } else {
