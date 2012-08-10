@@ -364,7 +364,7 @@ for ($TREE) {
         last;
     }; 
     /^comm-(?:central|1\.9\.\d+|2\.0|release|aurora|beta|esr10)$/ && do {
-        print LOG `cd $src_dir; $TIME python2.4 ./client.py checkout $STDERRTOSTDOUT`;
+        print LOG `cd $src_dir; $TIME python ./client.py checkout $STDERRTOSTDOUT`;
         last;
     };
     /^(?:.*-(?:central|tracing)|(mozilla-\D.*))$/ && do {
@@ -444,7 +444,7 @@ for ($TREE) {
     };
     /^addons$/ && do {
         print LOG `rm -rf /data/mxr-data/addons/incoming; mkdir /data/mxr-data/addons/incoming`; # should be unnecessary
-        print LOG `cd /data/amo-code/bin; $TIME python26 -S latest_addon_extractor.py /data/addons /data/mxr-data/addons/incoming`;
+        print LOG `cd /data/amo-code/bin; $TIME python2.6 -S latest_addon_extractor.py /data/addons /data/mxr-data/addons/incoming`;
 	print LOG `mv /data/mxr-data/addons/addons /data/mxr-data/addons/old`;
 	print LOG `mv /data/mxr-data/addons/incoming /data/mxr-data/addons/addons`;
 	print LOG `mkdir /data/mxr-data/addons/incoming`;
@@ -452,7 +452,7 @@ for ($TREE) {
         last;
     };
     /^addons-stage$/ && do {
-        print LOG `cd /data/amo-code/bin; $TIME python26 -S latest_addon_extractor.py /data/addons /data/mxr-data/addons-stage/addons`;
+        print LOG `cd /data/amo-code/bin; $TIME python2.6 -S latest_addon_extractor.py /data/addons /data/mxr-data/addons-stage/addons`;
         last;
     };
     /^(?:.*)$/ && do {

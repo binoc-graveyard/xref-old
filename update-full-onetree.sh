@@ -12,7 +12,7 @@ if [ -n "$3" ] && [ "$2" = "--by-unit" ]; then
     UNIT="$2"
 fi
 
-TREE_PATH=$(grep "^sourceroot: $TREE " /var/www/webtools/mxr/lxr.conf | head -n 1 | awk '{print $3}')
+TREE_PATH=$(grep "^sourceroot: $TREE " /data/www/mxr.mozilla.org/lxr.conf | head -n 1 | awk '{print $3}')
 
 OUT1=`perl update-src.pl $CRON "$TREE" 2>&1`
 
