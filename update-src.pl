@@ -212,6 +212,25 @@ for ($TREE) {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P -rMozillaSourceClassic_19981026_BRANCH MozillaSource $STDERRTOSTDOUT`;
         last;
     };
+    /^chromium$/ && do {
+        # http://dev.chromium.org/developers/how-tos/get-the-code
+        # must have the depot-tools installed already
+        # check for depot-tools, install if necessary
+        unless (-d "$src_dir/../depot_tools") {
+            chdir "$src_dir/..";
+            print LOG `git clone https://git.chromium.org/chromium/tools/depot_tools.git`;
+        }
+        chdir $src_dir;
+        unless (-f "$src_dir/.gclient") {
+            print "\nBREAK: check out manually by running the following in $src_dir:\n";
+            print "../depot_tools/gclient config https://src.chromium.org/chrome/trunk/src https://chromium-status.appspot.com/lkgr\n";
+            print "Then edit $src_dir/.gclient, per http://dev.chromium.org/developers/how-tos/get-the-code#TOC-Reducing-the-size-of-your-checkout\n";
+            print "Not attempting to do this automatically... quitting here!\n\n";
+            last;
+        }
+        print LOG `../depot_tools/gclient sync`;
+        last;
+    };
     /^js$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/js mozilla/js2 mozilla/nsprpub $STDERRTOSTDOUT`;
         last;
