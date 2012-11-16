@@ -870,7 +870,7 @@ sub filelookup {
   my $idlfile = $1 if ($filename =~ /(^.*)\.h$/);
   my $baseurl = $Conf->{virtroot}; # &baseurl;
   my ($pfile_ref,$gfile_ref,$ifile_ref,$jfile_ref,$kfile_ref,$loosefile,$basefile,$p,$g,$i,$j,$k);
-  $filename =~ s|([\[\](){}^\$.*?\&\@\\+])|\\$1|g;
+  $filename =~ s|([(){}^\$.*?\&\@\\+])|\\$1|g;
   if ($filename =~ m|/|) {
     $basefile = $loosefile = $filename;
     $basefile =~ s|^.*/|/|g;
