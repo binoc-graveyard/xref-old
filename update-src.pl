@@ -233,13 +233,13 @@ for ($TREE) {
     };
     /^gaia$/ && do {
         if (! -d "$src_dir/.git") {
-            print LOG "need to clone - https://github.com/mozilla-b2g/gaia"
+            print LOG `git clone https://github.com/mozilla-b2g/gaia $src_dir`;
         } else {
-            print LOG "git pull && git gc"
+            chdir $src_dir;
+            print LOG `git pull && git gc`;
         }
-    }
-        
-            
+        last;
+    };
     /^js$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/js mozilla/js2 mozilla/nsprpub $STDERRTOSTDOUT`;
         last;
