@@ -1278,9 +1278,9 @@ sub merge {
 sub buildList {
     my ($fspre, $fspost) = ('', '');
     if ($suffix ne '') {
-       $fspost = '! -type l';
+        $fspost = "! -type l ! -path '*/.git/*' ! -path '*/.hg/*' ! -path '*/.svn/*' ! -path '*/CVS/*'";
     } else {
-       $fspre = '-L';
+        $fspre = '-L';
     }
     open(FILES, "find $fspre $realpath $fspost -type f -print |");
     print(STDERR "Starting pass 0: Checking for files to index.\n",
