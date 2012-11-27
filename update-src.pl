@@ -231,6 +231,15 @@ for ($TREE) {
         print LOG `../depot_tools/gclient sync`;
         last;
     };
+    /^gaia$/ && do {
+        if (! -d "$src_dir/.git") {
+            print LOG "need to clone - https://github.com/mozilla-b2g/gaia"
+        } else {
+            print LOG "git pull && git gc"
+        }
+    }
+        
+            
     /^js$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/js mozilla/js2 mozilla/nsprpub $STDERRTOSTDOUT`;
         last;
