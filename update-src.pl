@@ -44,7 +44,6 @@ my $SVNCOMMAND = "$SVN $SVNQUIETFLAGS";
 my $HGCOMMAND = 'hg ';
 my $HGCLONE = 'clone ';
 my $HGUP = 'up ';
-my $HGUPDATE = 'pull -u';
 my $HGCHANGESET = 'parents --template="{node|short}\n"';
 
 sub hg_get_list
@@ -94,7 +93,7 @@ sub hg_update {
     $branch = "-r $branch" if $branch;
     $origin = 'default' unless defined $origin;
     # $origin isn't used yet.
-    print LOG `cd $dir; $TIME $HGCOMMAND $HGUPDATE $branch $STDERRTOSTDOUT || pwd; $HGCOMMAND $HGCHANGESET`;
+    print LOG `cd $dir; $TIME $HGCOMMAND pull $branch $STDERRTOSTDOUT || pwd; $HGCOMMAND update --clean $STDERRTOSTDOUT; $HGCOMMAND $HGCHANGESET`;
 }
 
 
