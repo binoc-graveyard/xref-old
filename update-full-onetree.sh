@@ -16,7 +16,7 @@ TREE_PATH=$(grep "^sourceroot: $TREE " /data/www/mxr.mozilla.org/lxr.conf | head
 
 OUT1=`perl update-src.pl $CRON "$TREE" 2>&1`
 
-if [ -f "${TREE_PATH}/last-processed" ] && [ -z "$(find ${TREE_PATH} -type f -newer ${TREE_PATH}/last-processed ! -path "*/.hg/*" ! -path "*/CVS/*" ! -path "${TREE_PATH}/.mozconfig.out" -print -quit)" ]; then
+if [ -f "${TREE_PATH}/last-processed" ] && [ -z "$(find ${TREE_PATH} -type f -newer ${TREE_PATH}/last-processed ! -path "*/.hg/*" ! -path "*/CVS/*" ! -path "*/.git/*" ! -path "${TREE_PATH}/.mozconfig.out" -print -quit)" ]; then
 	echo "$TREE: No files changed, skipping xref and indexing"
 	OUT2=''
 	OUT3=''
