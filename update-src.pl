@@ -233,10 +233,11 @@ for ($TREE) {
     };
     /^gaia$/ && do {
         if (! -d "$src_dir/.git") {
-            print LOG `git clone https://github.com/mozilla-b2g/gaia $src_dir`;
+            print LOG `git clone https://github.com/mozilla-b2g/gaia $src_dir $STDERRTOSTDOUT`;
         } else {
             chdir $src_dir;
-            print LOG `git pull && git gc`;
+            print LOG `git pull $STDERRTOSTDOUT`;
+            print LOG `git gc $STDERRTOSTDOUT`;
         }
         last;
     };
@@ -451,7 +452,7 @@ for ($TREE) {
     };
     /^(?:.*)-bzr$/ && do {
         unless (`which $BZR`) {
-          print LOG `which $BZR 2>&1`;
+          print LOG `which $BZR $STDERRTOSTDOUT`;
           close LOG;
           die "can't find $BZR";
         }
