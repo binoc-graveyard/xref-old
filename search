@@ -609,7 +609,7 @@ $filter =~ s/%(\w\w)/chr(hex $1)/ge;
 
 sub cleanHitlimit {
   my $hitLimit = shift;
-  $hitLimit =~ s/^.*?(\d*).*$/$1/;
+  $hitLimit =~ s/\D//gs;
   return $hitLimit;
 }
 
