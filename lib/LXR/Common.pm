@@ -332,7 +332,7 @@ my @pyterm = (
    '\W',
   'verb',
   '\\b(?:True|False|None)\\b',
-   '\\b',
+   '\W',
 );
 
 my @xmlterm = (
