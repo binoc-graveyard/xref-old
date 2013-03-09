@@ -320,7 +320,7 @@ for ($TREE) {
         pull_gitorious($1);
         last;
     };
-    /^nspr$/ && do {
+    /^nspr-cvs$/ && do {
 	# Seems wrong, per bug 730010
         # print LOG `$TIME $CVSCOMMAND $CVSCO -P NSPR $STDERRTOSTDOUT`;
 	print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/nsprpub $STDERRTOSTDOUT`;
@@ -410,6 +410,23 @@ for ($TREE) {
         } else {
           my $dir = $1 ? "releases/$1" : basename($src_dir);
           print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/$dir $src_dir`;
+        }
+        last;
+    };
+    /^(nss|jss|nspr)$/ && do {
+        if (-d "$src_dir/.hg") {
+          hg_update($src_dir);
+        } else {
+          my $dir = $1 ? "projects/$1" : basename($src_dir);
+          print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/$dir $src_dir`;
+        }
+        last;
+    };
+    /^(python-nss)$/ && do {
+        if (-d "$src_dir/.hg") {
+          hg_update($src_dir);
+        } else {
+          print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/projects/nss-python $src_dir`;
         }
         last;
     };
