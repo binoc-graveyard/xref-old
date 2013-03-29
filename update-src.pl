@@ -426,7 +426,7 @@ for ($TREE) {
         if (-d "$src_dir/.hg") {
           hg_update($src_dir);
         } else {
-          print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/projects/nss-python $src_dir`;
+          print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/projects/python-nss $src_dir`;
         }
         last;
     };
