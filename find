@@ -185,12 +185,12 @@ if ($searchtext2 ne '') {
         $verb = 'ident';
         $searchtext2 =~ s/\+//g;
         $searchtext2 =~ s/\s+//g;
-        $extra = 'i='.$searchtext2;
-        $extra .= '&filter='.$searchtext if $searchtext;
+        $extra = 'i=' . url_quote($searchtext2);
+        $extra .= '&filter=' . url_quote($searchtext) if $searchtext;
     } else {
         $verb = 'search';
-        $extra = 'string='.$searchtext2;
-        $extra .= '&find='.$searchtext if $searchtext;
+        $extra = 'string=' . url_quote($searchtext2);
+        $extra .= '&find=' . url_quote($searchtext) if $searchtext;
         $extra .= '&regexp=1' if $HTTP->{'param'}->{'kind'} eq 'regexp';
     }
 }
@@ -208,9 +208,9 @@ if ($verb ne 'find' || ($tree && ($tree ne $Conf->{'treename'}))) {
         if ($extra) {
             push @tail, $extra;
         } else {
-            push @tail, "string=$searchtext" if $searchtext ne '';
+            push @tail, "string=" . url_quote($searchtext) if $searchtext ne '';
         }
-        push @tail, "hint=$hint" if $hint ne '';
+        push @tail, "hint=" . url_quote($hint) if $hint ne '';
         my $tail = $#tail >= 0 ? '?' . join "&", @tail : '';
         $refresh .= "Refresh: 0; url=../$foundtree/$verb$tail
 ";

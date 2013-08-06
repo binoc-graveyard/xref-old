@@ -640,13 +640,13 @@ if ($tree && ($tree ne $Conf->{'treename'})) {
     my @treelist = @{$Conf->{'trees'}};
     foreach my $othertree (@treelist) {
         next unless $othertree eq $tree;
-push @tail, "string=$searchtext" if $searchtext ne '';
-push @tail, "regexp=$regexp" if $regexp ne '';
-push @tail, "case=$search_sensitive" if $search_sensitive ne '';
-push @tail, "find=$find" if $find ne '';
-push @tail, "findi=$findi" if $findi ne '';
-push @tail, "filter=$filter" if $filter ne '';
-push @tail, "hitlimit=$hitlimit" if $hitlimit ne '';
+push @tail, "string=" . url_quote($searchtext) if $searchtext ne '';
+push @tail, "regexp=" . url_quote($regexp) if $regexp ne '';
+push @tail, "case=" . url_quote($search_sensitive) if $search_sensitive ne '';
+push @tail, "find=" . url_quote($find) if $find ne '';
+push @tail, "findi=" . url_quote($findi) if $findi ne '';
+push @tail, "filter=" . url_quote($filter) if $filter ne '';
+push @tail, "hitlimit=" . url_quote($hitlimit) if $hitlimit ne '';
 my $tail = $#tail >= 0 ? '?' . join "&", @tail : '';
 $refresh .= "Refresh: 0; url=../$tree/search$tail
 ";

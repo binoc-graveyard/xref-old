@@ -356,8 +356,8 @@ if ($tree && ($tree ne $Conf->{'treename'})) {
     foreach my $othertree (@treelist) {
         next unless $othertree eq $tree;
 my @tail = ();
-push @tail, "i=$identifier" if $identifier ne '';
-push @tail, "filter=$filter" if $filter ne '';
+push @tail, "i=" . url_quote($identifier) if $identifier ne '';
+push @tail, "filter=" . url_quote($filter) if $filter ne '';
 push @tail, "strict=1" if $strict;
 my $tail = $#tail >= 0 ? '?' . join "&", @tail : '';
 $head .= "Refresh: 0; url=../$tree/ident$tail

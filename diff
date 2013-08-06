@@ -339,11 +339,11 @@ if ($file2 ne '') {
 
 if ($file2 ne $HTTP->{'param'}->{'file2'} || $tree) {
   my @tail = ();
-  push @tail, "file=".$Path->{'virt'}.$Path->{'file'} if $Path->{'file'} ne '';
-  push @tail, "file2=".$file2 if $file2 ne '';
-  push @tail, "diffvar=$diffvar" if $diffvar ne '';
-  push @tail, "diffval=$diffval" if $diffval ne '';
-  push @tail, "diffw=$diffw" if $diffw;
+  push @tail, "file=" . url_quote($Path->{'virt'}.$Path->{'file'}) if $Path->{'file'} ne '';
+  push @tail, "file2=" . url_quote($file2) if $file2 ne '';
+  push @tail, "diffvar=" . url_quote($diffvar) if $diffvar ne '';
+  push @tail, "diffval=" . url_quote($diffval) if $diffval ne '';
+  push @tail, "diffw=" . url_quote($diffw) if $diffw;
   my $tail = $#tail >= 0 ? '?' . join "&", @tail : '';
   my $newtree = $Conf->{'treename'};
   if ($tree ne $newtree) {
