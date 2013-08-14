@@ -220,7 +220,7 @@ for ($TREE) {
             # sed one-liner than natively. it will also complain if
             # you modify in-place and run
             chdir "$src_dir/../depot_tools";
-            print LOG `sed -e '1!N; s/^.*Running depot tools as root is sad\.\n.*exit/  echo Running depot tools as root/' < update_depot_tools > update_depot_tools.root`;
+            print LOG `sed -e '1!N; s/^.*Running depot tools as root is sad\\.\\n.*exit/  echo Running depot tools as root/' < update_depot_tools > update_depot_tools.root`;
             chmod 0755, "update_depot_tools.root";
             print LOG `./update_depot_tools.root`;
         } else {
