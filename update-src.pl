@@ -215,10 +215,18 @@ for ($TREE) {
         # http://dev.chromium.org/developers/how-tos/get-the-code
         # must have the depot-tools installed already
         # check for depot-tools, install if necessary
-        unless (-d "$src_dir/../depot_tools") {
+        if (-d "$src_dir/../depot_tools") {
+            # update_depot_tools won't run as root; easier to run a 
+            # sed one-liner than natively. it will also complain if
+            # you modify in-place and run
+            chdir "$src_dir/../depot_tools";
+            print LOG `sed -e '1!N; s/^.*Running depot tools as root is sad\.\n.*exit/  echo Running depot tools as root/' < update_depot_tools > update_depot_tools.root`;
+            chmod 0755, "update_depot_tools.root";
+            print LOG `./update_depot_tools.root`;
+        } else {
             chdir "$src_dir/..";
             print LOG `git clone https://git.chromium.org/chromium/tools/depot_tools.git`;
-        }
+	}
         chdir $src_dir;
         unless (-f "$src_dir/.gclient") {
             print "\nBREAK: check out manually by running the following in $src_dir:\n";
