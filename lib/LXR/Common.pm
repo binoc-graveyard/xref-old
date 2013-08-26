@@ -581,13 +581,8 @@ sub atomref {
 
 sub http_wash {
   my $t = shift;
-  # $t =~ s/\+/%2B/g;
 
-  $t =~ s/\%2b/\%252b/gi;
-
-  #endico: don't use plus signs to represent spaces as is the normal
-  #case. we need to use them in file names for gtk+
-
+  $t =~ s/\+/%2B/g;
   $t =~ s/\%([\da-f][\da-f])/pack("C", hex($1))/gie;
 
   # Paranoia check. Regexp-searches in Glimpse won't work.
@@ -1459,7 +1454,8 @@ http://src.chromium.org/svn
 
   my $xref = '';
   foreach (1..$#pathelem) {
-    my $pathseg = url_quote($pathelem[$_]);
+    my $pathseg = $pathelem[$_];
+    htmlquote($pathseg);
     if (defined($addrelem[$_])) {
 
       # jwz: put a space after each / in the banner so that it's possible
