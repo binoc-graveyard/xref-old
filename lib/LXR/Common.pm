@@ -1075,7 +1075,7 @@ sub markupfile {
 
   if ($name =~ /\.(?:java|idl)$/i) {
     @terms = @javaterm;
-  } elsif ($name =~ /\.(?:hh?|s|cpp?|c[cs]?|mm?|pch\+?\+?|fin|tbl)$/i) { # Duplicated in genxref.
+  } elsif ($name =~ /\.(?:hh?|s|cpp?|c[cs]?|mm?|pch\+?\+?|fin|tbl|ipdlh?)$/i) { # Duplicated in genxref.
     @terms = @cppterm;
   } elsif ($name =~ /\.(?:jsm?)(?:\.in|)$/) {
     @terms = @jsterm;
