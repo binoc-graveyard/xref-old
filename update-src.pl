@@ -432,6 +432,14 @@ for ($TREE) {
         }
         last;
     };
+    /^mozmill-tests$/ && do {
+        if (-d "$src_dir/.hg") {
+          hg_update($src_dir);
+        } else {
+          print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/qa/mozmill-tests $src_dir`;
+        }
+        last;
+    };
     /^(nss|jss|nspr)$/ && do {
         if (-d "$src_dir/.hg") {
           hg_update($src_dir);
