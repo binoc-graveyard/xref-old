@@ -248,6 +248,17 @@ for ($TREE) {
         }
         last;
     };
+    /^(rust|servo)$/ && do {
+        my $repo = $1;
+        if (! -d "$src_dir/.git") {
+            print LOG `git clone https://github.com/mozilla/$repo $src_dir $STDERRTOSTDOUT`;
+        } else {
+            chdir $src_dir;
+            print LOG `git pull $STDERRTOSTDOUT`;
+            print LOG `git gc $STDERRTOSTDOUT`;
+        }
+        last;
+    };
     /^js$/ && do {
         print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/js mozilla/js2 mozilla/nsprpub $STDERRTOSTDOUT`;
         last;
