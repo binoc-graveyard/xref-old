@@ -432,6 +432,14 @@ for ($TREE) {
         }
         last;
     };
+    /^gaia-l10n$/ && do {
+        if (-d "$src_dir/.hg") {
+          hg_update($src_dir);
+        } else {
+          print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/gaia-l10n $src_dir`;
+        }
+        last;
+    };
     /^mozmill-tests$/ && do {
         if (-d "$src_dir/.hg") {
           hg_update($src_dir);
