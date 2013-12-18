@@ -345,6 +345,23 @@ for ($TREE) {
 	print LOG `$TIME $CVSCOMMAND $CVSCO -P mozilla/nsprpub $STDERRTOSTDOUT`;
         last;
     };
+    /^l10n-gaia(-v[\d_]+)?$/ && do {
+        my $ver = defined $1 ? "/$1" : '';
+        my $rel = defined $1 ? 'releases/' : '';
+        $ver =~ s/-//;
+        my $url = "http://hg.mozilla.org/${rel}gaia-l10n${ver}";
+        my @ldirs = <$src_dir/*>;
+        my @rdirs = hg_get_list($url);
+        my @dirs = sort uniq(@ldirs, @rdirs);
+        foreach my $dir (@dirs) {
+            if ( -d $dir ) {
+                hg_update($dir);
+            } else {
+                print LOG `$TIME $HGCOMMAND $HGCLONE $url/$dir $src_dir/$dir $STDERRTOSTDOUT`;
+            }
+        }
+        last;
+    }
     /^l10n-mozilla(1\.9.*|2\.0.*)$/ && do {
         my $ver = $1;
         my @dirs;
@@ -429,14 +446,6 @@ for ($TREE) {
         } else {
           my $dir = $1 ? "releases/$1" : basename($src_dir);
           print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/$dir $src_dir`;
-        }
-        last;
-    };
-    /^gaia-l10n$/ && do {
-        if (-d "$src_dir/.hg") {
-          hg_update($src_dir);
-        } else {
-          print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/gaia-l10n $src_dir`;
         }
         last;
     };
