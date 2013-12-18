@@ -5,6 +5,7 @@
 
 use Cwd;
 use File::Basename;
+use List::MoreUtils qw(uniq);
 use lib 'lib';
 use LXR::Common;
 use LXR::Config;
@@ -361,7 +362,7 @@ for ($TREE) {
             }
         }
         last;
-    }
+    };
     /^l10n-mozilla(1\.9.*|2\.0.*)$/ && do {
         my $ver = $1;
         my @dirs;
