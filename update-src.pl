@@ -441,7 +441,7 @@ for ($TREE) {
         }
         last;
     };
-    /^(mozilla-esr10|mozilla-esr17|mozilla-esr24|mozilla-b2g18)$/ && do {
+    /^(mozilla-esr10|mozilla-esr17|mozilla-esr24|mozilla-b2g18|mozilla-b2g26_v1_2)$/ && do {
         if (-d "$src_dir/.hg") {
           hg_update($src_dir);
         } else {
