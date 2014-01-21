@@ -1668,7 +1668,7 @@ sub expandtemplate {
 # simply return an appropriate value.
 sub bannerexpand {
   if ($who eq 'source' || $who eq 'sourcedir' || $who eq 'diff') {
-    return htmlquote($Path->{'xref'});
+    return $Path->{'xref'};
   };
   return '';
 }
