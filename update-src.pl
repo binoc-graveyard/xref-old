@@ -441,7 +441,16 @@ for ($TREE) {
         }
         last;
     };
-    /^(mozilla-esr10|mozilla-esr17|mozilla-esr24|mozilla-b2g18|mozilla-b2g26_v1_2)$/ && do {
+    /^(mozilla-esr10|mozilla-esr17|mozilla-esr24)$/ && do {
+        if (-d "$src_dir/.hg") {
+          hg_update($src_dir);
+        } else {
+          my $dir = $1 ? "releases/$1" : basename($src_dir);
+          print LOG `$TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/$dir $src_dir`;
+        }
+        last;
+    };
+    /^(mozilla-b2g18|mozilla-b2g26_v1_2|mozilla-b2g28_v1_3)$/ && do {
         if (-d "$src_dir/.hg") {
           hg_update($src_dir);
         } else {
