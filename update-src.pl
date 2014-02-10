@@ -42,7 +42,7 @@ my $SVNCO = 'checkout ';
 my $SVNUP = 'update ';
 my $SVNCOMMAND = "$SVN $SVNQUIETFLAGS";
 
-my $HGCOMMAND = 'hg ';
+my $HGCOMMAND = 'timeout 1h hg ';
 my $HGCLONE = 'clone ';
 my $HGUP = 'up ';
 my $HGCHANGESET = 'parents --template="{node|short}\n"';
