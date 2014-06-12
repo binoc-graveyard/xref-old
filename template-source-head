@@ -36,6 +36,23 @@ $begingitorious
       <a href="$gitorioushost/blobs/history/$gitrev$gitpath/$filename"
 >History</a><br>
 $endgitorious
+$begingithub
+<script>
+function updateGithubBlameHash(node, event) {
+  if (!document.location.hash)
+    return;
+  var anchor = document.location.hash;
+  anchor = anchor.replace("#", "#L");
+  node.href =
+    node.href.replace(/#.*|$/, anchor);
+}
+</script>
+<a href="$githubrepo/commits/$gitrev$gitpath/$filename">Git Log</a><br>
+<a href="$githubrepo/blame/$gitrev$gitpath/$filename"
+onfocus='updateGithubBlameHash(this, event)'
+onmouseover='updateGithubBlameHash(this, event)'
+>Git Blame</a><br>
+$endgithub
 $beginbonsai
       <a href="$bonsaihost/cvslog.cgi?file=$cvspath/$filename&amp;rev=$cvsbranch&amp;mark=$cvsversion"
 >CVS Log</a><br>

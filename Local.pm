@@ -932,6 +932,9 @@ sub localexpandtemplate
                           ('gitpath',           \&gitpath),
                           ('begingitorious',    \&begingitorious),
                           ('endgitorious',      \&endgitorious),
+                          ('githubhost',        \&githubhost),
+                          ('begingithub',       \&begingithub),
+                          ('endgithub',         \&endgithub),
                           ('oghghost',          \&oghghost),
                           ('beginoghg',         \&beginoghg),
                           ('endoghg',           \&endoghg),
@@ -1200,6 +1203,25 @@ sub begingitorious
 }
 
 sub endgitorious
+{
+    return &endskip;
+}
+
+sub githubrepo
+{
+    return 'https://github.com/mozilla-b2g/gaia' if $Path->{'real'} =~ /gaia/;
+    return 'https://github.com/mozilla/rust' if $Path->{'real'} =~ /rust/;
+    return 'https://github.com/mozilla/servo' if $Path->{'real'} =~ /servo/;
+    return '';
+}
+
+sub begingithub
+{
+    return &beginskip unless githubrepo();
+    return '';
+}
+
+sub endgithub
 {
     return &endskip;
 }
