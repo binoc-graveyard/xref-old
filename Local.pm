@@ -932,7 +932,7 @@ sub localexpandtemplate
                           ('gitpath',           \&gitpath),
                           ('begingitorious',    \&begingitorious),
                           ('endgitorious',      \&endgitorious),
-                          ('githubhost',        \&githubhost),
+                          ('githubrepo',        \&githubrepo),
                           ('begingithub',       \&begingithub),
                           ('endgithub',         \&endgithub),
                           ('oghghost',          \&oghghost),
