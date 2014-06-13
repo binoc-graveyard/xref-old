@@ -47,8 +47,8 @@ function updateGithubBlameHash(node, event) {
     node.href.replace(/#.*|$/, anchor);
 }
 </script>
-<a href="$githubrepo/commits/$gitrev$gitpath/$filename">Git Log</a><br>
-<a href="$githubrepo/blame/$gitrev$gitpath/$filename"
+<a href="$githubrepo/commits/$gitrev$urlpath">Git Log</a><br>
+<a href="$githubrepo/blame/$gitrev$urlpath"
 onfocus='updateGithubBlameHash(this, event)'
 onmouseover='updateGithubBlameHash(this, event)'
 >Git Blame</a><br>

@@ -10,6 +10,6 @@ $beginwebhg
 <a href="$webhghost/annotate/$hgversion/$hgpath/$filename">Hg annotations</a>)</span>
 $endwebhg
 $begingithub
-<span class=bonsailinks>(View <a href="$githubrepo/commits/$gitrev$gitpath/$filename">Git log</a> or
-<a href="$githubrepo/blame/$gitrev$gitpath/$filename">Git blame</a>)</span>
+<span class=bonsailinks>(View <a href="$githubrepo/commits/$gitrev$urlpath">Git log</a> or
+<a href="$githubrepo/blame/$gitrev$urlpath">Git blame</a>)</span>
 $endgithub
