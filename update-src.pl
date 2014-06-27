@@ -450,7 +450,7 @@ for ($TREE) {
         }
         last;
     };
-    /^(mozilla-b2g18|mozilla-b2g26_v1_2|mozilla-b2g28_v1_3|mozilla-b2g28_v1_3t|mozilla-b2g30_v1_4)$/ && do {
+    /^(mozilla-b2g28_v1_3|mozilla-b2g28_v1_3t|mozilla-b2g30_v1_4)$/ && do {
         if (-d "$src_dir/.hg") {
           hg_update($src_dir);
         } else {
