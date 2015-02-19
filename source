@@ -44,11 +44,14 @@ sub diricon {
             $img = "/icons/forward.gif";
         } else {
             $img = "/icons/folder.gif";
-#            $img = "internal-gopher-menu";
         }
         $link = $Path->{'virt'}.$filename;
     }
-    return(&fileref("<img class='dir icon' align=absbottom border=0 src=\"$img\">", $link));
+    $link =~ s/&/&amp;/g;
+    $link =~ s/"/&quot;/g;
+    $link =~ s/</&lt;/g;
+    $link =~ s/>/&gt;/g;
+    return "<a href=\"$link\"><img class=\"dir icon\" align=\"absbottom\" border=\"0\" src=\"$img\"></a>";
 }
 
 sub dirnamehtml {
@@ -78,11 +81,9 @@ sub fileicon {
         $img = "/icons/generic.sec.gif";
     } elsif ($filename =~ /^.*\.[ch]$/) {
         $img = "/icons/c.gif";
-#        $img = "internal-gopher-text";
     } elsif ($filename =~ /^.*\.(idl|cpp?|c[cs]|hh|java|s)$/) {
         # TODO: Find a nice icon for c++ files (KDE?)
         $img = "/icons/c.gif";
-#        $img = "internal-gopher-text";
     } elsif (isImage($filename, 1)) {
         $img = "/icons/image2.gif";
         my $s = (-s $realf);
@@ -96,11 +97,13 @@ sub fileicon {
         }
     } else {
         $img = "/icons/text.gif";
-#        $img = "internal-gopher-unknown";
     }
-
-    return(&fileref("<$tag class='file icon' ALIGN=ABSBOTTOM BORDER=0 SRC=\"$img\">",
-                    $Path->{'virt'}.$filename));
+    my $link = $Path->{'virt'} . $filename;
+    $link =~ s/&/&amp;/g;
+    $link =~ s/"/&quot;/g;
+    $link =~ s/</&lt;/g;
+    $link =~ s/>/&gt;/g;
+    return "<a href=\"$link\"><$tag class=\"file icon\" align=\"absbottom\" border=\"0\" src=\"$img\"></a>";
 }
 
 

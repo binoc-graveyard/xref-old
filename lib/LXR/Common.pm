@@ -449,6 +449,10 @@ $path =~ s/\n//g;
   $line = defined $line && $line > 0
         ? '#' . $line
         : '';
+  $desc =~ s/&/&amp;/g;
+  $desc =~ s/"/&quot;/g;
+  $desc =~ s/</&lt;/g;
+  $desc =~ s/>/&gt;/g;
   unless (scalar @args || scalar @allvariables_) {
     return '<a href="'.$path.$line.'">'.$desc.'</a>';
   }
