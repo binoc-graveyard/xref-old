@@ -428,7 +428,7 @@ for ($TREE) {
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
         last;
     }; 
-    /^comm-(?:central|1\.9\.\d+|2\.0|release|aurora|beta|esr10|esr17|esr24|esr31)$/ && do {
+    /^comm-(?:central|1\.9\.\d+|2\.0|release|aurora|beta|esr10|esr17|esr24|esr31|esr38)$/ && do {
         print LOG `cd $src_dir; $TIME python ./client.py checkout $STDERRTOSTDOUT`;
         last;
     };
@@ -441,7 +441,7 @@ for ($TREE) {
         }
         last;
     };
-    /^(mozilla-esr10|mozilla-esr17|mozilla-esr24|mozilla-esr31)$/ && do {
+    /^(mozilla-esr10|mozilla-esr17|mozilla-esr24|mozilla-esr31|mozilla-esr38)$/ && do {
         if (-d "$src_dir/.hg") {
           hg_update($src_dir);
         } else {
