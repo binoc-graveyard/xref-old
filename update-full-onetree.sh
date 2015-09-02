@@ -17,6 +17,8 @@ if [ ${TREE} = "addons" ]; then
     DURATION="long"
 elif [ ${TREE} = "projects-central" ]; then
     DURATION="medium"
+elif [ ${TREE} = "gaia" ]; then
+    DURATION="medium"
 else
     DURATION="short"
 fi    
