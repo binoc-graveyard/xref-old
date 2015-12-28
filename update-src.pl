@@ -550,10 +550,6 @@ for ($TREE) {
 	system("rm -rf /data/mxr-data/addons/old &"); # do this in the background... doesn't need to block other stuff
         last;
     };
-    /^addons-stage$/ && do {
-        print LOG `cd /data/amo-code/bin; $TIME python2.6 -S latest_addon_extractor.py /data/addons /data/mxr-data/addons-stage/addons`;
-        last;
-    };
     /^(?:.*)$/ && do {
         my @dirs = <$src_dir/*/CVS>;
         if (scalar @dirs) {
