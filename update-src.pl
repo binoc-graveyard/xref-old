@@ -542,13 +542,7 @@ for ($TREE) {
         last;
     };
     /^addons$/ && do {
-        print LOG `rm -rf /data/mxr-data/addons/incoming; mkdir /data/mxr-data/addons/incoming`; # should be unnecessary
-        print LOG `cd /data/amo-code/bin; $TIME python2.6 -S latest_addon_extractor.py /data/addons /data/mxr-data/addons/incoming`;
-	print LOG `mv /data/mxr-data/addons/addons /data/mxr-data/addons/old`;
-	print LOG `mv /data/mxr-data/addons/incoming /data/mxr-data/addons/addons`;
-	print LOG `mkdir /data/mxr-data/addons/incoming`;
-	system("rm -rf /data/mxr-data/addons/old &"); # do this in the background... doesn't need to block other stuff
-        last;
+        su - addons_update -c /home/addons_update/bin/rsync-addons.sh
     };
     /^(?:.*)$/ && do {
         my @dirs = <$src_dir/*/CVS>;
