@@ -542,7 +542,7 @@ for ($TREE) {
         last;
     };
     /^addons$/ && do {
-        su - addons_update -c /home/addons_update/bin/rsync-addons.sh
+        print LOG `$TIME su - addons_update -c /home/addons_update/bin/rsync-addons.sh $STDERRTOSTDOUT`;
     };
     /^(?:.*)$/ && do {
         my @dirs = <$src_dir/*/CVS>;
