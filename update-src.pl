@@ -428,7 +428,7 @@ for ($TREE) {
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
         last;
     }; 
-    /^comm-(?:central|1\.9\.\d+|2\.0|release|aurora|beta|esr10|esr17|esr24|esr31|esr38)$/ && do {
+    /^comm-(?:central|1\.9\.\d+|2\.0|release|aurora|beta|esr10|esr17|esr24|esr31|esr38|esr45)$/ && do {
         print LOG `cd $src_dir; $TIME python ./client.py checkout $STDERRTOSTDOUT`;
         last;
     };
