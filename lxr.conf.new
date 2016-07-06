@@ -46,10 +46,6 @@ identref: template-ident-fileref
 # entry per tree where each entry is a tree/directory pair.
 
 #XXX: PLEASE KEEP THIS LIST IN ALPHABETICAL ORDER!!! :XXX#
-
-sourceroot: tycho-trunk /srv/www/xref.palemoon.org/mxr-data/tycho-trunk/tycho
-sourceprefix: tycho-trunk tycho
-
 sourceroot: palemoon-trunk /srv/www/xref.palemoon.org/mxr-data/palemoon-trunk/palemoon
 sourceprefix: palemoon-trunk palemoon
 
@@ -67,9 +63,6 @@ sourceprefix: fossamail-trunk fossamail
 
 sourceroot: mozilla-esr38 /srv/www/xref.palemoon.org/mxr-data/mozilla-esr38/mozilla
 sourceprefix: mozilla-esr38 mozilla
-
-sourceroot: comm-esr38 /srv/www/xref.palemoon.org/mxr-data/comm-esr38/comm
-sourceprefix: comm-esr38 comm
 
 sourceroot: mozilla-esr24 /srv/www/xref.palemoon.org/mxr-data/mozilla-esr24/mozilla
 sourceprefix: mozilla-esr24 mozilla

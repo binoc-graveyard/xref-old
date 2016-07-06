@@ -74,14 +74,14 @@ sub hg_clone_cheap
           "[ -d $destextra ] && rmdir $destextra $STDERRTOSTDOUT; cd $orig;".
           "$TIME ($HGCOMMAND $HGCLONE .#$tag $destextra || $HGCOMMAND $HGCLONE . $destextra) $STDERRTOSTDOUT;".
           "cd $destextra;".
-          "perl -pi -e 's!default =.*!default = https://hg.mozilla.org/releases/$prefixextra!' .hg/hgrc;".
+          "perl -pi -e 's!default =.*!default = http://hg.mozilla.org/releases/$prefixextra!' .hg/hgrc;".
           "$TIME $HGCOMMAND $HGUP $STDERRTOSTDOUT;";
         print LOG $command;
         print LOG `$command`;
     }
     unless (-d "$destextra/.hg") {
         my $src = basename($dest);
-        print LOG `cd $src; $TIME $HGCOMMAND $HGCLONE https://hg.mozilla.org/releases/$prefixextra $STDERRTOSTDOUT`;
+        print LOG `cd $src; $TIME $HGCOMMAND $HGCLONE http://hg.mozilla.org/releases/$prefixextra $STDERRTOSTDOUT`;
     }
 }
 
@@ -315,7 +315,7 @@ for ($TREE) {
         my @dirs = <$src_dir/*>;
         my $fallback = defined $1 ? $1 : "releases/$2/$3";
         $fallback .= '-central' if $fallback eq 'l10n';
-        $fallback = "https://hg.mozilla.org/$fallback";
+        $fallback = "http://hg.mozilla.org/$fallback";
         my $general_root;
         foreach my $dir (@dirs) {
             if ( -d $dir ) {
@@ -350,7 +350,7 @@ for ($TREE) {
         my $ver = defined $1 ? "/$1" : '';
         my $rel = defined $1 ? 'releases/' : '';
         $ver =~ s/-//;
-        my $url = "https://hg.mozilla.org/${rel}gaia-l10n${ver}";
+        my $url = "http://hg.mozilla.org/${rel}gaia-l10n${ver}";
         my @ldirs = <$src_dir/*>;
         my @rdirs = hg_get_list($url);
         my @dirs = sort uniq(@ldirs, @rdirs);
@@ -369,7 +369,7 @@ for ($TREE) {
         {
             my $base = 'l10n-central';
             my $orig = $Conf->{'treehash'}{$base};
-            @dirs = hg_get_list("https://hg.mozilla.org/releases/l10n-mozilla-$ver");
+            @dirs = hg_get_list("http://hg.mozilla.org/releases/l10n-mozilla-$ver");
             foreach my $dir (@dirs) {
                 hg_clone_cheap($ver, "l10n-mozilla-$ver", $base, $src_dir, "/" . basename $dir);
             }
@@ -428,7 +428,7 @@ for ($TREE) {
         print LOG `cat cvsco.log $STDERRTOSTDOUT`;
         last;
     }; 
-    /^comm-(?:central|1\.9\.\d+|2\.0|release|aurora|beta|esr10|esr17|esr24|esr31|esr38|esr45)$/ && do {
+    /^comm-(?:central|1\.9\.\d+|2\.0|release|aurora|beta|esr10|esr17|esr24|esr31|esr38)$/ && do {
         print LOG `cd $src_dir; $TIME python ./client.py checkout $STDERRTOSTDOUT`;
         last;
     };
@@ -606,7 +606,7 @@ sub pull_gitorious {
     # we could try doing something fancier like master/origin
     hg_update($dir, '');
   }
-  $host = "https://$host" unless $host =~ m!://!;
+  $host = "http://$host" unless $host =~ m!://!;
   my @git_cmds = get_gitorious_roots($host);
   foreach my $git_cmd (@git_cmds) {
     $git_cmd =~ /git clone (\S+)\s+(\S+)/;
