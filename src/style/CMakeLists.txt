@@ -21,7 +21,7 @@ set(CSS_SRCS
 )
 
 set(SOURCE_FILES
-    ${CGI_SRCS}
+    ${CSS_SRCS}
 )
 
 COPY_TO_DIST("${SOURCE_FILES}")
