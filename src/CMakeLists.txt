@@ -64,6 +64,7 @@ set(SOURCE_FILES
 
 COPY_TO_DIST("${SOURCE_FILES}")
 
+add_subdirectory(icons)
 add_subdirectory(lib)
 add_subdirectory(root)
 add_subdirectory(style)
