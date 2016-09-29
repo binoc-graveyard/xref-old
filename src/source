@@ -345,11 +345,11 @@ sub printfile {
             }
             if ($verb) {
                 my $command = "$verb $cat ".$Path->{'realf'}.' |';
-                $openresult = open(SRCFILE, $command);
+                $openresult = open(SRCFILE, '<:raw', $command);
             }
             chdir $dir;
         } else {
-            $openresult = open(SRCFILE, $Path->{'realf'});
+            $openresult = open(SRCFILE, '<:raw', $Path->{'realf'});
         }
         if ($openresult) {
 if (0) {
