@@ -18,11 +18,6 @@ set(PERL_SRCS
     ${mk_srcdir}/genxref
 )
 
-set(BINARY_SRCS
-    ${mk_srcdir}/fileidx
-    ${mk_srcdir}/xref
-)
-
 set(JS_SRCS
     ${mk_srcdir}/coloration.js
     ${mk_srcdir}/jquery-1.3.2.min.js
