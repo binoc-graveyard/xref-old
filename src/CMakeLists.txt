@@ -32,18 +32,6 @@ set(JS_SRCS
 set(HTML_SRCS
     ${mk_srcdir}/index.html
     ${mk_srcdir}/search-help.html
-    ${mk_srcdir}/template-dir
-    ${mk_srcdir}/template-head
-    ${mk_srcdir}/template-ident-fileref
-    ${mk_srcdir}/template-rev
-    ${mk_srcdir}/template-rev-entry
-    ${mk_srcdir}/template-sourcedir-head
-    ${mk_srcdir}/template-sourcedir-tail
-    ${mk_srcdir}/template-source-head
-    ${mk_srcdir}/template-source-tail
-    ${mk_srcdir}/template-tail
-    ${mk_srcdir}/template-tree
-    ${mk_srcdir}/template-tree-entry
 )
 
 Set(MISC_SRCS
@@ -68,3 +56,4 @@ add_subdirectory(icons)
 add_subdirectory(lib)
 add_subdirectory(root)
 add_subdirectory(style)
+add_subdirectory(templates)
