@@ -32,7 +32,6 @@ set(HTML_SRCS
 Set(MISC_SRCS
     ${mk_srcdir}/.htaccess
     ${mk_srcdir}/robots.txt
-    ${mk_srcdir}/lxr.conf
     ${mk_srcdir}/mxr.png
 )
 
