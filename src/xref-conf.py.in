@@ -1,0 +1,153 @@
+%include ./xref-shared.inc
+
+# ===| Function: Generate lxr.conf |===========================================
+
+def funcGenLXRConf(_input): 
+    _lxrSources = ''
+    for _source in _input['active-sources']:
+        _sourcePrefix = ''
+        if _source.endswith('-trunk'):
+            _sourcePrefix = re.sub('\-trunk$', '', _source)
+        elif "-rel" in _source:
+            _sourcePrefix = re.sub('\-rel([0-9]+)', '', _source)
+        else:
+            _sourcePrefix = _source
+        _lxrSources += 'sourceroot: {0} {1}/{0}/{2}'.format(_source, _input['setup']['dbDir'], _sourcePrefix) + "\n"
+        _lxrSources += 'sourceprefix: {0} {1}'.format(_source, _sourcePrefix) + "\n"
+
+    for _source in _input['inactive-sources']:
+        _sourcePrefix = ''
+        if _source.endswith('-trunk'):
+            _sourcePrefix = re.sub('\-trunk$', '', _source)
+        elif "-rel" in _source:
+            _sourcePrefix = re.sub('\-rel([0-9]+)', '', _source)
+        elif "-esr" in _source:
+            _sourcePrefix = re.sub('\-esr([0-9]+)', '', _source)
+        else:
+            _sourcePrefix = _source
+        _lxrSources += 'sourceroot: {0} {1}/{0}/{2}'.format(_source, _input['setup']['dbDir'], _sourcePrefix) + "\n"
+        _lxrSources += 'sourceprefix: {0} {1}'.format(_source, _sourcePrefix) + "\n"
+        
+    _lxrConf = '''
+%include ./lxrconf.inc
+'''
+
+    return _lxrConf.format(_input['setup']['baseURL'], _lxrSources, _input['setup']['dbDir'])
+
+# =============================================================================
+
+# ===| Function: Create SymLinks |=============================================
+
+def funcCreateSymlinks(_input):
+    # Unsymlink all directories
+    _directoryList = os.listdir(os.getcwd())
+    for _item in _directoryList:
+        if os.path.islink(_item):
+            try:
+                os.unlink(_item);
+                funcOutputMessage('statusGen', 'Removing symlink: ' + _item)
+            except:
+                funcOutputMessage('errorGen', 'Could not remove symlink: ' + _item)
+    
+    # Create new symlinks for those sources defined in config
+    for _source in _input['active-sources']:
+        if not os.path.islink(os.getcwd() + '/' + _source):
+            try:
+                os.symlink('.', _source)
+                funcOutputMessage('statusGen', 'Creating symlink: ' + _source)
+            except:
+                funcOutputMessage('errorGen', 'Could not create symlink: ' + _source)
+    for _source in _input['inactive-sources']:
+        if not os.path.islink(os.getcwd() + '/' + _source):
+            try:
+                os.symlink('.', _source)
+                funcOutputMessage('statusGen', 'Creating symlink: ' + _source)
+            except:
+                funcOutputMessage('errorGen', 'Could not create symlink: ' + _source)
+
+# =============================================================================
+
+# ===| Function: Generate Root Index |=========================================
+
+def funcGenRootIndex(_input):
+    _rootIndexSources = ''
+    
+    _rootIndexSources += '<h2>Sources</h2>' + "\n"
+    for _source in _input['active-sources']:
+        _rootIndexSources += '<dt><a href="{0}/">{1}</a></dt>'.format(_source, _input['active-sources'][_source]['xrefName']) + "\n"
+        _rootIndexSources += '<dd class="note">{0}</dd>'.format(_input['active-sources'][_source]['xrefDesc']) + "\n\n"
+
+    _rootIndexSources += '<hr>' + "\n"
+
+    _rootIndexSources += '<h2>Archived and Historical</h2>' + "\n"
+    for _source in _input['inactive-sources']:
+        _rootIndexSources += '<dt><a href="{0}/">{1}</a></dt>'.format(_source, _input['inactive-sources'][_source]['xrefName']) + "\n"
+        _rootIndexSources += '<dd class="note">{0}</dd>'.format(_input['inactive-sources'][_source]['xrefDesc']) + "\n\n"
+
+    _rootIndex = '''
+%include rootindex.inc
+'''.format(_rootIndexSources)
+    return _rootIndex
+
+# =============================================================================
+
+# ===| Main |==================================================================
+
+# Define initial vars
+pathCurrent = os.getcwd()
+fileXREFJson = 'config.json'
+
+# Find config.json
+if os.path.exists(fileXREFJson):
+    pathXREFJson = fileXREFJson
+elif os.path.exists('../' + fileXREFJson):
+    pathXREFJson = '../' + fileXREFJson
+else:
+    print('Could not find: ' + fileXREFJson)
+
+# Read json into a dict
+dictXREFJson = funcReadJson(pathXREFJson)
+
+# Read mxr-data directory list
+try:
+    listMXRData = os.listdir(dictXREFJson['setup']['dbDir'])
+except:
+    listMXRData = []
+    funcOutputMessage('warnGen', 'The directory ' + dictXREFJson['setup']['dbDir'] + ' is either empty or does not exist')
+
+if len(listMXRData) is not 0:
+    for _item in listMXRData:
+        if (_item not in dictXREFJson['active-sources']) and (_item not in dictXREFJson['inactive-sources']):
+            funcOutputMessage('warnGen', 'MXR Data item: ' + _item + ' is not listed in config.json')
+
+# Create SymLinks (if not on Windows)
+funcOutputMessage('statusGen', '(Re)generating Symbolic Links')
+if platform.system() != "Windows":
+    funcCreateSymlinks(dictXREFJson)
+else:
+    funcOutputMessage('statusGen', 'Symbolic Link (re)generation is skipped on Windows hosts.')
+
+# Create lxr.conf File
+funcOutputMessage('statusGen', '(Re)generating LXR Configuration')
+try:
+    fileLXRConf = open('lxr.conf', 'wb')
+    fileLXRConf.write(funcGenLXRConf(dictXREFJson))
+    fileLXRConf.close
+    funcOutputMessage('statusGen', 'Wrote LXR Configuration to ./lxr.conf')
+except:
+    funcOutputMessage('errorGen', 'Unable to write to ./lxr.conf') 
+    sys.exit(1)
+
+# Create Root Index File
+funcOutputMessage('statusGen', '(Re)generating MXR Root Index')
+try:
+    fileRootIndex = open('./root/index.html', 'wb')
+    fileRootIndex.write(funcGenRootIndex(dictXREFJson))
+    fileRootIndex.close
+    funcOutputMessage('statusGen', 'Wrote MXR Root Index to ./root/index.html')
+except:
+    funcOutputMessage('errorGen', 'Unable to write to ./root/index.html') 
+
+# =============================================================================
+
+
