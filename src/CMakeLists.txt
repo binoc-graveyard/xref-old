@@ -50,6 +50,7 @@ build_func_preprocess(
     ${varBuildDefines}
     -DXREF_TARGET="moonchild"
     --marker %
+    --make-exec
 )
 
 COPY_TO_DIST("${SOURCE_FILES}")
