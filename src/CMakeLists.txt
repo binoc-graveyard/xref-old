@@ -44,6 +44,14 @@ set(SOURCE_FILES
     ${MISC_SRCS}
 )
 
+build_func_preprocess(
+    xref-conf.py.in
+    ${FINAL_TARGET}/xref-conf.py
+    ${varBuildDefines}
+    -DXREF_TARGET="moonchild"
+    --marker %
+)
+
 COPY_TO_DIST("${SOURCE_FILES}")
 
 add_subdirectory(icons)
