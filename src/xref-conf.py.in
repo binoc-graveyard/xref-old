@@ -103,7 +103,7 @@ if os.path.exists(fileXREFJson):
 elif os.path.exists('../' + fileXREFJson):
     pathXREFJson = '../' + fileXREFJson
 else:
-    print('Could not find: ' + fileXREFJson)
+    funcOutputMessage('errorGen', 'Could not find ' + fileXREFJson)
 
 # Read json into a dict
 dictXREFJson = funcReadJson(pathXREFJson)
