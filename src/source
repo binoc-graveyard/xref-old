@@ -51,7 +51,7 @@ sub diricon {
     $link =~ s/"/&quot;/g;
     $link =~ s/</&lt;/g;
     $link =~ s/>/&gt;/g;
-    return "<a href=\"$link\"><img class=\"dir icon\" align=\"absbottom\" border=\"0\" src=\"$img\"></a>";
+    return "<img class=\"dir icon\" align=\"absbottom\" border=\"0\" src=\"$img\">";
 }
 
 sub dirnamehtml {
@@ -103,7 +103,7 @@ sub fileicon {
     $link =~ s/"/&quot;/g;
     $link =~ s/</&lt;/g;
     $link =~ s/>/&gt;/g;
-    return "<a href=\"$link\"><$tag class=\"file icon\" align=\"absbottom\" border=\"0\" src=\"$img\"></a>";
+    return "<$tag class=\"file icon\" align=\"absbottom\" border=\"0\" src=\"$img\">";
 }
 
 
