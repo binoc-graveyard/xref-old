@@ -165,7 +165,7 @@ sub modtime {
 }
 
 sub bgcolor {
-    if (!($line % 3)) {
+    if (!($line % 1)) {
         $color = ($color eq "#EEEEEE")? "#FFFFFF": "#EEEEEE";
     }
     return($color);
