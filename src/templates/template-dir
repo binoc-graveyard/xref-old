@@ -1,10 +1,10 @@
 <table border=0 cellspacing=0 cellpadding=2 width="100%">
-  <tr bgcolor="#005ca0" color="#FFFFFF">
+  <tr bgcolor="#005ca0">
     <th width="1%">&nbsp;</th>
-    <th width="1%" nowrap align=left>Name</th>
-    <th width="1%" nowrap align=right>Size</th>
-    <th width="1%" nowrap align=left>Date (GMT)</th>
-    <th width="96%" nowrap align=left>Description</th>
+    <th width="1%" nowrap align=left><font color="#FFFFFF">Name</font></th>
+    <th width="1%" nowrap align=right><font color="#FFFFFF">Size/font></th>
+    <th width="1%" nowrap align=left><font color="#FFFFFF">Date (GMT)/font></th>
+    <th width="96%" nowrap align=left><font color="#FFFFFF">Description/font></th>
   </tr>
   $files{
   <tr bgcolor="$bgcolor" valign=top>
