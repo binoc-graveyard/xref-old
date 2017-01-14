@@ -1,0 +1,67 @@
+build_macro_mkPaths()
+FIND_FINAL_TARGET()
+
+set(SRC_PNG_FILES
+    ${mk_srcdir}/binary.png
+    ${mk_srcdir}/blame.png
+    ${mk_srcdir}/buglink.png
+    ${mk_srcdir}/build.png
+    ${mk_srcdir}/c.png
+    ${mk_srcdir}/class.png
+    ${mk_srcdir}/conf.png
+    ${mk_srcdir}/cpp.png
+    ${mk_srcdir}/cs.png
+    ${mk_srcdir}/css.png
+    ${mk_srcdir}/diff.png
+    ${mk_srcdir}/enum.png
+    ${mk_srcdir}/exclude_path.png
+    ${mk_srcdir}/external_link.png
+    ${mk_srcdir}/field.png
+    ${mk_srcdir}/folder.png
+    ${mk_srcdir}/goto_folder.png
+    ${mk_srcdir}/h.png
+    ${mk_srcdir}/html.png
+    ${mk_srcdir}/image.png
+    ${mk_srcdir}/iso.png
+    ${mk_srcdir}/java.png
+    ${mk_srcdir}/js.png
+    ${mk_srcdir}/jump.png
+    ${mk_srcdir}/log.png
+    ${mk_srcdir}/macro.png
+    ${mk_srcdir}/members.png
+    ${mk_srcdir}/method.png
+    ${mk_srcdir}/mm.png
+    ${mk_srcdir}/page_white.png
+    ${mk_srcdir}/page_white_code.png
+    ${mk_srcdir}/page_white_code_red.png
+    ${mk_srcdir}/page_white_find.png
+    ${mk_srcdir}/page_white_wrench.png
+    ${mk_srcdir}/path_search.png
+    ${mk_srcdir}/php.png
+    ${mk_srcdir}/py.png
+    ${mk_srcdir}/raw.png
+    ${mk_srcdir}/rb.png
+    ${mk_srcdir}/reference.png
+    ${mk_srcdir}/regexp-search.png
+    ${mk_srcdir}/search.png
+    ${mk_srcdir}/search_warning.png
+    ${mk_srcdir}/sh.png
+    ${mk_srcdir}/struct.png
+    ${mk_srcdir}/svg.png
+    ${mk_srcdir}/tex.png
+    ${mk_srcdir}/txt.png
+    ${mk_srcdir}/type.png
+    ${mk_srcdir}/ui.png
+    ${mk_srcdir}/union.png
+    ${mk_srcdir}/unknown.png
+    ${mk_srcdir}/vs.png
+    ${mk_srcdir}/warning.png
+    ${mk_srcdir}/xml.png
+)
+
+set(SOURCE_FILES
+    ${SRC_PNG_FILES}
+)
+
+COPY_TO_DIST("${SOURCE_FILES}")
+

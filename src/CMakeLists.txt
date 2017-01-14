@@ -56,6 +56,7 @@ build_func_preprocess(
 COPY_TO_DIST("${SOURCE_FILES}")
 
 add_subdirectory(lib)
+add_subdirectory(media/icons/)
 add_subdirectory(root)
 add_subdirectory(style)
 add_subdirectory(templates)
