@@ -37,12 +37,14 @@ ul {
  color: gray;
 }
 img.icon {
- max-width: 128px;
+ max-width: 16px;
  margin: 2px;
 }
+/*
 img.icon:hover {
  float: right;
  max-width: inherit;
  border: 1px solid black;
  margin: 1px;
 }
+*/

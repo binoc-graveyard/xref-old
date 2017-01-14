@@ -51,7 +51,7 @@ sub diricon {
     $link =~ s/"/&quot;/g;
     $link =~ s/</&lt;/g;
     $link =~ s/>/&gt;/g;
-    return "<img class=\"dir icon\" align=\"middle\" border=\"0\" src=\"$img\">";
+    return "<img class=\"dir icon\" border=\"0\" src=\"$img\">";
 }
 
 sub dirnamehtml {
@@ -79,22 +79,24 @@ sub fileicon {
         $img = "/media/icons/exclude_path.png";
     } elsif (!-r $realf) {
         $img = "/media/icons/unknown.png";
-    } elsif ($filename =~ /^.*\.[ch|c[cs]]$/) {
+    } elsif ($filename =~ /^.*\.ch|c[cs]$/) {
         $img = "/media/icons/c.png";
-    } elsif ($filename =~ /^.*\.[css]$/) {
+    } elsif ($filename =~ /^.*\.css$/) {
         $img = "/media/icons/txt.png";
-    } elsif ($filename =~ /^.*\.[bin]$/) {
+    } elsif ($filename =~ /^.*\.bin$/) {
         $img = "/media/icons/binary.png";
-    } elsif ($filename =~ /^.*\.[py]$/) {
+    } elsif ($filename =~ /^.*\.py$/) {
         $img = "/media/icons/py.png";
-    } elsif ($filename =~ /^.*\.[mk|build|mozbuild|m4|manifest]$/) {
+    } elsif ($filename =~ /^.*\.(mk|build|mozbuild|m4|manifest)$/) {
         $img = "/media/icons/build.png";
-    } elsif ($filename =~ /^.*\.[xul]$/) {
+    } elsif ($filename =~ /^.*\.xul$/) {
         $img = "/media/icons/ui.png";
-    } elsif ($filename =~ /^.*\.[xml]$/) {
+    } elsif ($filename =~ /^.*\.xml$/) {
         $img = "/media/icons/xml.png";
-    } elsif ($filename =~ /^.*\.[java]$/) {
-        $img = "/media/icons/ui.png";
+    } elsif ($filename =~ /^.*\.java$/) {
+        $img = "/media/icons/java.png";
+    } elsif ($filename =~ /^.*\.js$/) {
+        $img = "/media/icons/js.png";
     } elsif ($filename =~ /^.*\.(idl|cpp?|hh|s)$/) {
         $img = "/media/icons/cpp.png";
     } elsif (isImage($filename, 1)) {
@@ -116,7 +118,7 @@ sub fileicon {
     $link =~ s/"/&quot;/g;
     $link =~ s/</&lt;/g;
     $link =~ s/>/&gt;/g;
-    return "<$tag class=\"file icon\" align=\"middle\" border=\"0\" src=\"$img\">";
+    return "<$tag class=\"file icon\" border=\"0\" src=\"$img\">";
 }
 
 
