@@ -35,15 +35,15 @@ my $force;
 sub diricon {
     my ($img, $link);
     if ($filename eq '..') {
-        $img = "/icons/back.gif";
+        $img = "/media/icons/folder.png";
         $link = $parentdir;
     } else {
         my $dir =  $Path->{'real'}.$filename;
         $dir =~ s#/$##;
         if (-l $dir) {
-            $img = "/icons/forward.gif";
+            $img = "/media/icons/goto_folder.png";
         } else {
-            $img = "/icons/folder.gif";
+            $img = "/media/icons/folder.png";
         }
         $link = $Path->{'virt'}.$filename;
     }
@@ -51,7 +51,7 @@ sub diricon {
     $link =~ s/"/&quot;/g;
     $link =~ s/</&lt;/g;
     $link =~ s/>/&gt;/g;
-    return "<img class=\"dir icon\" align=\"absbottom\" border=\"0\" src=\"$img\">";
+    return "<img class=\"dir icon\" align=\"middle\" border=\"0\" src=\"$img\">";
 }
 
 sub dirnamehtml {
@@ -76,16 +76,29 @@ sub fileicon {
     my $tag = 'img';
     my $realf = $Path->{'real'}.$filename;
     if (-l $realf && !-e resolvelink($realf, $Path->{'real'})) {
-        $img = "/icons/broken.gif";
+        $img = "/media/icons/exclude_path.png";
     } elsif (!-r $realf) {
-        $img = "/icons/generic.sec.gif";
-    } elsif ($filename =~ /^.*\.[ch]$/) {
-        $img = "/icons/c.gif";
-    } elsif ($filename =~ /^.*\.(idl|cpp?|c[cs]|hh|java|s)$/) {
-        # TODO: Find a nice icon for c++ files (KDE?)
-        $img = "/icons/c.gif";
+        $img = "/media/icons/unknown.png";
+    } elsif ($filename =~ /^.*\.[ch|c[cs]]$/) {
+        $img = "/media/icons/c.png";
+    } elsif ($filename =~ /^.*\.[css]$/) {
+        $img = "/media/icons/txt.png";
+    } elsif ($filename =~ /^.*\.[bin]$/) {
+        $img = "/media/icons/binary.png";
+    } elsif ($filename =~ /^.*\.[py]$/) {
+        $img = "/media/icons/py.png";
+    } elsif ($filename =~ /^.*\.[mk|build|mozbuild|m4|manifest]$/) {
+        $img = "/media/icons/build.png";
+    } elsif ($filename =~ /^.*\.[xul]$/) {
+        $img = "/media/icons/ui.png";
+    } elsif ($filename =~ /^.*\.[xml]$/) {
+        $img = "/media/icons/xml.png";
+    } elsif ($filename =~ /^.*\.[java]$/) {
+        $img = "/media/icons/ui.png";
+    } elsif ($filename =~ /^.*\.(idl|cpp?|hh|s)$/) {
+        $img = "/media/icons/cpp.png";
     } elsif (isImage($filename, 1)) {
-        $img = "/icons/image2.gif";
+        $img = "/media/icons/image.png";
         my $s = (-s $realf);
         if ($s < 10<<10) {
             $img = "$filename?raw=1";
@@ -96,14 +109,14 @@ sub fileicon {
             }
         }
     } else {
-        $img = "/icons/text.gif";
+        $img = "/media/icons/txt.png";
     }
     my $link = $Path->{'virt'} . $filename;
     $link =~ s/&/&amp;/g;
     $link =~ s/"/&quot;/g;
     $link =~ s/</&lt;/g;
     $link =~ s/>/&gt;/g;
-    return "<$tag class=\"file icon\" align=\"absbottom\" border=\"0\" src=\"$img\">";
+    return "<$tag class=\"file icon\" align=\"middle\" border=\"0\" src=\"$img\">";
 }
 
 
