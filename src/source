@@ -425,12 +425,11 @@ my $body = <SRCFILE>;
 # ff2 gives a non grown image for <object> for svg, i.e. so badly truncated
 # that no one could possibly want it
                   print qq#
-<p>Inheritance diagram for $base:</P>
+<!-- <p>Inheritance diagram for $base:</P>
 <p align="center">
-<!--
   <object data="${doxURL}__inherit__graph.svg" type="image/svg+xml" border="0">
     <param name="src" value="${doxURL}__inherit__graph.svg">
--->
+
   <a href="${doxURL}__inherit__graph.svg">
     <img src="${doxURL}__inherit__graph.png" alt="Inheritance graph" border="0">
   </a>
@@ -444,7 +443,7 @@ my $body = <SRCFILE>;
 <p align="center">
   [ <a href="${doxURL}.html"><i>$base</i> Interface Reference</a> |
   <a href="${doxRoot}graph_legend.html">Graph Legend</a> ]
-</p>
+</p> -->
 #;
                 }
                 print("<pre lang='en'>");
