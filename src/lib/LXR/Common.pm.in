@@ -1920,7 +1920,7 @@ sub stylesheets {
   my $index = 0 ;
   my $stylesheets;
   while ($stylesheet) {
-    $stylesheets .= "<link rel='$type' title='$title' href='$baseurl/style/$stylesheet' type='text/css'>\n" if $stylesheet;
+    $stylesheets .= "<link rel='$type' title='$title' href='/style/$stylesheet?@BUILD_EDATE@' type='text/css'>\n" if $stylesheet;
     $type = 'alternate stylesheet';
     return $stylesheets unless $stylesheet = stylesheet(++$index);
     $title = "Alt-$index";
