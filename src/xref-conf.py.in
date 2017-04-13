@@ -12,8 +12,8 @@ def funcGenLXRConf(_input):
             _sourcePrefix = re.sub('\-rel([0-9]+)', '', _source)
         else:
             _sourcePrefix = _source
-        _lxrSources += 'sourceroot: {0} {1}/{0}/{2}'.format(_source, _input['setup']['dbDir'], _sourcePrefix) + "\n"
-        _lxrSources += 'sourceprefix: {0} {1}'.format(_source, _sourcePrefix) + "\n"
+        _lxrSources += 'sourceroot: {0} {1}/{0}/{2}'.format(_source, _input['setup']['dbDir'], 'source') + "\n"
+        _lxrSources += 'sourceprefix: {0} {1}'.format(_source, 'source') + "\n"
 
     for _source in _input['inactive-sources']:
         _sourcePrefix = ''
@@ -25,8 +25,8 @@ def funcGenLXRConf(_input):
             _sourcePrefix = re.sub('\-esr([0-9]+)', '', _source)
         else:
             _sourcePrefix = _source
-        _lxrSources += 'sourceroot: {0} {1}/{0}/{2}'.format(_source, _input['setup']['dbDir'], _sourcePrefix) + "\n"
-        _lxrSources += 'sourceprefix: {0} {1}'.format(_source, _sourcePrefix) + "\n"
+        _lxrSources += 'sourceroot: {0} {1}/{0}/{2}'.format(_source, _input['setup']['dbDir'], 'source') + "\n"
+        _lxrSources += 'sourceprefix: {0} {1}'.format(_source, 'source') + "\n"
         
     _lxrConf = '''
 %include ./lxrconf.inc
