@@ -102,6 +102,8 @@ if os.path.exists(fileXREFJson):
     pathXREFJson = fileXREFJson
 elif os.path.exists('../' + fileXREFJson):
     pathXREFJson = '../' + fileXREFJson
+elif os.path.exists('../datastore/' + fileXREFJson):
+    pathXREFJson = '../datastore/' + fileXREFJson
 else:
     funcOutputMessage('errorGen', 'Could not find ' + fileXREFJson)
 
