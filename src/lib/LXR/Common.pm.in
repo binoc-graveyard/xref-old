@@ -1626,9 +1626,9 @@ Link: <' . $parenturl . '>; rel="Up"; title="Parent"
   my $mod_time = ($time1 > $time2 ? $time1 : $time2);
   if ($mod_time > 0) {
     # Last-Modified: Wed, 10 Dec 1997 00:55:32 GMT
-    $head .= ("Last-Modified: ".(pretty_date($mod_time))."\n");
+    # $head .= ("Last-Modified: ".(pretty_date($mod_time))."\n");
     # Expires: Thu, 11 Dec 1997 00:55:32 GMT
-    $head .= ("Expires: ".(pretty_date(time+1200))."\n");
+    # $head .= ("Expires: ".(pretty_date(time+1200))."\n");
   }
   # remove cookie so that if JS is disabled, reloading the page is enough to get back to "old" JS-less behaviour
   $head .= "Set-Cookie: colorwithjs=; path=/; expires= Sat, 01-Jan-2000 00:00:00 GMT\n";
