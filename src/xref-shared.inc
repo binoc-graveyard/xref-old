@@ -8,14 +8,16 @@
 # The beginning of this script is both valid shell and valid python,
 # such that the script starts with the shell and is reexecuted with
 # the right python.
-
 '''echo' $0: Starting up...
-if ! BINOC_PYTHON_PATH="$(which python2.7 2>/dev/null)"; then
+if [ -f "/opt/rh/python27/root/usr/bin/python2.7" ];then
+    BINOC_PYTHON_ARGS=$@
+    exec scl enable python27 "python $0 $BINOC_PYTHON_ARGS"
+elif BINOC_PYTHON_PATH="$(which python2.7 2>/dev/null)"; then
+    exec $BINOC_PYTHON_PATH $0 "$@"
+else
     echo "$0 error: Python 2.7 was not found on this system"
     exit 1
 fi
-
-exec $BINOC_PYTHON_PATH $0 "$@"
 '''
 # =============================================================================
 
