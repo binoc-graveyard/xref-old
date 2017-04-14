@@ -50,7 +50,7 @@ def funcOutputMessage(_messageType, _messageBody):
     
     if _messageType in _messageTemplates:
         print(_messageTemplates[_messageType])
-        if _messageTemplates[_messageType].find('error') != -1:
+        if _messageType == 'errorGen':
             sys.exit(1)
     else:
         print('{0} Unknown error - Referenced as \'{1}\' internally.'.format(_messagePrefix, _messageType))
