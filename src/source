@@ -244,7 +244,7 @@ sub printdir {
 
     $template = "<ul>\n\$files{\n<li>\$iconlink \$namelink\n}</ul>\n";
     if ($Conf->htmldir) {
-        unless (open(TEMPL, $Conf->htmldir)) {
+        unless (open(TEMPL, '<:unix', $Conf->htmldir)) {
             &warning("Template ".$Conf->htmldir.unreadable($Conf->htmldir), 'htmldir');
         } else {
             local $/;
@@ -277,7 +277,7 @@ sub printdir {
     }
 
     if (-f $Path->{'real'}."00-INDEX") {
-        open(INDEX,$Path->{'real'}."00-INDEX") ||
+        open(INDEX,$Path->{'real'}."00-INDEX", '<:unix') ||
             &warning("Existing \"00-INDEX\" could not be opened.", '00-index');
         local $/;
         $index = <INDEX>;
@@ -360,11 +360,11 @@ sub printfile {
             }
             if ($verb) {
                 my $command = "$verb $cat ".$Path->{'realf'}.' |';
-                $openresult = open(SRCFILE, '<:raw', $command);
+                $openresult = open(SRCFILE, '<:unix', $command);
             }
             chdir $dir;
         } else {
-            $openresult = open(SRCFILE, '<:raw', $Path->{'realf'});
+            $openresult = open(SRCFILE, '<:unix', $Path->{'realf'});
         }
         if ($openresult) {
 if (0) {
@@ -549,7 +549,7 @@ Link: <' . $localurl . '?raw=1>; rel="Last"; title="Raw"
 }
 
     if (defined($HTTP->{'param'}->{'raw'})) {
-        unless (open(RAW, "<", $Path->{'realf'})) {
+        unless (open(RAW, "<:unix", $Path->{'realf'})) {
             $Path->{'realf'} =~ m{/([-a-z0-9_.]+)$}i;
             print "Status: 404 File Not Found
 Link: <" . $Conf->{baseurl} . "/find?string=$1>; rel='Contents'; title='Find file'
@@ -562,8 +562,9 @@ Content-Type: text/html
 <h4><em>Couldn't open $Conf->{'treename'}:$virtf";
             exit;
         }
-        print "$head
-";
+        if ($ENV{'BINOC_CGI'} != 1) {
+            print "$head";
+        }
         while (<RAW>) {
             print;
         }

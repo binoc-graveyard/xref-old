@@ -122,7 +122,7 @@ sub findidentXBL {
         $fileidx{++$fnum} = $f;
         ++$curfnum;
 
-        open(SRCFILE, $realpath.$f);
+        open(SRCFILE, '<:unix', $realpath.$f);
         {
             local $/ = undef;
             $contents = <SRCFILE>;
@@ -326,7 +326,7 @@ sub findidentPL {
         $fileidx{++$fnum} = $f;
         ++$curfnum;
 
-        open(SRCFILE, $realpath.$f);
+        open(SRCFILE, '<:unix', $realpath.$f);
         {
             local $/ = undef;
             $contents = <SRCFILE>;
@@ -456,7 +456,7 @@ sub findidentJS {
         $fileidx{++$fnum} = $f;
         ++$curfnum;
 
-        open(SRCFILE, $realpath.$f);
+        open(SRCFILE, '<:unix', $realpath.$f);
         {
             local $/ = undef;
             $contents = <SRCFILE>;
@@ -735,7 +735,7 @@ sub findidentIDL {
         $fileidx{++$fnum} = $f;
         ++$curfnum;
 
-        open(SRCFILE, $realpath.$f);
+        open(SRCFILE, '<:unix', $realpath.$f);
         $_ = $/; undef($/); $contents = <SRCFILE>; $/ = $_;
         close(SRCFILE);
 
@@ -853,7 +853,7 @@ sub findident {
 	$fileidx{++$fnum} = $f;
         ++$curfnum;
 
-	open(SRCFILE, $realpath.$f);
+	open(SRCFILE, '<:unix', $realpath.$f);
 	$_ = $/; undef($/); $contents = <SRCFILE>; $/ = $_;
 	close(SRCFILE);
 
@@ -978,7 +978,7 @@ sub findusagePL {
 	my $lcount = 0;
 	my %tref = ();
 
-	open(SRCFILE, $realpath.$f);
+	open(SRCFILE, '<:unix', $realpath.$f);
 	$_ = $/; undef($/); my $contents = <SRCFILE>; $/ = $_;
 	close(SRCFILE);
 
@@ -1028,7 +1028,7 @@ sub findusageJS {
 	my $lcount = 0;
 	my %tref = ();
 
-	open(SRCFILE, $realpath.$f);
+	open(SRCFILE, '<:unix', $realpath.$f);
 	$_ = $/; undef($/); my $contents = <SRCFILE>; $/ = $_;
 	close(SRCFILE);
 
@@ -1081,7 +1081,7 @@ sub findusageIDL {
         my $lcount = 0;
         my %tref = ();
 
-        open(SRCFILE, $realpath.$f);
+        open(SRCFILE, '<:unix', $realpath.$f);
         $_ = $/; undef($/); my $contents = <SRCFILE>; $/ = $_;
         close(SRCFILE);
 
@@ -1135,7 +1135,7 @@ sub findusage {
 	my $lcount = 0;
 	my %tref = ();
 
-	open(SRCFILE, $realpath.$f);
+	open(SRCFILE, '<:unix', $realpath.$f);
 	$_ = $/; undef($/); my $contents = <SRCFILE>; $/ = $_;
 	close(SRCFILE);
 
