@@ -1899,14 +1899,14 @@ sub stylesheet {
   my $alt = shift;
   my $pre = "alt$alt-" if defined $alt;
   my $kind;
-  $kind = 'style' if -f ('style/' . $pre . "style.css");
+  $kind = 'style' if -f ('media/style/' . $pre . "style.css");
   my $ext;
   if ($Path->{'file'}) {
     $ext = $1 if $Path->{'file'} =~ /\.(\w+)$/;
   } else {
     $ext = 'dir' unless $Path->{'file'};
   }
-  $kind = $ext if -f ("style/$pre$ext.css");
+  $kind = $ext if -f ("media/style/$pre$ext.css");
   return '' unless $kind;
   return "$pre$kind.css";
 }
@@ -1920,7 +1920,7 @@ sub stylesheets {
   my $index = 0 ;
   my $stylesheets;
   while ($stylesheet) {
-    $stylesheets .= "<link rel='$type' title='$title' href='/style/$stylesheet?@BUILD_EDATE@' type='text/css'>\n" if $stylesheet;
+    $stylesheets .= "<link rel='$type' title='$title' href='/media/style/$stylesheet?@BUILD_EDATE@' type='text/css'>\n" if $stylesheet;
     $type = 'alternate stylesheet';
     return $stylesheets unless $stylesheet = stylesheet(++$index);
     $title = "Alt-$index";
