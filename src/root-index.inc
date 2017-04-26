@@ -5,49 +5,49 @@
         <title>Cross-Reference</title>
         <link rel='stylesheet' title='' href='/media/style/style.css' type='text/css'>
         <style type="text/css">
-            body {
+            body {{
             background-color: #fff;
             color: #000;
-            }
-            a { color: #00e; }
-            a:visited { color: #551a8b; }
-            a:hover { color: #f00; }
-            .banner {
+            }}
+            a {{ color: #00e; }}
+            a:visited {{ color: #551a8b; }}
+            a:hover {{ color: #f00; }}
+            .banner {{
             background-color: #000;
             width: 100%;
             border: 0px;
-            }
-            .banner td {
+            }}
+            .banner td {{
             padding: 0px;
             margin: 0px;
-            }
-            .contentarea {
+            }}
+            .contentarea {{
             border: 0px;
-            }
-            .note {
+            }}
+            .note {{
             font-size: 70%;
-            }
-            table.rootlist {
+            }}
+            table.rootlist {{
             border: 1px solid black;
             width: 100%;
             background-color: #eee;
-            }
-            table.rootlist td {
+            }}
+            table.rootlist td {{
             padding: 10px;
-            }
-            table.rootlist h2 {
+            }}
+            table.rootlist h2 {{
             text-align: center;
-            }
-            dl.rootlist dt {
+            }}
+            dl.rootlist dt {{
             font-size: 120%;
-            }
-            dl.rootlist dt a {
+            }}
+            dl.rootlist dt a {{
             font-weight: bold;
-            }
-            dl.rootlist dd {
+            }}
+            dl.rootlist dd {{
             font-size: 70%;
             margin-bottom: 1em;
-            }
+            }}
         </style>
     </head>
     <body>
@@ -66,9 +66,6 @@
                 </td>
             </tr>
         </table>
-        <p class=footer>
-            <small>All indexed content is the intellectual property, copyright, or trademark of their respective owners.
-        </p>
     </body>
 </html>
 
