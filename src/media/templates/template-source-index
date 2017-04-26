@@ -1,61 +1,105 @@
 <!DOCTYPE html>
 <html>
-<head>
- <link rel="icon" href="/mxr.png" type="image/png">
- <title>Cross-Reference</title>
- <link rel='stylesheet' title='' href='/media/style/style.css' type='text/css'>
- <style type="text/css">
-</style>
-</head>
-<body   bgcolor="#ffffff" text="#000000"
-	link="#0000EE" vlink="#551a8b" alink="#ff0000">
+    <head>
+        <link rel="icon" href="/mxr.png" type="image/png">
+        <title>Cross-Reference</title>
+        <link rel='stylesheet' title='' href='/media/style/style.css' type='text/css'>
+        <style type="text/css">
+            body {
+            background-color: #fff;
+            color: #000;
+            }
+            a { color: #00e; }
+            a:visited { color: #551a8b; }
+            a:hover { color: #f00; }
+            .banner {
+            background-color: #000;
+            width: 100%;
+            border: 0px;
+            }
+            .banner td {
+            padding: 0px;
+            margin: 0px;
+            }
+            .contentarea {
+            border: 0px;
+            }
+            .note {
+            font-size: 70%;
+            }
+            table.rootlist {
+            border: 1px solid black;
+            width: 100%;
+            background-color: #eee;
+            }
+            table.rootlist td {
+            padding: 10px;
+            }
+            table.rootlist h2 {
+            text-align: center;
+            }
+            dl.rootlist dt {
+            font-size: 120%;
+            }
+            dl.rootlist dt a {
+            font-weight: bold;
+            }
+            dl.rootlist dd {
+            font-size: 70%;
+            margin-bottom: 1em;
+            }
+        </style>
+    </head>
+    <body>
+        <table class="contentarea" width="500px" align="left">
+            <tr>
+                <td align="left" valign="top">
+                    <table class="rootlist">
+                        <tr>
+                            <td>
+                                <h2 align=center><i>$treename</i> Starting Points</h2>
+                                <font size="+1"><a href="source/"><b>/$rootname</b></a></font>
+                                <br>
+                                <font size="-1">
+                                Browse from the root
+                                of this tree.
+                                </font>
+                                <form method=get action="find">
+                                    <div align="right">
+                                        <br> <b><a href="search">Search for</a>:</b>
+                                        <input type=text name="text" size=29 value="">
+                                        <br> <b><a href="find">File path</a>:</b>
+                                        <input type=text name="string" value="" size=29>
+                                        <br>
+                                        <input type="checkbox" id="regexp" name="regexp" value="1"><label for="regexp">search as regexp</label> &nbsp;
+                                        <input type=submit value="Find">
+                                    </div>
+                                </form>
+                                <form method=get action="ident">
+                                    <div align="right">
+                                        <br> <b><a href="ident">Identifier</a>:</b>
+                                        <input type=text name="i" size=29 value="">
+                                        <br> <b><a href="find">File path</a>:</b>
+                                        <input type=text name="filter" value="" size=29>
+                                        <br>
+                                        <input type=submit value="Find">
+                                    </div>
+                                </form>
+                                <p>
+                                    <a href="../">Pick another root</a> <span class="note">(you can also
+                                    change roots from within the search tools)</span>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <p class="footer" style="text-align: center;">
+            <small>All indexed content is the intellectual property, copyright, or trademark of its respective owners.</small>
+        </p>
+    </body>
+</html>
 
-<table border=0 cellpadding=0 cellspacing=6 width="100%">
- <tr>
-  <td width="35%" align=left valign=top>
 
-   <table border cellpadding=10 cellspacing=0 width="100%" bgcolor="#eeeeee">
-    <tr>
-     <td>
-      <h2 align=center><i>$treename</i> Starting Points</h2>
 
-         <font size="+1"><a href="source/"><b>/$rootname</b></a></font>
-<br>
-         <font size="-1">
-          Browse from the root
-          of this tree.
-         </font>
-<form method=get action="find">
-<div align="right">
-<br> <b><a href="search">Search for</a>:</b>
-              <input type=text name="text" size=29 value="">
-<br> <b><a href="find">File path</a>:</b>
-              <input type=text name="string" value="" size=29>
-<br>
-<input type="checkbox" id="regexp" name="regexp" value="1"><label for="regexp">search as regexp</label> &nbsp;
-	      <input type=submit value="Find">
-</div>
-</form>
-<p>
-<form method=get action="ident">
-<div align="right">
-<br> <b><a href="ident">Identifier</a>:</b>
-              <input type=text name="i" size=29 value="">
-<br> <b><a href="find">File path</a>:</b>
-              <input type=text name="filter" value="" size=29>
-<br>
-              <input type=submit value="Find">
-</div>
-</form>
-<p>
-<a href="../">Pick another root</a> <span class="note">(you can also
-change roots from within the search tools)</span>
-    </tr>
-   </table>
-
-  </td>
-  <td width=8></td>
-  <td align=left valign=top>
-  </td>
- </tr>
-</table>
