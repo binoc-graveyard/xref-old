@@ -19,7 +19,6 @@ set(PERL_SRCS
 )
 
 set(HTML_SRCS
-    ${mk_srcdir}/index.html
     ${mk_srcdir}/search-help.html
 )
 
@@ -27,6 +26,7 @@ Set(MISC_SRCS
     ${mk_srcdir}/.htaccess
     ${mk_srcdir}/robots.txt
     ${mk_srcdir}/mxr.png
+    ${mk_srcdir}/xref-update.py
 )
 
 set(SOURCE_FILES
@@ -40,7 +40,6 @@ build_func_preprocess(
     xref-conf.py.in
     ${FINAL_TARGET}/xref-conf.py
     ${varBuildDefines}
-    -DXREF_TARGET="moonchild"
     --marker %
     --make-exec
 )
@@ -49,4 +48,3 @@ COPY_TO_DIST("${SOURCE_FILES}")
 
 add_subdirectory(lib)
 add_subdirectory(media)
-add_subdirectory(root)

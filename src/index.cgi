@@ -11,10 +11,10 @@ unless (defined $Conf->{'trees'} &&
         $Conf->baseurl eq $Conf->realbaseurl) {
 # this is the root of an individual tree
 # or the root of the only tree
-open INDEX, "<index.html";
+open INDEX, "<media/templates/template-source-index";
 } else {
 # this is a list of published trees
-open INDEX, "<root/index.html";
+open INDEX, "<root-index.html";
 }
 
 {

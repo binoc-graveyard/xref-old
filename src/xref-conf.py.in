@@ -97,8 +97,25 @@ def funcGenLXRConf(_input):
         _lxrSources += 'sourceprefix: {0} {1}'.format(_source, 'source') + "\n"
         
     _lxrConf = '''
-%include ./lxrconf.inc
-'''
+baseurl: {0}
+bonsaihome: http://bonsai.mozilla.org
+htmlhead: ./media/templates/template-head
+htmltail: ./media/templates/template-tail
+htmldir:  ./media/templates/template-dir
+sourcehead: ./media/templates/template-source-head
+sourcetail: ./media/templates/template-source-tail
+sourcedirhead: ./media/templates/template-sourcedir-head
+sourcedirtail: ./media/templates/template-sourcedir-tail
+treechooser: ./media/templates/template-tree
+treeentry: ./media/templates/template-tree-entry
+revchooser: ./media/templates/template-rev
+reventry: ./media/templates/template-rev-entry
+identref: ./media/templates/template-ident-fileref
+
+{1}
+incprefix: /include
+dbdir: {2}
+glimpsebin: /usr/bin/glimpse'''
 
     return _lxrConf.format(_input['setup']['baseURL'], _lxrSources, _input['setup']['dbDir'])
 
@@ -153,7 +170,7 @@ def funcGenRootIndex(_input):
         _rootIndexSources += '<dd class="note">{0}</dd>'.format(_input['inactive-sources'][_source]['xrefDesc']) + "\n\n"
 
     _rootIndex = '''
-%include rootindex.inc
+%include root-index.inc
 '''.format(_rootIndexSources)
     return _rootIndex
 
@@ -211,12 +228,12 @@ except:
 # Create Root Index File
 funcOutputMessage('statusGen', '(Re)generating MXR Root Index')
 try:
-    fileRootIndex = open('./root/index.html', 'wb')
+    fileRootIndex = open('./root-index.html', 'wb')
     fileRootIndex.write(funcGenRootIndex(dictXREFJson))
     fileRootIndex.close
-    funcOutputMessage('statusGen', 'Wrote MXR Root Index to ./root/index.html')
+    funcOutputMessage('statusGen', 'Wrote MXR Root Index to ./root-index.html')
 except:
-    funcOutputMessage('errorGen', 'Unable to write to ./root/index.html') 
+    funcOutputMessage('errorGen', 'Unable to write to ./root-index.html') 
 
 # =============================================================================
 

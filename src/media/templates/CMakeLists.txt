@@ -10,6 +10,7 @@ set(HTML_SRCS
     ${mk_srcdir}/template-sourcedir-head
     ${mk_srcdir}/template-sourcedir-tail
     ${mk_srcdir}/template-source-head
+    ${mk_srcdir}/template-source-index
     ${mk_srcdir}/template-source-tail
     ${mk_srcdir}/template-tail
     ${mk_srcdir}/template-tree
