@@ -167,7 +167,7 @@ Free-text search through the source code, including comments.
  for help with glimpse's regular expression syntax,
 });
     my $changetarget = '';
-    print &bigexpandtemplate('<script src="$dotdoturl/script.js"></script>');
+    print &bigexpandtemplate('<script src="/media/scripts/script.js"></script>');
 
     my $note;
     my @filters = ();

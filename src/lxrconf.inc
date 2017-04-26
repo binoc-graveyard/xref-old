@@ -1,17 +1,17 @@
 baseurl: {0}
 bonsaihome: http://bonsai.mozilla.org
-htmlhead: ./templates/template-head
-htmltail: ./templates/template-tail
-htmldir:  ./templates/template-dir
-sourcehead: ./templates/template-source-head
-sourcetail: ./templates/template-source-tail
-sourcedirhead: ./templates/template-sourcedir-head
-sourcedirtail: ./templates/template-sourcedir-tail
-treechooser: ./templates/template-tree
-treeentry: ./templates/template-tree-entry
-revchooser: ./templates/template-rev
-reventry: ./templates/template-rev-entry
-identref: ./templates/template-ident-fileref
+htmlhead: ./media/templates/template-head
+htmltail: ./media/templates/template-tail
+htmldir:  ./media/templates/template-dir
+sourcehead: ./media/templates/template-source-head
+sourcetail: ./media/templates/template-source-tail
+sourcedirhead: ./media/templates/template-sourcedir-head
+sourcedirtail: ./media/templates/template-sourcedir-tail
+treechooser: ./media/templates/template-tree
+treeentry: ./media/templates/template-tree-entry
+revchooser: ./media/templates/template-rev
+reventry: ./media/templates/template-rev-entry
+identref: ./media/templates/template-ident-fileref
 
 {1}
 incprefix: /include

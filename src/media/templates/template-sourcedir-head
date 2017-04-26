@@ -6,7 +6,7 @@
 <title>$title</title>
 $stylesheets
 
-<script src='$dotdoturl/script.js'></script>
+<script src='/media/scripts/script.js'></script>
 </head>
 
 <body   bgcolor="#FFFFFF" text="#000000"

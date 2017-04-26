@@ -18,12 +18,6 @@ set(PERL_SRCS
     ${mk_srcdir}/genxref
 )
 
-set(JS_SRCS
-    ${mk_srcdir}/coloration.js
-    ${mk_srcdir}/jquery-1.3.2.min.js
-    ${mk_srcdir}/script.js
-)
-
 set(HTML_SRCS
     ${mk_srcdir}/index.html
     ${mk_srcdir}/search-help.html
@@ -38,8 +32,6 @@ Set(MISC_SRCS
 set(SOURCE_FILES
     ${CGI_SRCS}
     ${PERL_SRCS}
-    ${BINARY_SRCS}
-    ${JS_SRCS}
     ${HTML_SRCS}
     ${MISC_SRCS}
 )
@@ -56,7 +48,7 @@ build_func_preprocess(
 COPY_TO_DIST("${SOURCE_FILES}")
 
 add_subdirectory(lib)
-add_subdirectory(media/icons/)
+add_subdirectory(media)
 add_subdirectory(root)
 add_subdirectory(style)
 add_subdirectory(templates)

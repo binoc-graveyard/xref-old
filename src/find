@@ -39,7 +39,7 @@ href="search-help.html">regular expressions</a>.
 </p>
 ';
     if ($Conf->{'treename'} ne '') {
-        print &bigexpandtemplate('<script src="$dotdoturl/script.js"></script>');
+        print &bigexpandtemplate('<script src="/media/scripts/script.js"></script>');
     }
     print '<form name=find id=find method=get action="find" class="beforecontent">
 ';
