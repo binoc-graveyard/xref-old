@@ -1,6 +1,0 @@
-#include "base.idl";
-
-interface derived_class : base_class {
-  void methOd();
-};
-/* derived interface and method tests */

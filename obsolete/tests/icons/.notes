@@ -1,7 +1,0 @@
-#!/bin/sh
-# this file could be deleted.
-# not-readable needs to be unreadable
-# when you read this file, please be sure to:
-# chmod -rw not-readable
-# i.e., remove all access for the not-readable file.
-chmod -rw not-readable

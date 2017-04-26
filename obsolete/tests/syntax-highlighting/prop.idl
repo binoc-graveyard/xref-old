@@ -1,6 +1,0 @@
-interface testInterface {
-  readonly attribute boolean readableFoo;
-  attribute boolean writableBar;
-  void longMethod();
-}
-/* interface to be tested by implementation */

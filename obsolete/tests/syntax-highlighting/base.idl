@@ -1,4 +1,0 @@
-interface base_class : nsISupports {
-  void metHod();
-};
-/* base class interface test */
