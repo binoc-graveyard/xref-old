@@ -23,7 +23,7 @@ set(HTML_SRCS
 )
 
 Set(MISC_SRCS
-    ${mk_srcdir}/.htaccess
+    ${mk_srcdir}/index.php
     ${mk_srcdir}/robots.txt
     ${mk_srcdir}/mxr.png
     ${mk_srcdir}/xref-update.py

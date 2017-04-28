@@ -207,12 +207,12 @@ if len(listMXRData) is not 0:
         if (_item not in dictXREFJson['active-sources']) and (_item not in dictXREFJson['inactive-sources']):
             funcOutputMessage('warnGen', 'MXR Data item: ' + _item + ' is not listed in config.json')
 
-# Create SymLinks (if not on Windows)
+'''# Create SymLinks (if not on Windows)
 funcOutputMessage('statusGen', '(Re)generating Symbolic Links')
 if platform.system() != "Windows":
     funcCreateSymlinks(dictXREFJson)
 else:
-    funcOutputMessage('statusGen', 'Symbolic Link (re)generation is skipped on Windows hosts.')
+    funcOutputMessage('statusGen', 'Symbolic Link (re)generation is skipped on Windows hosts.')'''
 
 # Create lxr.conf File
 funcOutputMessage('statusGen', '(Re)generating LXR Configuration')
