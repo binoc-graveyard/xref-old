@@ -276,7 +276,7 @@ elseif ($strXRefTree != null && (array_key_exists($strXRefTree, $arrayManifest['
     $strPageContent = str_replace('$treename', strtolower($strXRefTree), $strPageContent);
     $strPageContent = str_replace('$rootname', 'source', $strPageContent);
     print($strPageContent); 
-    }
+}
 elseif ($strRequestPath == '/') {
     $strPageContent = file_get_contents('./root-index.html') or
         funcError('You need to configure XRef');
