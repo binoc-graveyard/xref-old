@@ -266,6 +266,10 @@ if (($strXRefTree != null && (array_key_exists($strXRefTree, $arrayManifest['act
 }
 elseif ($strXRefTree != null && (array_key_exists($strXRefTree, $arrayManifest['active-sources']) ||
     array_key_exists($strXRefTree, $arrayManifest['inactive-sources']))) {
+    if ($strRequestPath == '/' . $strXRefTree) {
+        funcRedirect('/' . $strXRefTree . '/');
+    }
+    
     $strPageContent = file_get_contents('./media/templates/template-source-index') or
         funcError('Unable to load source template');
     funcSendHeader('html');
