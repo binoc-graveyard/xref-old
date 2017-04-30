@@ -24,6 +24,7 @@ set(HTML_SRCS
 
 Set(MISC_SRCS
     ${mk_srcdir}/index.php
+    ${mk_srcdir}/root-index.inc
     ${mk_srcdir}/robots.txt
     ${mk_srcdir}/mxr.png
     ${mk_srcdir}/xref-update.py

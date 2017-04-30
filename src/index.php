@@ -308,8 +308,7 @@ elseif ($strRequestPath == '/') {
         $strPageContent = str_replace('{0}', $strRepoContent, $strPageContent);
     }
     else {
-        $strPageContent = file_get_contents('./root-index.html')
-            or funcError('You need to configure XRef');
+        funcError('Unknown Error');
     }
     
     funcSendHeader('html');
@@ -317,7 +316,7 @@ elseif ($strRequestPath == '/') {
 }
 else {
     // We don't know what the request was so 404 it
-    funcError('404: ' . $strRequestPath);
+    funcSendHeader('404');
 }
 
 // ============================================================================
