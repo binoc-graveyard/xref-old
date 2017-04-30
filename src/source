@@ -277,15 +277,6 @@ sub printdir {
         return;
     }
 
-    if (-f $Path->{'real'}."00-INDEX") {
-        open(INDEX,$Path->{'real'}."00-INDEX", '<:unix') ||
-            &warning("Existing \"00-INDEX\" could not be opened.", '00-index');
-        local $/;
-        $index = <INDEX>;
-
-        %index = $index =~ /\n(\S*)\s*\n\t-\s*([^\n]*)/gs;
-    }
-
     if ($Path->{'virt'} =~ m#^(.*/)[^/]*/$#) {
         $parentdir = $1;
         unshift(@dirs, '..');
