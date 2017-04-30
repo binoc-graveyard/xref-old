@@ -132,7 +132,7 @@ if dictXREFJson['active-sources'][strRepository]['mode'] == 'mangle':
     subprocess.call('"{0}" {1}'.format('git', 'fetch'), shell=True, cwd=strGitRepoPath)
     subprocess.call('"{0}" {1} {2}'.format ('git', 'checkout', strGitRepoBranch), shell=True, cwd=strGitRepoPath)
     subprocess.call('"{0}" {1}'.format('git', 'pull'), shell=True, cwd=strGitRepoPath)
-elif dictXREFJson['active-sources'][strRepository]['mode'] == 'basic':
+elif dictXREFJson['active-sources'][strRepository]['mode'] == 'standard':
     funcOutputMessage('statusGen', 'Updating repository (standard mode)')
     subprocess.call('"{0}" {1}'.format('git', 'pull'), shell=True, cwd=strMXRDataPath)
 
