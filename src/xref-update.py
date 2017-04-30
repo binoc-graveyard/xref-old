@@ -65,10 +65,29 @@ def funcReadJson(filename):
 
 # =============================================================================
 
+# ===| Function: contains |====================================================
+
+def funcContains(_strNeedle, _strHaystack):
+    if type(_strHaystack) is str:
+        if _strNeedle in _strHaystack:
+            return True
+        else:
+            return False
+    if type(_strHaystack) is list:
+        for _value in _strHaystack:
+            if _value in _strNeedle:
+                return True
+            else:
+                return False
+    else:
+        funcOutputMessage('errorGen', 'Incorrect funcContains usage')
+
+# =============================================================================
+
 # ===| Main |==================================================================
 
 # Define initial vars
-pathCurrent = os.getcwd()
+strCurrentPath = os.getcwd()
 fileXREFJson = 'config.json'
 
 # Find and read config.json
@@ -81,37 +100,58 @@ elif os.path.exists('../datastore/' + fileXREFJson):
 else:
     funcOutputMessage('errorGen', 'Could not find ' + fileXREFJson)
 
-dictXREFJson = funcReadJson(pathXREFJson)
-
-# Args
+# Simple Arguments
 if not len(sys.argv) > 1:
     funcOutputMessage('errorGen', 'You must specify a repository')
 else:
     strRepository = sys.argv[1]
 
+# Define more vars
+dictXREFJson = funcReadJson(pathXREFJson)
+strXRefPath = dictXREFJson['setup']['wwwroot']
+strMXRDataPath = dictXREFJson['setup']['dbDir'] + '/' + strRepository + '/source/'
+strGitRepoBranch = ''
+
+# Ensure active-source exists in json
 if strRepository not in dictXREFJson['active-sources']:
     funcOutputMessage('errorGen', strRepository + ' is not an active source in your config.json')
 
-strGitRepoPath = dictXREFJson['setup']['repoDir'] + '/' + dictXREFJson['active-sources'][strRepository]['localRepo'] + '/'
-strGitRepoBranch = dictXREFJson['active-sources'][strRepository]['gitBranch']
-strMXRDataPath = dictXREFJson['setup']['dbDir'] + '/' + strRepository + '/source/'
+# Print the Repository name
+funcOutputMessage('statusGen', 'Repository ' + strRepository)
 
-funcOutputMessage('statusGen', strRepository)
+# Determine where the Git Repo lives
+if dictXREFJson['active-sources'][strRepository]['mode'] == 'mangle':
+    strGitRepoPath = dictXREFJson['setup']['repoDir'] + '/' + dictXREFJson['active-sources'][strRepository]['localRepo'] + '/'
+else:
+    strGitRepoPath = strMXRDataPath
 
 # Git
-funcOutputMessage('statusGen', 'Stage 1 - Git')
-subprocess.call('"{0}" {1}'.format('git', 'fetch'), shell=True, cwd=strGitRepoPath)
-subprocess.call('"{0}" {1} {2}'.format ('git', 'checkout', strGitRepoBranch), shell=True, cwd=strGitRepoPath)
-subprocess.call('"{0}" {1}'.format('git', 'pull'), shell=True, cwd=strGitRepoPath)
+if dictXREFJson['active-sources'][strRepository]['mode'] == 'mangle':
+    funcOutputMessage('statusGen', 'Updating repository (mangle mode)')
+    strGitRepoBranch = dictXREFJson['active-sources'][strRepository]['gitBranch']
+    subprocess.call('"{0}" {1}'.format('git', 'fetch'), shell=True, cwd=strGitRepoPath)
+    subprocess.call('"{0}" {1} {2}'.format ('git', 'checkout', strGitRepoBranch), shell=True, cwd=strGitRepoPath)
+    subprocess.call('"{0}" {1}'.format('git', 'pull'), shell=True, cwd=strGitRepoPath)
+elif dictXREFJson['active-sources'][strRepository]['mode'] == 'basic':
+    funcOutputMessage('statusGen', 'Updating repository (standard mode)')
+    subprocess.call('"{0}" {1}'.format('git', 'pull'), shell=True, cwd=strMXRDataPath)
 
-# Rsync
-funcOutputMessage('statusGen', 'Stage 2 - Rsync')
-subprocess.call('"{0}" {1} {2} {3}'.format('rsync', "-r --delete --exclude '.git'", strGitRepoPath, strMXRDataPath), shell=True, cwd=pathCurrent)
+# Custom Command
+if dictXREFJson['active-sources'][strRepository]['mode'] == 'custom':
+    strCustomCommand = dictXREFJson['active-sources'][strRepository]['customCommand'][0]
+    strCustomArguments = dictXREFJson['active-sources'][strRepository]['customCommand'][1]
+    funcOutputMessage('statusGen', 'Executing command {0} {1} (custom mode)'.format(strCustomCommand, strCustomArguments))
+    subprocess.call('"{0}" {1}'.format(strCustomCommand, strCustomArguments), shell=True, cwd=strMXRDataPath)
+
+# RSync
+if dictXREFJson['active-sources'][strRepository]['mode'] == 'mangle':
+    funcOutputMessage('statusGen', 'Executing RSync (mangle mode)')
+    subprocess.call('"{0}" {1} {2} {3}'.format('rsync', "-r --delete --exclude '.git'", strGitRepoPath, strMXRDataPath), shell=True, cwd=strXRefPath)
 
 # XRef Perl Scripts
-funcOutputMessage('statusGen', 'Stage 3 - (Re)generate XRef ident and search databases')
-subprocess.call('"{0}" {1} {2}'.format('perl', 'update-xref.pl', strRepository), shell=True, cwd=pathCurrent)
-subprocess.call('"{0}" {1} {2}'.format('perl', 'update-search.pl', strRepository), shell=True, cwd=pathCurrent)
+funcOutputMessage('statusGen', '(Re)generate XRef ident and search databases')
+subprocess.call('"{0}" {1} {2}'.format('perl', 'update-xref.pl', strRepository), shell=True, cwd=strXRefPath)
+subprocess.call('"{0}" {1} {2}'.format('perl', 'update-search.pl', strRepository), shell=True, cwd=strXRefPath)
 
 # =============================================================================
 
