@@ -278,8 +278,40 @@ elseif ($strXRefTree != null && (array_key_exists($strXRefTree, $arrayManifest['
     print($strPageContent); 
 }
 elseif ($strRequestPath == '/') {
-    $strPageContent = file_get_contents('./root-index.html') or
-        funcError('You need to configure XRef');
+    if (count($arrayManifest['active-sources']) == 1 && count($arrayManifest['inactive-sources']) == 0) {
+        funcRedirect('/' . key($arrayManifest['active-sources']) . '/');
+    }
+    elseif (file_exists('./root-index.inc')) {
+        $strPageContent = file_get_contents('./root-index.inc')
+            or funcError('Unable to read ./root-index.inc');
+        
+        $strRepoContent = '';
+        
+        if (count($arrayManifest['active-sources']) >= 1) {
+            $strRepoContent .= '<h2>Sources</h2>' . "\n";
+            foreach ($arrayManifest['active-sources'] as $_key => $_value) {
+                $strRepoContent .= '<dt><a href="' . $_key . '/">' . $arrayManifest['active-sources'][$_key]['xrefName'] . '</a></dt>' . "\n";
+                $strRepoContent .= '<dd class="note">' . $arrayManifest['active-sources'][$_key]['xrefDesc'] . '</dd>' . "\n";
+            }
+        }
+        
+        if (count($arrayManifest['inactive-sources']) > 0) {
+            $strRepoContent .= '<h2>Archived and Historical</h2>' . "\n";
+            foreach ($arrayManifest['inactive-sources'] as $_key => $_value) {
+                $strRepoContent .= '<dt><a href="' . $_key . '/">' . $arrayManifest['inactive-sources'][$_key]['xrefName'] . '</a></dt>' . "\n";
+                $strRepoContent .= '<dd class="note">' . $arrayManifest['inactive-sources'][$_key]['xrefDesc'] . '</dd>' . "\n";
+            }
+        }
+        
+        $strPageContent = str_replace('{{', '{', $strPageContent);
+        $strPageContent = str_replace('}}', '}', $strPageContent);
+        $strPageContent = str_replace('{0}', $strRepoContent, $strPageContent);
+    }
+    else {
+        $strPageContent = file_get_contents('./root-index.html')
+            or funcError('You need to configure XRef');
+    }
+    
     funcSendHeader('html');
     print($strPageContent);
 }
