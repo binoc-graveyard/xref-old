@@ -198,6 +198,7 @@ sub direxpand {
 
     foreach $filename (@dirs) {
         $line++;
+        next if $filename =~ /(obj-(.*))\//;
         $direx .= &expandtemplate($templ,
             ('iconlink',                \&diricon),
             ('namelink',                \&dirnamehtml),
@@ -209,7 +210,7 @@ sub direxpand {
 
     foreach $filename (@files) {
         $line++;
-        next if $filename =~ /^.*\.[oa]$|^core$|^00-INDEX$/;
+        next if $filename =~ /^.*\.[oa]$|^00-INDEX$/;
         $direx .= &expandtemplate($templ,
             ('iconlink',        \&fileicon),
             ('namelink',        \&filename),
