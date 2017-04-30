@@ -200,6 +200,7 @@ my @exclude_paths = qw (
 /.svn/
 /.bzr/
 /_MTN/
+/obj-dir/
 );
 push @exclude_paths, '';
 print GLIMPSEEXCLUDE join("\n", @exclude_paths);

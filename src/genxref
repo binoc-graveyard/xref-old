@@ -1278,7 +1278,7 @@ sub merge {
 sub buildList {
     my ($fspre, $fspost) = ('', '');
     if ($suffix ne '') {
-        $fspost = "! -type l ! -path '*/.git/*' ! -path '*/.hg/*' ! -path '*/.svn/*' ! -path '*/CVS/*'";
+        $fspost = "! -type l ! -path '*/.git/*' ! -path '*/.hg/*' ! -path '*/.svn/*' ! -path '*/CVS/*'" ! -path '*/obj-dir/*';
     } else {
         $fspre = '-L';
     }
