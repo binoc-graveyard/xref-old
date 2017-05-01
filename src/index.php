@@ -154,10 +154,10 @@ unset($arrayRequestPath[2]);
 $strCGIPathInfo = implode('/', $arrayRequestPath);
 
 $arrayValidXRefComponents = array(
-    'find',
-    'ident',
-    'search',
-    'source'
+    'find' => 'find',
+    'ident' => 'ident',
+    'search' => 'search',
+    'source' => 'source'
 );
 
 
@@ -188,7 +188,9 @@ if ($strXRefTree != null && startsWith($strRequestPath, '/' . $strXRefTree)) {
             $strPageContent = str_replace('$rootname', 'source', $strPageContent);
             print($strPageContent); 
         }
-        elseif ($strXRefComponent != null && in_array($strXRefComponent, $arrayValidXRefComponents)) {
+        elseif ($strXRefComponent != null && array_key_exists($strXRefComponent, $arrayValidXRefComponents)) {
+            $strCGIExec = './' . $arrayValidXRefComponents[$strXRefComponent];
+            
             // Rebuild QUERY_STRING for CGI
             if ($arrayQueryString != null && count($arrayQueryString) > 0) {
                 foreach ($arrayQueryString as $_key => $_value) {
@@ -231,16 +233,16 @@ if ($strXRefTree != null && startsWith($strRequestPath, '/' . $strXRefTree)) {
             // We set a timeout of 65 seconds to keep any CGI scripts running
             // a muck from eating resources for more than a designated time
             // This should be adjusted later
-            if (file_exists('./' . $strXRefComponent) && is_executable('./' . $strXRefComponent)) {
+            if (file_exists($strCGIExec) && is_executable($strCGIExec)) {
                 // If the XRef component is 'source' and the query 'raw=1' is specified
                 // then we should pass though stdout with a binary stream
                 // NOTE: If the script errors it won't be printed in the browser
                 if ($strXRefComponent == 'source' && $strRequestRaw == 1) {
                     funcSendHeader('bin');
-                    passthru('timeout 65 ' . $strXRefComponent . ' 2>&1');
+                    passthru('timeout 65 ' . $strCGIExec . ' 2>&1');
                 }
                 else {
-                    exec('timeout 65 ./' . $strXRefComponent . ' 2>&1', $arrayCGIResult, $intCGIExitCode);
+                    exec('timeout 65 ' . $strCGIExec . ' 2>&1', $arrayCGIResult, $intCGIExitCode);
                     
                     // CGI sends raw headers as part of the result and we need to capture that
                     $arrayCGIHeaders = array();
