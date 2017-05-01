@@ -230,30 +230,46 @@ if ($strXRefTree != null && startsWith($strRequestPath, '/' . $strXRefTree)) {
             );
 
             // Prepare to run the CGI script if it is existent and executable
-            // We set a timeout of 65 seconds to keep any CGI scripts running
+            // We set a timeout of 55 seconds to keep any CGI scripts running
             // a muck from eating resources for more than a designated time
             // This should be adjusted later
             if (file_exists($strCGIExec) && is_executable($strCGIExec)) {
                 // If the XRef component is 'source' and the query 'raw=1' is specified
                 // then we should pass though stdout with a binary stream
                 // NOTE: If the script errors it won't be printed in the browser
-                if ($strXRefComponent == 'source' && $strRequestRaw == 1) {
-                    funcSendHeader('bin');
-                    passthru('timeout 65 ' . $strCGIExec . ' 2>&1');
-                }
-                elseif ($strXRefComponent == 'source' && $strRequestRaw == 2) {
-                    funcSendHeader('text');
-                    passthru('timeout 65 ' . $strCGIExec . ' 2>&1');
-                }
-                else {
-                    if ($strRequestRaw != null) {
+                if ($strXRefComponent == 'source' && $strRequestRaw != null) {
+                    if ($strRequestRaw == 1) {
+                        funcSendHeader('bin');
+                    }
+                    elseif ($strRequestRaw == 2) {
+                        funcSendHeader('text');
+                    }
+                    else {
                         funcSendHeader('400');
                     }
-                    exec('timeout 65 ' . $strCGIExec . ' 2>&1', $arrayCGIResult, $intCGIExitCode);
+                    passthru('timeout 55 ' . $strCGIExec . ' 2>&1');
+                    exit();
+                }
+                else {
+                    // Execute the CGI script while redirecting standard error to standard out
+                    exec('timeout 55 ' . $strCGIExec . ' 2>&1', $arrayCGIResult, $intCGIExitCode);
                     
                     // CGI sends raw headers as part of the result and we need to capture that
                     $arrayCGIHeaders = array();
                     
+                    // If not a successful exit or expected doctype tag isn't present then display
+                    // send unfiltered result as text
+                    if ($intCGIExitCode != 0 || !in_array('<!DOCTYPE html>', $arrayCGIResult)) {
+                        funcSendHeader('text');
+                        print('An issue has been detected in the execution or processing of the CGI script or ouput' . "\n");
+                        print('CGI exited with status code ' . $intCGIExitCode . "\n");
+                        print('Below is the raw output from standard out and error' . "\n");
+                        print('NOTE: If the output is binary data it should not be' . "\n" . 'trusted as representive of the intended output' . "\n");
+                        print('===============================================================================' . "\n\n");
+                        print(implode("\n", $arrayCGIResult));
+                        exit();
+                    }
+
                     // Iterate over the indexes of the result array to find headers and
                     // remove them as we go
                     foreach($arrayCGIResult as $_value) {
@@ -278,6 +294,7 @@ if ($strXRefTree != null && startsWith($strRequestPath, '/' . $strXRefTree)) {
                     }
                     
                     // implode the result array to a string and print it
+                    funcSendHeader('html');
                     print(implode("\n", $arrayCGIResult));
                     unset($arrayCGIResult);
                 }
