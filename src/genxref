@@ -1278,7 +1278,7 @@ sub merge {
 sub buildList {
     my ($fspre, $fspost) = ('', '');
     if ($suffix ne '') {
-        $fspost = "! -type l ! -path '*/.git/*' ! -path '*/.hg/*' ! -path '*/.svn/*' ! -path '*/CVS/*'" ! -path '*/obj-dir/*';
+        $fspost = "! -type l ! -path '*/.git/*' ! -path '*/.hg/*' ! -path '*/.svn/*' ! -path '*/CVS/*' ! -path '*/obj-dir/*'";
     } else {
         $fspre = '-L';
     }
@@ -1289,7 +1289,7 @@ sub buildList {
     while (my $file = <FILES>) {
         $file =~ s/^\Q$realpath\E|\s+$//og;
         #   Duplicated in lib/LXR/Common.pm
-       if ($file =~ /\.(?:(hh?|cpp?|c[cs]?|php?|fin|tbl|ipdlh?)|(java)|(jsm?)(?:\.in|)|(p[lm]|cgi)(?:\.in|)|(idl)|(xml))$/i) {
+       if ($file =~ /\.(?:(hh?|cpp?|c[cs]?|fin|tbl|ipdlh?)|(java)|(jsm?)(?:\.in|)|(p[lm]|cgi)(?:\.in|)|(idl)|(xml))$/i) {
            if ($1) {
                push @ft, 0;
                push @f, $file;

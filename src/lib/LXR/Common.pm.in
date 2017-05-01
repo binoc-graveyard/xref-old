@@ -1088,7 +1088,7 @@ sub markupfile {
     @terms = @dtdterm;
   } elsif ($name =~ /(configure|\.sh)$/) {
     @terms = @shterm;
-  } elsif ($name =~ /\.(?:py)$/) {
+  } elsif ($name =~ /\.(?:py|build|mozbuild)$/) {
     @terms = @pyterm;
   } elsif ($name =~ /\.(?:xml)$/) {
     @terms = @xmlterm;
