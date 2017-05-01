@@ -154,7 +154,6 @@ unset($arrayRequestPath[2]);
 $strCGIPathInfo = implode('/', $arrayRequestPath);
 
 $arrayValidXRefComponents = array(
-    'diff',
     'find',
     'ident',
     'search',
@@ -176,106 +175,112 @@ if ($_SERVER['REQUEST_URI'] == '/') {
 // under 'active-sources' and 'inactive-sources' where-as script is
 // defined under $arrayValidXRefComponents
 // Root and Source index is handled in the additional elseif statements
-if (($strXRefTree != null && (array_key_exists($strXRefTree, $arrayManifest['active-sources']) ||
-    array_key_exists($strXRefTree, $arrayManifest['inactive-sources'])) &&
-    ($strXRefComponent != null && in_array($strXRefComponent, $arrayValidXRefComponents)))) {
-    // Rebuild QUERY_STRING for CGI
-    if ($arrayQueryString != null && count($arrayQueryString) > 0) {
-        foreach ($arrayQueryString as $_key => $_value) {
-            if ($_key != 'path') {
-                $strQueryString .= $_key . '=' . $_value . '&';
+if ($strXRefTree != null && startsWith($strRequestPath, '/' . $strXRefTree)) {
+    if (array_key_exists($strXRefTree, $arrayManifest['active-sources']) || array_key_exists($strXRefTree, $arrayManifest['inactive-sources'])) {
+        if ($strRequestPath == '/' . $strXRefTree) {
+            funcRedirect('/' . $strXRefTree . '/');
+        }
+        elseif ($strRequestPath == '/' . $strXRefTree . '/') {
+            $strPageContent = file_get_contents('./media/templates/template-source-index')
+                or funcError('Unable to load source template');
+            funcSendHeader('html');
+            $strPageContent = str_replace('$treename', strtolower($strXRefTree), $strPageContent);
+            $strPageContent = str_replace('$rootname', 'source', $strPageContent);
+            print($strPageContent); 
+        }
+        elseif ($strXRefComponent != null && in_array($strXRefComponent, $arrayValidXRefComponents)) {
+            // Rebuild QUERY_STRING for CGI
+            if ($arrayQueryString != null && count($arrayQueryString) > 0) {
+                foreach ($arrayQueryString as $_key => $_value) {
+                    if ($_key != 'path') {
+                        $strQueryString .= $_key . '=' . $_value . '&';
+                    }
+                }
+                $strQueryString = rtrim($strQueryString, '&');
             }
-        }
-        $strQueryString = rtrim($strQueryString, '&');
-    }
 
-    // Assign PHP Environmental Variables to Local Environmental Variables
-    foreach ($_SERVER as $_key => $_value) {
-        putenv($_key . '=' . $_value);
-    }
+            // Assign PHP Environmental Variables to Local Environmental Variables
+            foreach ($_SERVER as $_key => $_value) {
+                putenv($_key . '=' . $_value);
+            }
 
-    // Assign or Override Local Environmental Variables
-    putenv('BINOC_CGI=1');
-    putenv('PATH_INFO=' . $strCGIPathInfo);
-    putenv('QUERY_STRING=' . $strQueryString);
-    putenv('DOCUMENT_URI=' .
-        '/' . $strXRefTree .
-        '/' . $strXRefComponent
-    );
-    putenv('REQUEST_URI=' .
-        '/' . $strXRefTree .
-        '/' . $strXRefComponent .
-        '?' . $strQueryString
-    );
-    putenv('SCRIPT_FILENAME=' . 
-        $_SERVER['DOCUMENT_ROOT'] .
-        '/' . $strXRefTree .
-        '/' . $strXRefComponent
-    );
-    putenv('SCRIPT_NAME=' .
-        '/' . $strXRefTree .
-        '/' . $strXRefComponent
-    );
+            // Assign or Override Local Environmental Variables
+            putenv('BINOC_CGI=1');
+            putenv('PATH_INFO=' . $strCGIPathInfo);
+            putenv('QUERY_STRING=' . $strQueryString);
+            putenv('DOCUMENT_URI=' .
+                '/' . $strXRefTree .
+                '/' . $strXRefComponent
+            );
+            putenv('REQUEST_URI=' .
+                '/' . $strXRefTree .
+                '/' . $strXRefComponent .
+                '?' . $strQueryString
+            );
+            putenv('SCRIPT_FILENAME=' . 
+                $_SERVER['DOCUMENT_ROOT'] .
+                '/' . $strXRefTree .
+                '/' . $strXRefComponent
+            );
+            putenv('SCRIPT_NAME=' .
+                '/' . $strXRefTree .
+                '/' . $strXRefComponent
+            );
 
-    // Prepare to run the CGI script if it is existent and executable
-    // We set a timeout of 65 seconds to keep any CGI scripts running
-    // a muck from eating resources for more than a designated time
-    // This should be adjusted later
-    if (file_exists('./' . $strXRefComponent) && is_executable('./' . $strXRefComponent)) {
-        // If the XRef component is 'source' and the query 'raw=1' is specified
-        // then we should pass though stdout with a binary stream
-        // NOTE: If the script errors it won't be printed in the browser
-        if ($strXRefComponent == 'source' && $strRequestRaw == 1) {
-            funcSendHeader('bin');
-            passthru('timeout 65 ' . $strXRefComponent . ' 2>&1');
-        }
-        else {
-            exec('timeout 65 ./' . $strXRefComponent . ' 2>&1', $arrayCGIResult, $intCGIExitCode);
-            
-            // CGI sends raw headers as part of the result and we need to capture that
-            $arrayCGIHeaders = array();
-            
-            // Iterate over the indexes of the result array to find headers and
-            // remove them as we go
-            foreach($arrayCGIResult as $_value) {
-                // XRef specifically has a blank line after all the headers so
-                // we should break out of the loop when we hit one else push
-                // each index/line to an array containing CGI supplied headers
-                if ($_value == '') {
-                    $intCGIResultIndex = array_search($_value, $arrayCGIResult);
-                    unset($arrayCGIResult[$intCGIResultIndex]);
-                    break;
+            // Prepare to run the CGI script if it is existent and executable
+            // We set a timeout of 65 seconds to keep any CGI scripts running
+            // a muck from eating resources for more than a designated time
+            // This should be adjusted later
+            if (file_exists('./' . $strXRefComponent) && is_executable('./' . $strXRefComponent)) {
+                // If the XRef component is 'source' and the query 'raw=1' is specified
+                // then we should pass though stdout with a binary stream
+                // NOTE: If the script errors it won't be printed in the browser
+                if ($strXRefComponent == 'source' && $strRequestRaw == 1) {
+                    funcSendHeader('bin');
+                    passthru('timeout 65 ' . $strXRefComponent . ' 2>&1');
                 }
                 else {
-                    array_push($arrayCGIHeaders, $_value);
-                    $intCGIResultIndex = array_search($_value, $arrayCGIResult);
-                    unset($arrayCGIResult[$intCGIResultIndex]);
+                    exec('timeout 65 ./' . $strXRefComponent . ' 2>&1', $arrayCGIResult, $intCGIExitCode);
+                    
+                    // CGI sends raw headers as part of the result and we need to capture that
+                    $arrayCGIHeaders = array();
+                    
+                    // Iterate over the indexes of the result array to find headers and
+                    // remove them as we go
+                    foreach($arrayCGIResult as $_value) {
+                        // XRef specifically has a blank line after all the headers so
+                        // we should break out of the loop when we hit one else push
+                        // each index/line to an array containing CGI supplied headers
+                        if ($_value == '') {
+                            $intCGIResultIndex = array_search($_value, $arrayCGIResult);
+                            unset($arrayCGIResult[$intCGIResultIndex]);
+                            break;
+                        }
+                        else {
+                            array_push($arrayCGIHeaders, $_value);
+                            $intCGIResultIndex = array_search($_value, $arrayCGIResult);
+                            unset($arrayCGIResult[$intCGIResultIndex]);
+                        }
+                    }
+                    
+                    // Iterate over all CGI supplied headers and have PHP send them
+                    foreach ($arrayCGIHeaders as $_value) {
+                        header($_value);
+                    }
+                    
+                    // implode the result array to a string and print it
+                    print(implode("\n", $arrayCGIResult));
+                    unset($arrayCGIResult);
                 }
             }
-            
-            // Iterate over all CGI supplied headers and have PHP send them
-            foreach ($arrayCGIHeaders as $_value) {
-                header($_value);
-            }
-            
-            // implode the result array to a string and print it
-            print(implode("\n", $arrayCGIResult));
-            unset($arrayCGIResult);
+        }
+        else {
+            funcSendHeader('404');
         }
     }
-}
-elseif ($strXRefTree != null && (array_key_exists($strXRefTree, $arrayManifest['active-sources']) ||
-    array_key_exists($strXRefTree, $arrayManifest['inactive-sources']))) {
-    if ($strRequestPath == '/' . $strXRefTree) {
-        funcRedirect('/' . $strXRefTree . '/');
+    else {
+        funcSendHeader('404');
     }
-    
-    $strPageContent = file_get_contents('./media/templates/template-source-index') or
-        funcError('Unable to load source template');
-    funcSendHeader('html');
-    $strPageContent = str_replace('$treename', strtolower($strXRefTree), $strPageContent);
-    $strPageContent = str_replace('$rootname', 'source', $strPageContent);
-    print($strPageContent); 
 }
 elseif ($strRequestPath == '/') {
     if (count($arrayManifest['active-sources']) == 1 && count($arrayManifest['inactive-sources']) == 0) {
