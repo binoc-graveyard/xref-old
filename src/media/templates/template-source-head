@@ -96,7 +96,6 @@ $beginoghg
 <a href="$oghghost/source/xref/$ogroot/$hgpath/$filename?a=true&r=&rev=$hgversion">Grok Blame</a><br>
 $endoghg
 
-      <a href="$baseurl/diff?file=$urlpath">Diff file</a><br>
       <a href="$baseurl/source$urlpath?raw=1">Raw file</a><br>
      </TD>
     </TR>
