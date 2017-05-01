@@ -241,7 +241,14 @@ if ($strXRefTree != null && startsWith($strRequestPath, '/' . $strXRefTree)) {
                     funcSendHeader('bin');
                     passthru('timeout 65 ' . $strCGIExec . ' 2>&1');
                 }
+                elseif ($strXRefComponent == 'source' && $strRequestRaw == 2) {
+                    funcSendHeader('text');
+                    passthru('timeout 65 ' . $strCGIExec . ' 2>&1');
+                }
                 else {
+                    if ($strRequestRaw != null) {
+                        funcSendHeader('400');
+                    }
                     exec('timeout 65 ' . $strCGIExec . ' 2>&1', $arrayCGIResult, $intCGIExitCode);
                     
                     // CGI sends raw headers as part of the result and we need to capture that
