@@ -57,36 +57,48 @@
                     <table class="rootlist">
                         <tr>
                             <td>
-                                <h2 align=center><i>$treename</i> Starting Points</h2>
+                                <h2 align=center><i>$treename</i></h2>
                                 <font size="+1"><a href="source/"><b>/$rootname</b></a></font>
                                 <br>
                                 <font size="-1">
                                 Browse from the root
                                 of this tree.
                                 </font>
-                                <form method=get action="find">
+                                <hr>
+                                <form method=get action="search">
                                     <div align="right">
-                                        <br> <b><a href="search">Search for</a>:</b>
-                                        <input type=text name="text" size=29 value="">
-                                        <br> <b><a href="find">File path</a>:</b>
-                                        <input type=text name="string" value="" size=29>
+                                        <b>Search for:</b>
+                                        <input type=text name="string" size=29 value="">
+                                        <br> <b>File path:</b>
+                                        <input type=text name="find" value="" size=29>
                                         <br>
                                         <input type="checkbox" id="regexp" name="regexp" value="1"><label for="regexp">search as regexp</label> &nbsp;
                                         <input type=submit value="Find">
                                     </div>
                                 </form>
+                                <hr align="right" width="280px">
                                 <form method=get action="ident">
                                     <div align="right">
-                                        <br> <b><a href="ident">Identifier</a>:</b>
+                                        <b>Identifier:</b>
                                         <input type=text name="i" size=29 value="">
-                                        <br> <b><a href="find">File path</a>:</b>
+                                        <br> <b>Pattern:</b>
                                         <input type=text name="filter" value="" size=29>
                                         <br>
                                         <input type=submit value="Find">
                                     </div>
                                 </form>
+                                <hr align="right" width="280px">
+                                <form method=get action="find">
+                                    <div align="right">
+                                        <b>Find file:</b>
+                                        <input type=text name="string" size=29 value="">
+                                        <br>
+                                        <input type=submit value="Find">
+                                    </div>
+                                </form>
+                                <hr>
                                 <p>
-                                    <a href="../">Pick another root</a> <span class="note">(you can also
+                                    <a href="/">Pick another root</a> <span class="note">(you can also
                                     change roots from within the search tools)</span>
                                 </p>
                             </td>
