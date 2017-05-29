@@ -2,7 +2,6 @@ build_macro_mkPaths()
 FIND_FINAL_TARGET()
 
 set(CGI_SRCS
-    ${mk_srcdir}/diff
     ${mk_srcdir}/find
     ${mk_srcdir}/ident
     ${mk_srcdir}/search
