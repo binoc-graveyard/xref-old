@@ -20,7 +20,7 @@ $stylesheets
 <table class=header border=0 cellpadding=12 cellspacing=0 width="100%">
  <tr>
   <td align=left valign=middle>
-   <nobr><font size="+2"><b><a href="$dotdoturl">Cross-Reference</a></b>
+   <nobr><font size="+2"><b><a href="/">Cross-Reference</a></b>
 <i><a href="$baseurl">$treename</a></i>
 </font></nobr>
    <br><b>$banner</b>
