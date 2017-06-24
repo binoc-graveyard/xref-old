@@ -270,7 +270,6 @@ if ($strXRefTree != null && startsWith($strRequestPath, '/' . $strXRefTree)) {
                     // If not a successful exit or expected doctype tag isn't present then display
                     // send unfiltered result as text
                     if ($intCGIExitCode != 0 || !in_array('<!DOCTYPE html>', $arrayCGIResult)) {
-                        $intCGIResultCount = count($arrayCGIResult);
                         funcSendHeader('text');
                         print('An issue has been detected in the execution or processing of the CGI script or ouput' . "\n");
                         print('CGI exited with status code ' . $intCGIExitCode . "\n");
