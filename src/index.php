@@ -257,9 +257,20 @@ if ($strXRefTree != null && startsWith($strRequestPath, '/' . $strXRefTree)) {
                     // CGI sends raw headers as part of the result and we need to capture that
                     $arrayCGIHeaders = array();
                     
+                    // Detect Redirect headers and act upon them
+                    if (count($arrayCGIResult) < 10) {
+                        $intCGIResultHeaderIndex = count($arrayCGIResult) - 2;
+                        $intCGIResultHeaderMatch = preg_match('/Refresh: 0; url=(.*)/', $arrayCGIResult[$intCGIResultHeaderIndex], $_intCGIResultHeaderMatch, PREG_OFFSET_CAPTURE, 0);
+                        if ($intCGIResultHeaderMatch == 1) {
+                            header($arrayCGIResult[$intCGIResultHeaderIndex]);
+                            exit();
+                        }
+                    }
+                    
                     // If not a successful exit or expected doctype tag isn't present then display
                     // send unfiltered result as text
                     if ($intCGIExitCode != 0 || !in_array('<!DOCTYPE html>', $arrayCGIResult)) {
+                        $intCGIResultCount = count($arrayCGIResult);
                         funcSendHeader('text');
                         print('An issue has been detected in the execution or processing of the CGI script or ouput' . "\n");
                         print('CGI exited with status code ' . $intCGIExitCode . "\n");
