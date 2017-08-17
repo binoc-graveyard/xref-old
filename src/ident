@@ -350,6 +350,7 @@ $strict = $HTTP->{'param'}->{'strict'};
 $strict = $strict =~ /1|yes/ ? 1 : 0 if defined $strict;
 $strict = 0 if $scriptidly;
 
+$strict = 1;
 my $tree = $HTTP->{'param'}->{'tree'};
 if ($tree && ($tree ne $Conf->{'treename'})) {
     my @treelist = @{$Conf->{'trees'}};
