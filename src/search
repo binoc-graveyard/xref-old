@@ -146,7 +146,7 @@ sub print_ident_hints
                 O_RDONLY, undef, $DB_HASH)) {
             foreach my $term (@terms) {
                 if (defined $xref{$term}) {
-                    push @idents, '<a href="ident?i='.$term.'&strict=1">'.$term.'</a>';
+                    push @idents, '<a href="ident?i='.$term.'">'.$term.'</a>';
                 }
             }
             if (scalar @idents) {
