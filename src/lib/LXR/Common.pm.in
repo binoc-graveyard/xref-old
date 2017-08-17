@@ -996,7 +996,7 @@ sub print_code {
       $code =~ s/<\/[^>]+>/>/g;
       my $ident_cgi = $Conf->{virtroot}.'/ident';
       # replace links to identifiers with <Didentifier>
-      $code =~ s/<a class="d" href="$ident_cgi\?i=([^>"]+)">\1>/<D$1>/g;
+      $code =~ s/<a class="d" href="$ident_cgi\?i=([^>"]+)&strict=1">\1>/<D$1>/g;
       # replace link emphasis
       $code =~ s/<a href="([^>"]+)">\1>/<L$1>/g;
       # replace mailto emphasis
