@@ -69,9 +69,13 @@ my $UPTIME = $defaults{UPTIME};
 $ENV{'LANG'} = 'C';
 
 # need to consider lxr.conf
-$lxr_dir = '.';
-die "can't find $lxr_dir" unless -d $lxr_dir;
-my $lxr_conf = "$lxr_dir/lxr.conf";
+if ($ENV{'LXR_CONF'}) {
+  $lxr_conf = $ENV{'LXR_CONF'};
+} else {
+  $lxr_dir = '.';
+  die "can't find $lxr_dir" unless -d $lxr_dir;
+  my $lxr_conf = "$lxr_dir/lxr.conf";
+}
 
 unless (-f $lxr_conf) {
   die "could not find $lxr_conf";
