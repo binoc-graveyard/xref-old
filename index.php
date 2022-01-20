@@ -198,10 +198,10 @@ else {
 //funcError(var_export($strCGIPathInfo, true));
 
 $arrayValidXRefComponents = array(
-  'find' => 'find.cgi',
-  'ident' => 'ident.cgi',
-  'search' => 'search.cgi',
-  'source' => 'source.cgi'
+  'find' => 'libs/mxr/find.cgi',
+  'ident' => 'libs/mxr/ident.cgi',
+  'search' => 'libs/mxr/search.cgi',
+  'source' => 'libs/mxr/source.cgi'
 );
 
 
@@ -293,6 +293,9 @@ if ($strXRefTree != null && startsWith($strRequestPath, '/' . $strXRefTree)) {
         '/' . $strXRefTree .
         '/' . $strXRefComponent
       );
+      putenv('PERL5LIB=' .
+             $_SERVER['DOCUMENT_ROOT'] . '/libs/mxr:' .
+             $_SERVER['DOCUMENT_ROOT'] . '/libs/mxr/lib');
 
       // Prepare to run the CGI script if it is existent and executable
       // We set a timeout of 55 seconds to keep any CGI scripts running
@@ -309,7 +312,7 @@ if ($strXRefTree != null && startsWith($strRequestPath, '/' . $strXRefTree)) {
           }
         }
 
-        $fh = popen('timeout 65 ' . $strCGIExec /* .  ' 2>&1' */, 'r');
+        $fh = popen('timeout 65 ' . $strCGIExec .  ' 2>&1', 'r');
 
         while($line = fgets($fh)) {
           if (startsWith($line, 'Content-Type:') || startsWith($line, 'Set-Cookie:') || startsWith($line, 'Refresh:')) {
@@ -328,6 +331,7 @@ if ($strXRefTree != null && startsWith($strRequestPath, '/' . $strXRefTree)) {
         }
         $exitStatus = pclose($fh);
 
+        print("\n\n" . 'Exit Status: ' . $exitStatus);
         exit();
       }
     }
