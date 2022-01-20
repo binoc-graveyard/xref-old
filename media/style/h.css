@@ -1,0 +1,14 @@
+@import url(style.css?20170817.1802);
+.c { /* comment */
+ color: black;
+ font-weight: bold;
+}
+.idl_FROZEN {
+ border: 1px solid red;
+}
+.idl_UNDER_REVIEW {
+ border: 1px solid orange;
+}
+.idl_DEPRECATED {
+ border: 1px solid brown;
+}

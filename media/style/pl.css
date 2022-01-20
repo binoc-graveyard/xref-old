@@ -1,0 +1,7 @@
+@import url(style.css?20170817.1802);
+.c { /* comment */
+ font-weight: bold;
+}
+.s { /* string */
+ font-weight: bold;
+}

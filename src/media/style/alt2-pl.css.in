@@ -1,6 +1,0 @@
-@import url(pl.css?@BUILD_EDATE@);
-
-.atom {
-border: 1px dotted red;
-}
-
