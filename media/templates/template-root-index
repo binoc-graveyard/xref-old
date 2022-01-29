@@ -58,7 +58,7 @@
                         <tr>
                             <td>
                                 <dl class="rootlist">
-{0}
+                                  $sources
                                 </dl>
                             </td>
                         </tr>

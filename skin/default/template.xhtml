@@ -1,0 +1,345 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>{$SITE_NAME} - {$PAGE_TITLE}</title>
+    <link rel="stylesheet" href="{$SKIN_PATH}/webfonts/red-hat-font.css" />
+    <style>
+      body {
+        margin: 0px;
+        /* background-color: #51667b; Mattcast Blue*/
+        background-color: #181f2e;
+        background-image: url('{$SKIN_PATH}/background.webp');
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-position-x: center;
+      }
+
+      body, td, th {
+        font-family: "RedHatText";
+        font-size: 12pt;
+        color: #000000;
+      }
+
+      /* ========================================================================== */
+
+      a:link, a:active, a:visited {
+        color: #0066cc;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+        color: #cc0000;
+      }
+
+      hr {
+        border-top: 1px dotted #000;
+        border-bottom: 0px #000;
+        border-left: 0px #000;
+        border-right: 0px #000;
+        border-width: 1px;
+      }
+
+      .alignleft {
+        float: left;
+        text-align: left;
+        margin-right: 10px;
+      }
+
+      .alignright {
+        float: right;
+        text-align: right;
+        margin-left: 10px;
+      }
+
+      .aligncenter {
+        display:block;
+        margin-left:auto;
+        margin-right:auto;
+      }
+
+      h1, h2, h3 {
+        font-family: "RedHatDisplay";
+        line-height: 100%;
+        padding-bottom: 2px;
+        margin: 0.5em auto;
+      }
+
+      h1:first-of-type {
+        margin-top: 10px;
+      }
+
+      h1, h2 {
+        border-bottom: 1px solid #d6e5f5;
+      }
+
+      /* ========================================================================== */
+
+      .binoc-background-blur {
+        background-color: #020814;
+        background-image: url('{$SKIN_PATH}/background-blur.webp');
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-position-x: center;
+      }
+
+      /* ========================================================================== */
+
+      #binoc-window {
+        width: 1200px;
+        min-width: 1200px;
+        max-width: 1200px;
+        margin: 0 auto;
+        margin-top: 32px;
+        border-radius: 5px;
+        border: 1px solid #f9f9f9;
+        box-shadow: 0px 2px 10px #000000;
+        transition: all 0.2s linear;
+        padding: 0px;
+      }
+
+      /* ========================================================================== */
+
+      #binoc-caption {
+        height: 40px;
+        margin-top: 0px;
+        margin-left: 7px;
+        margin-right: 6px;
+        line-height: inital;
+        text-align: left;
+        color: #fff;
+        font-size: 10pt;
+        text-shadow: 0px 2px 2px black, 0px 1px 1px #000;
+        overflow: hidden;
+      }
+
+      #binoc-caption p {
+        margin: 0px;
+        padding-top: 8px;
+        font-size: 12pt;
+        font-weight: normal;
+      }
+
+      #binoc-caption-back,
+      #binoc-caption-back:visited {
+        background-image: url('{$SKIN_PATH}/back.png');
+        width: 31px;
+        height: 31px;
+        margin-top: 4px;
+      }
+
+      #binoc-caption-back:hover {
+        background-position-x: -31px;
+      }
+
+      #binoc-caption-back:active {
+        background-position-x: -62px;
+      }
+
+      /* ========================================================================== */
+
+      #binoc-client {
+        background-color: #fcfcfc;
+        border: 1px solid #1f1f1f;
+        outline: 1px solid #9f9f9f;
+        margin-top: 0px;
+        margin-left: 6px;
+        margin-right: 6px;
+        margin-bottom: 6px;
+        padding: 0px;
+        overflow-x: hidden;
+        min-height: 634px;
+      }
+
+      #binoc-client p {
+        line-height: 125%;
+      }
+
+      /* ========================================================================== */
+
+      #binoc-commandbar {
+        height: 30px;
+        max-height: 30px;
+        background: rgb(0,0,128);
+        background: linear-gradient(0deg, rgba(255,255,255,0) 50%, rgba(255,255,255,0.20) 50%, rgba(255,255,255,0.50) 100%),
+                    linear-gradient(90deg, #4e5882 0%, #5eb0d0 50%, #4e5882 100%);
+        background-blend-mode: hard-light;
+        border-bottom: 1px solid #1f1f1f;
+        margin: 0px;
+        padding-top: 0px;
+        font-size: 10pt;
+        color: #fff;
+        text-shadow: 0px 2px 2px black, 0px 1px 1px #000;
+        font-family: "RedHatDisplay";
+      }
+
+      #binoc-commandbar > ul {
+        display: table;
+        margin: 0px;
+        padding: 0px;
+      }
+
+      #binoc-commandbar > ul > li {
+        float: left;
+        list-style: none;
+        margin-top: 5px;
+        margin-left: 12px;
+        margin-bottom: 0px;
+      }
+
+      #binoc-commandbar > ul > li > a,
+      #binoc-commandbar > ul > li > a:active,
+      #binoc-commandbar > ul > li > a:visited{
+        text-decoration: none;
+        color: #fff;
+      }
+
+      #binoc-commandbar > ul > li > a {
+        border: 1px solid transparent;
+        border-radius: 2px;
+        padding-top: 2px;
+        padding-left: 12px;
+        padding-right: 12px;
+        padding-bottom: 2px;
+      }
+
+      #binoc-commandbar > ul > li > a:hover {
+        border: 1px solid #a1b6cb;
+        box-shadow: 0 0 1px #1f1f1f;
+        background: linear-gradient(0deg,
+                                    rgba(255,255,255,0) 50%,
+                                    rgba(255,255,255,0.10) 50%,
+                                    rgba(255,255,255,0.20) 85%,
+                                    rgba(255,255,255,0.50) 100%);
+      }
+
+      #binoc-commandbar > ul > li > a:active {
+        border: 1px solid #000;
+        box-shadow: none;
+        background: linear-gradient(0deg,
+                                    rgba(31,31,31,0.05) 50%,
+                                    rgba(31,31,31,0.05) 50%,
+                                    rgba(31,31,31,0.20) 85%,
+                                    rgba(31,31,31,0.50) 100%);
+      }
+
+      #binoc-commandbar > ul > li > ul,
+      #binoc-commandbar > ul > li > p {
+        display: none;
+      }
+
+      /* ========================================================================== */
+
+      #binoc-body {
+        margin: 0px;
+        display: table;
+        width: 100%;
+      }
+
+      /* ========================================================================== */
+
+      #binoc-content {
+        display: table-cell;
+        vertical-align: top;
+        overflow-x: hidden;
+        padding-top: 0px;
+        padding-left: 12px;
+        padding-right: 12px;
+        padding-bottom: 12px;
+      }
+
+      /* ========================================================================== */
+
+      #binoc-sidebar {
+        display: table-cell;
+        vertical-align: top;
+        overflow-x: hidden;
+        border-left: 1px solid #d6e5f5;
+        min-height: 400px;
+        min-width: 220px;
+        max-width: 220px;
+        width: 220px;
+
+        padding-top: 0px;
+        padding-left: 12px;
+        padding-right: 12px;
+        padding-bottom: 12px;
+      }
+
+      #binoc-sidebar > ul {
+        list-style: none;
+        padding-left: 0px;
+      }
+
+      #binoc-sidebar > ul > li {
+        margin-bottom: 2px;
+      }
+
+      /* ========================================================================== */
+
+      #binoc-copyright {
+        margin: 0 auto;
+        font-size: 10pt;
+        line-height: inital;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        width: 1200px;
+        min-width: 1200px;
+        text-align: center;
+        font-weight: bold;
+        font-family: "RedHatDisplay";
+        color: #fff;
+        text-shadow: 0px 2px 2px black, 0px 1px 1px #000;
+      }
+
+      /* ========================================================================== */
+
+      .special-textbox {
+        width: 1148px;
+        margin-top: 12px;
+        margin-bottom: -12px;
+        background-color: #fff;
+        border: 1px solid #e3e9ef;
+        border-top-color: #abadb3;
+        border-radius: 2px;
+        padding: 6px;
+        resize: none;
+      }
+
+      /* ========================================================================== */
+
+      .clearfix:after {
+        content: ".";
+        display: block;
+        height: 0;
+        clear: both;
+        visibility: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="binoc-window" class="binoc-background-blur">
+      <div id="binoc-caption">
+        <div id="binoc-caption-back" class="alignleft" onclick="window.history.back();"></div>
+        <p>{$PAGE_TITLE}</p>
+      </div>
+      <div id="binoc-client">
+        <div id="binoc-commandbar">
+          <ul>
+            {$SITE_MENU}
+          </ul>
+        </div>
+        <div id="binoc-body">
+          <div id="binoc-content">
+            {$PAGE_CONTENT}
+          </div>
+        </div>
+      </div>
+    </div>
+    <p id="binoc-copyright">
+      Powered by {$SOFTWARE_NAME} {$SOFTWARE_VERSION}
+      <br />
+    </p>
+  </body>
+</html>

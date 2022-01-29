@@ -80,13 +80,10 @@ my $DATE = $defaults{DATE};
 my $TIME = $defaults{TIME};
 my $UPTIME = $defaults{UPTIME};
 
-if ($ENV{'LXR_CONF'}) {
-  $lxr_conf = $ENV{'LXR_CONF'};
-} else {
-  my $lxr_dir = '.';
-  die "can't find $lxr_dir" unless -d $lxr_dir;
-  my $lxr_conf = "$lxr_dir/lxr.conf";
-}
+my $lxr_dir = '.';
+die "can't find $lxr_dir" unless -d $lxr_dir;
+my $lxr_conf = "$lxr_dir/lxr.conf";
+
 unless (-f $lxr_conf) {
   die "could not find $lxr_conf";
 }

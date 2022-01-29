@@ -8,11 +8,7 @@ require Exporter;
 @ISA = qw(Exporter);
 # @EXPORT = '';
 
-if ($ENV{'LXR_CONF'}) {
-  $confname = $ENV{'LXR_CONF'};
-} else {
-  $confname = 'lxr.conf';
-}
+$confname = 'lxr.conf';
 
 
 sub new {
@@ -220,18 +216,14 @@ sub _initialize {
     my ($self, $conf) = @_;
     my ($dir, $arg);
 
-    if ($ENV{'LXR_CONF'}) {
-      $conf = $confname;
-    } else {
-      unless ($conf) {
-          $conf = $0;
-          if ($conf =~ m{/}) {
-              $conf =~ s{/[^/]+$}{/};
-          } else {
-              $conf = './';
-          }
-          $conf .= $confname;
-      }
+    unless ($conf) {
+        $conf = $0;
+        if ($conf =~ m{/}) {
+            $conf =~ s{/[^/]+$}{/};
+        } else {
+            $conf = './';
+        }
+	$conf .= $confname;
     }
 
     unless (open(CONFIG, $conf)) {
@@ -272,6 +264,7 @@ sub _initialize {
 		     $dir eq 'rewriteurl' ||
 		     $dir eq 'incprefix' ||
 		     $dir eq 'dbdir' ||
+		     $dir eq 'bonsaihome' ||
 		     $dir eq 'glimpsebin' ||
 		     $dir eq 'htmlhead' ||
 		     $dir eq 'htmltail' ||
@@ -410,6 +403,12 @@ sub virtroot {
 sub incprefix {
     my $self = shift;
     return varexpandit($self, 'incprefix');
+}
+
+
+sub bonsaihome {
+    my $self = shift;
+    return varexpandit($self, 'bonsaihome');
 }
 
 

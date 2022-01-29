@@ -1,0 +1,97 @@
+{
+  "setup" : {
+    "baseURL" : "xref.palemoon.org/",
+    "wwwroot" : "/srv/data/xref.palemoon.org",
+    "dbDir"   : "/srv/data/storage/xref"
+  },
+  "access" : {
+    "mattatobin"  : "tobin4644gamma",
+    "athenian200" : "g62Ws2VADvjTqAeRY9Qr4hQkC9D3EJBnBfHVfAPkvQB9dzG3xz",
+    "moonchild"   : "5ksjzFw65dKGSyjB9c7nvUX9q3b9ba7Ae6r332aXcZqf62jfrY",
+    "moonbat"     : "f45090216ec095499c89162c4a6293aee0acc40f"
+  },
+  "active-sources" : {
+    "goanna-central" : {
+      "xrefName" : "goanna-central",
+      "xrefDesc" : "This contains the latest development code (git master/trunk branches) for<br />Pale Moon, Basilisk, Borealis, Interlink and the Goanna Runtime Environment"
+    },
+    "binoc-build":{
+      "xrefName": "binoc-build",
+      "xrefDesc": "Experimental build system based on Mozilla's. Also includes associated BinOC Projects"
+    }
+  },
+  "inactive-sources" : {
+      "uxp-4.8.3" : {
+      "xrefName" : "uxp-4.8.3",
+      "xrefDesc" : "This contains a snapshot of the code for the last released version<br />of the Unified XUL Platform (RELBASE_20210823)"
+    },
+    "palemoon-rel27" : {
+      "xrefName" : "palemoon-rel27",
+      "xrefDesc" : "This contains a snapshot of the code for the last released version of Pale Moon 27.x"
+    },
+    "palemoon-rel26" : {
+      "xrefName" : "palemoon-rel26",
+      "xrefDesc" : "This contains a snapshot of the code for the last released version of Pale Moon 26.x"
+    },
+    "mozilla-esr91" : {
+      "xrefName" : "mozilla-esr91",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-esr91 codebase"
+    },
+    "mozilla-esr78" : {
+      "xrefName" : "mozilla-esr78",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-esr78 codebase"
+    },
+    "mozilla-esr68" : {
+      "xrefName" : "mozilla-esr68",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-esr68 codebase"
+    },
+    "mozilla-esr60" : {
+      "xrefName" : "mozilla-esr60",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-esr60 codebase"
+    },
+    "mozilla-esr52" : {
+      "xrefName" : "mozilla-esr52",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-esr52 codebase"
+    },
+    "mozilla-esr45" : {
+      "xrefName" : "mozilla-esr45",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-esr45 codebase"
+    },
+    "mozilla-esr38" : {
+      "xrefName" : "mozilla-esr38",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-esr38 codebase"
+    },
+    "mozilla-esr31" : {
+      "xrefName" : "mozilla-esr31",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-esr31 codebase"
+    },
+    "mozilla-esr24" : {
+      "xrefName" : "mozilla-esr24",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-esr24 codebase"
+    },
+    "mozilla-esr17" : {
+      "xrefName" : "mozilla-esr17",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-esr17 codebase"
+    },
+    "mozilla-esr10" : {
+      "xrefName" : "mozilla-esr10",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-esr10 codebase"
+    },
+    "mozilla-2.0" : {
+      "xrefName" : "mozilla-2.0",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-2.0 codebase"
+    },
+    "mozilla-1.9.2" : {
+      "xrefName" : "mozilla-1.9.2",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-1.9.2 codebase"
+    },
+    "mozilla-1.8" : {
+      "xrefName" : "mozilla-1.8",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-1.8 codebase"
+    },
+    "mozilla-1.7" : {
+      "xrefName" : "mozilla-1.7",
+      "xrefDesc" : "This is a snapshot of the code for the mozilla-1.7 codebase"
+    }
+  }
+}

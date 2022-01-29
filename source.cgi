@@ -534,6 +534,13 @@ unless ($exit) {
     $localurl =~ s/%3A/:/;
     $localurl =~ m{(^.*/)/*[^/]+/*(?:|\?.*)$};
     my $parenturl = $1;
+    if (!$ENV{'BINOC_CGI'}) {
+      $head .=
+'Link: <' . $localurl . '?force=1>; rel="First"; title="Marked up"
+Link: <' . $localurl . '?raw=1>; rel="Last"; title="Raw"
+';
+    }
+}
 
     if (defined($HTTP->{'param'}->{'raw'})) {
         unless (open(RAW, "<:unix", $Path->{'realf'})) {
@@ -548,6 +555,9 @@ Content-Type: text/html
             print "<h1>File Not Found</h1>
 <h4><em>Couldn't open $Conf->{'treename'}:$virtf";
             exit;
+        }
+        if (!$ENV{'BINOC_CGI'}) {
+            print "$head";
         }
         while (<RAW>) {
             print;
