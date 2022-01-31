@@ -48,6 +48,9 @@
       font-size: 70%;
       margin-bottom: 1em;
       }
+      input {
+        margin-bottom: 4px;
+      }
     </style>
   </head>
   <body>
