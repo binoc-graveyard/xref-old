@@ -70,7 +70,7 @@
         </td>
         <td width="8"></td>
         <td align="left" valign="top">
-          <h1>About Cross-References</h1>
+          <h1  style="margin-top: 0px;">About Cross-References</h1>
           <p>This is a cross reference designed to display
           source code.
           Sources may be retrieved via <em>cvs</em>, <em>svn</em>, <em>git</em>,
