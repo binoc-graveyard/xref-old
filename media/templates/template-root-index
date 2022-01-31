@@ -46,7 +46,7 @@
       }
       dl.rootlist dd {
       font-size: 70%;
-      width: 400px;
+      width: 450px;
       margin-bottom: 1em;
       }
     </style>

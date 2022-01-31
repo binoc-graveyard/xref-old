@@ -51,7 +51,7 @@ sub diricon {
     $link =~ s/"/&quot;/g;
     $link =~ s/</&lt;/g;
     $link =~ s/>/&gt;/g;
-    return "<img class=\"dir icon\" border=\"0\" src=\"$img\">";
+    return "<img class=\"dir icon\" border=\"0\" src=\"$img\" style\=\"margin-top: 4px; margin-bottom: 0px;\">";
 }
 
 sub dirnamehtml {

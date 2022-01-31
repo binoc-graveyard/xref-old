@@ -1,3 +1,10 @@
+@import url("/skin/default/webfonts/red-hat-font.css");
+
+body > :not(pre) {
+  font-family: Verdana, "DejaVu Sans", Helvetica, Arial, sans-serif;
+  font-size: smaller;
+}
+
 a.l:target {
   background-color: lightpink;
 }

@@ -55,14 +55,15 @@
     <tr><td><a href="/"><img src="/media/img/banner.png" alt="" border=0></a></td></tr>
     </table>
 
-    <table class="contentarea" width="500px" align="left">
+    <table class="contentarea" width="100%" align="left">
       <tr>
-        <td align="left" valign="top">
-          <table class="rootlist">
+        <td align="left" valign="top" width="516">
+          <table class="rootlist" width="100%">
             <tr>
               <td>
+                <div>
                 <h2 align=center><i>$treename</i></h2>
-                <font size="+1"><a href="source/"><b>/$rootname</b></a></font>
+                <a style="font-size: larger" href="source/"><b>/$rootname</b></a>
                 <br>
                 <font size="-1">
                 Browse from the root
@@ -108,6 +109,11 @@
               </td>
             </tr>
           </table>
+        </td>
+        <td width="8"></td>
+        <td align="left" valign="top">
+          <h1>About the <em>$treename</em> Source Tree</h1>
+          <p>$treedesc</p>
         </td>
       </tr>
     </table>

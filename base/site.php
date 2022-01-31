@@ -178,6 +178,12 @@ if (!$gaRuntime['xref']) {
   gfError('Unable to read xref configuration.');
 }
 
+// Handle the most recent obsolete trees
+if ($gaRuntime['currentPath'][0] == 'moonchild-central' || $gaRuntime['currentPath'][0] == 'binoc-central') {
+  $gaRuntime['currentPath'][0] = 'goanna-central';
+  gfRedirect(gfBuildPath(...$gaRuntime['currentPath']));
+}
+
 $gvValidTree = in_array($gaRuntime['currentPath'][0], array_merge(array_keys($gaRuntime['xref']['active-sources']),
                                                                   array_keys($gaRuntime['xref']['inactive-sources'])));
 
@@ -207,7 +213,11 @@ if ($gvValidTree) {
     gfError('Could not load source index template');
   }
 
-  $content = gfSubst('string', ['$treename' => strtolower($gvXrefTree), '$rootname' => 'source'],
+  $treedesc = $gaRuntime['xref']['active-sources'][$gvXrefTree]['xrefDesc'] ??
+              $gaRuntime['xref']['inactive-sources'][$gvXrefTree]['xrefDesc'];
+
+  $content = gfSubst('string',
+                     ['$treename' => strtolower($gvXrefTree), '$rootname' => 'source', '$treedesc' => $treedesc],
                      $content);
 
   gfHeader('html');
