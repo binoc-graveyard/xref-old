@@ -1,71 +1,103 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <link rel="icon" href="/mxr.png" type="image/png">
-        <title>Cross-Reference</title>
-        <link rel='stylesheet' title='' href='/media/style/style.css' type='text/css'>
-        <style type="text/css">
-            body {{
-            background-color: #fff;
-            color: #000;
-            }}
-            a {{ color: #00e; }}
-            a:visited {{ color: #551a8b; }}
-            a:hover {{ color: #f00; }}
-            .banner {{
-            background-color: #000;
-            width: 100%;
-            border: 0px;
-            }}
-            .banner td {{
-            padding: 0px;
-            margin: 0px;
-            }}
-            .contentarea {{
-            border: 0px;
-            }}
-            .note {{
-            font-size: 70%;
-            }}
-            table.rootlist {{
-            border: 1px solid black;
-            width: 100%;
-            background-color: #eee;
-            }}
-            table.rootlist td {{
-            padding: 10px;
-            }}
-            table.rootlist h2 {{
-            text-align: center;
-            }}
-            dl.rootlist dt {{
-            font-size: 120%;
-            }}
-            dl.rootlist dt a {{
-            font-weight: bold;
-            }}
-            dl.rootlist dd {{
-            font-size: 70%;
-            margin-bottom: 1em;
-            }}
-        </style>
-    </head>
-    <body>
-        <table class="contentarea" width="500px" align="left">
+  <head>
+    <link rel="icon" href="/mxr.png" type="image/png">
+    <title>Cross-Reference</title>
+    <link rel='stylesheet' title='' href='/media/style/style.css' type='text/css'>
+    <style type="text/css">
+      body {
+      background-color: #fff;
+      color: #000;
+      }
+      a { color: #00e; }
+      a:visited { color: #551a8b; }
+      a:hover { color: #f00; }
+      .banner {
+      background-color: #000;
+      width: 100%;
+      border: 0px;
+      }
+      .banner td {
+      padding: 0px;
+      margin: 0px;
+      }
+      .contentarea {
+      border: 0px;
+      }
+      .note {
+      font-size: 70%;
+      }
+      table.rootlist {
+      border: 1px solid black;
+      width: 100%;
+      background-color: #eee;
+      }
+      table.rootlist td {
+      padding: 10px;
+      }
+      table.rootlist h2 {
+      text-align: center;
+      }
+      dl.rootlist dt {
+      font-size: 120%;
+      }
+      dl.rootlist dt a {
+      font-weight: bold;
+      }
+      dl.rootlist dd {
+      font-size: 70%;
+      width: 400px;
+      margin-bottom: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <table bgcolor="#000000" width="100%" border=0 cellpadding=0 cellspacing=0 style="line-height: 0px; margin-bottom: 8px;">
+    <tr><td><a href="/"><img src="/media/img/banner.png" alt="" border=0></a></td></tr>
+    </table>
+    <table class="contentarea" width="100%" align="left">
+      <tr>
+        <td align="left" valign="top">
+          <table class="rootlist">
             <tr>
-                <td align="left" valign="top">
-                    <table class="rootlist">
-                        <tr>
-                            <td>
-                                <dl class="rootlist">
-                                  $sources
-                                </dl>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
+              <td>
+                <dl class="rootlist">
+                  $sources
+                </dl>
+              </td>
             </tr>
-        </table>
-    </body>
+          </table>
+        </td>
+        <td width="8"></td>
+        <td align="left" valign="top">
+          <h1>About Cross-References</h1>
+          <p>This is a cross reference designed to display
+          source code.
+          Sources may be retrieved via <em>cvs</em>, <em>svn</em>, <em>git</em>,
+          <em>apt</em>, or through some other process.</p>
+
+          <p>It's possible to search through an entire source text; or to search for files whose name matches a pattern; or to search for the definitions of particular functions, variables, etc.</p>
+
+          <p>The individual files of the source code are formatted on the fly
+          and presented with clickable identifiers.  An <i>identifier</i> is a
+          macro, typedef, struct, enum, union, function, function prototype or
+          variable.  Clicking on them shows you a summary of how and where they
+          are used.</p>
+
+          <p>The free-text search feature is implemented
+          using Glimpse, so all the
+          capabilities of Glimpse are available.
+          <a href="/search-help.html">Regular expression</a> searches are
+          especially useful.</p>
+
+          <p>(Don't use a web-crawler to try and download all of these pages;
+          the CGIs will feed you several <i>gigabytes</i> worth of generated HTML!)</p>
+
+          <p>(That's beyond the nearly <strong>&infin; gigabytes</strong> worth of
+          content that is indexed here.)</p>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>
 

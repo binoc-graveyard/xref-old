@@ -4,11 +4,11 @@
 const CGI_COMPONENTS = array(
   'find'      => 'find.cgi',
   'ident'     => 'ident.cgi',
-  'serch'     => 'search.cgi',
+  'search'     => 'search.cgi',
   'source'    => 'source.cgi'
-)
+);
 
-const PROTECTED_TREES = ['goanna-central'];
+const PROTECTED_TREES = ['goanna-central', 'mozilla-central', 'palemoon-rel29'];
 
 // ====================================================================================================================
 
@@ -37,7 +37,7 @@ function gfLocalAuth($aTobinOnly = null) {
   }
  
   if (!array_key_exists($username, $gaRuntime['xref']['access']) ||
-      !password_verify($password, $gaRuntime['xref']['access'][$username])) {
+      !gfPasswordVerify($password, $gaRuntime['xref']['access'][$username])) {
     gfBasicAuthPrompt();
   }
 
@@ -49,6 +49,8 @@ function gfLocalAuth($aTobinOnly = null) {
 ***********************************************************************************************************************/
 function gfExecuteCGI($aScript) {
   global $gaRuntime;
+  global $gvXrefTree;
+  global $gvXrefComponent;
 
   // Make sure the script actually exists
   if (!file_exists($aScript)) {
@@ -60,29 +62,35 @@ function gfExecuteCGI($aScript) {
   }
 
   $scriptURI = gfBuildPath($gaRuntime['currentPath'][0], $gaRuntime['currentPath'][1]);
-  $scriptQuery = gfSuperVar('server', 'QUERY_STRING');
+
+  $scriptQuery = $_GET ?? EMPTY_ARRAY;
+  unset($scriptQuery['component']);
+  unset($scriptQuery['path']);
 
   // Rebuild the query string
-  if ($scriptQuery) {
-    str_replace('component=' . $gaRuntime['qComponent'], EMPTY_STRING, $scriptQuery);
-    str_replace('path=' . $gaRuntime['qPath'], EMPTY_STRING, $scriptQuery);
-    $scriptQuery = gfSuperVar('check', $scriptQuery);
+  $scriptQuery = http_build_query($scriptQuery);
+
+  // Figure out CGI Path Info
+  $pathInfo = SLASH;
+
+  if (count($gaRuntime['currentPath']) > 1) {
+     $pathInfo = str_replace(SLASH . $gvXrefTree . SLASH . $gvXrefComponent, EMPTY_STRING, $gaRuntime['qPath']);
   }
 
   // Create an array of environmental variables to be assigned to the local environment
   $env = array(
     'BINOC_CGI'         => '1',
     'DOCUMENT_URI'      => $scriptURI,
-    'PATH_INFO'         => implode(SLASH, array_slice($gaRuntime['currentPath'], 2)) . SLASH,
-    'QUERY_STRING'      => $scriptQuery ?? null,
-    'REQUEST_URI'       => $scriptQuery ? ($scriptURI . '?' . $scriptQuery) : $scriptURI,
+    'PATH_INFO'         => $pathInfo,
+    'QUERY_STRING'      => gfSuperVar('check', $scriptQuery),
+    'REQUEST_URI'       => $scriptQuery ? ($gaRuntime['qPath'] . '?' . $scriptQuery) : $gaRuntime['qPath'],
     'SCRIPT_FILENAME'   => ROOT_PATH . $scriptURI,
-    'SCRIPT_NAME'       => $scriptURI,
+    'SCRIPT_NAME'       => substr($scriptURI, 0, -1),
   );
-
+  // gfError($env);
   // Apply our array on top of PHP's $_SERVER array
   $env = array_merge($_SERVER, $env);
-  
+
   // Assign our environmental variables to the local environment
   foreach ($env as $_key => $_value) {
     if (!$_value) {
@@ -93,10 +101,10 @@ function gfExecuteCGI($aScript) {
   }
 
   // Start building the CGI Command including prepending a timeout so scripts don't run a muck
-  $cgiCommand = 'timeout 65' . SPACE . $aScript;
+  $cgiCommand = 'timeout 55' . SPACE . $aScript;
 
   // If debug pipe stderr to stdout
-  if ($gaRuntime('debugMode') {
+  if ($gaRuntime['debugMode']) {
     $cgiCommand .= SPACE . '2>&1';
   }
 
@@ -112,11 +120,16 @@ function gfExecuteCGI($aScript) {
     $gotHeaders = true;
   }
 
+  if ($gaRuntime['currentPath'][1] == 'source' && gfSuperVar('get', 'raw') == 2) {
+    gfHeader('text');
+    $gotHeaders = true;
+  }
+
   // Read from stdout until the end.
   while ($line = fgets($cgi)) {
     if (!$gaRuntime['debugMode']) {
       if (str_starts_with($line, 'Content-Type:') || str_starts_with($line, 'Last-Modified:') ||
-          str_starts_with($line, 'Set-Cookie:') || str_starts_with($line, 'Refresh:') {
+          str_starts_with($line, 'Set-Cookie:') || str_starts_with($line, 'Refresh:')) {
         if (!$gotHeaders) {
           $gotHeaders = true;
         }
@@ -142,7 +155,8 @@ function gfExecuteCGI($aScript) {
   if (gfSuperVar('check', $headerlessContent)) {
     if ($gaRuntime['debugMode']) {
       gfHeader('text');
-      print($headerlessContent . NEW_LINE . NEW_LINE . 'Exit Code:' . SPACE . $exitCode);  
+      print($headerlessContent . NEW_LINE . NEW_LINE . 'Exit Code:' . SPACE . $exitCode);
+      exit();
     }
 
     gfError('Did not receive headers from' . SPACE . basename($aScript) . DOT . SPACE .
@@ -158,31 +172,79 @@ function gfExecuteCGI($aScript) {
 // == | Main | ========================================================================================================
 
 // Read the XREF Configuration
-$gaRuntime['xref'] = gfReadFile(gfBuildPath(ROOT_PATH, '.config.json'));
+$gaRuntime['xref'] = gfReadFile(ROOT_PATH . SLASH . '.config.json');
 
-$gvXrefTree = $gaRuntime['currentPath'][0];
-$gvXrefComponent = $gaRuntime['currentPath'][1] ?? null;
+if (!$gaRuntime['xref']) {
+  gfError('Unable to read xref configuration.');
+}
 
-if (in_array($gvXrefTree, PROTECTED_TREES) {
-  gfLocalAuth();
+$gvValidTree = in_array($gaRuntime['currentPath'][0], array_merge(array_keys($gaRuntime['xref']['active-sources']),
+                                                                  array_keys($gaRuntime['xref']['inactive-sources'])));
+
+if ($gvValidTree) {
+  $gvXrefTree = $gaRuntime['currentPath'][0];
+  $gvXrefComponent = $gaRuntime['currentPath'][1] ?? null;
+
+  if (in_array($gvXrefTree, PROTECTED_TREES)) {
+    gfLocalAuth();
+  }
+
+  if ($gvXrefComponent) {
+    if (array_key_exists($gvXrefComponent, CGI_COMPONENTS)) {
+      gfExecuteCGI(gfBuildPath(ROOT_PATH, CGI_COMPONENTS[$gvXrefComponent]));
+    }
+
+    gfError('Invalid CGI Component');
+  }
+
+  if (!str_ends_with($gaRuntime['qPath'], SLASH)) {
+    gfRedirect($gaRuntime['qPath'] . SLASH);
+  }
+
+  $content = gfReadFile(ROOT_PATH . SLASH . 'media' . SLASH . 'templates' . SLASH . 'template-source-index');
+
+  if (!$content) {
+    gfError('Could not load source index template');
+  }
+
+  $content = gfSubst('string', ['$treename' => strtolower($gvXrefTree), '$rootname' => 'source'],
+                     $content);
+
+  gfHeader('html');
+  print($content);
+  exit();
 }
 
 unset($gaRuntime['xref']['access']);
 
-if (array_key_exists($gvXrefTree, $gaRuntime['xref']['active-sources']) ||
-    array_key_exists($gvXrefTree, $gaRuntime['xref']['inactive-sources'])) {
+if ($gaRuntime['qPath'] == SLASH) {
+  $content = gfReadFile(ROOT_PATH . SLASH . 'media' . SLASH . 'templates' . SLASH . 'template-root-index');
 
-  switch ($gvXrefComponent) {
-    default:
-      if (array_key_exists($gvXrefComponent, CGI_COMPONENTS)) {
-        gfExecuteCGI(gfBuildPath(ROOT_PATH, CGI_COMPONENTS[$gvXrefComponent]));
-      }
+  if (!$content) {
+    gfError('Could not load root index template');
   }
 
-  // Source Index Page
-}
-elseif ($gaRuntime['qPath'] == SLASH) {
-  // Root index
+  $trees = '<h2>Sources</h2>' . NEW_LINE;
+
+  foreach ($gaRuntime['xref']['active-sources'] as $_key => $_value) {
+    $trees .= '<dt><a href="/' . $_key . '/">' .
+              $gaRuntime['xref']['active-sources'][$_key]['xrefName'] . '</a></dt>' . NEW_LINE;
+    $trees .= '<dd class="note">' . $gaRuntime['xref']['active-sources'][$_key]['xrefDesc'] . '</dd>' . NEW_LINE;
+  }
+
+  $trees .= '<h2>Archived and Historical</h2>' . NEW_LINE;
+
+  foreach ($gaRuntime['xref']['inactive-sources'] as $_key => $_value) {
+    $trees .= '<dt><a href="/' . $_key . '/">' .
+              $gaRuntime['xref']['inactive-sources'][$_key]['xrefName'] . '</a></dt>' . NEW_LINE;
+    $trees .= '<dd class="note">' . $gaRuntime['xref']['inactive-sources'][$_key]['xrefDesc'] . '</dd>' . NEW_LINE;
+  }
+
+  $content = str_replace('$sources', $trees, $content);
+
+  gfHeader('html');
+  print($content);
+  exit();
 }
 else {
   // No idea what we should do so 404

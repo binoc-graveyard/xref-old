@@ -16,7 +16,7 @@ define('ROOT_PATH', $_SERVER['DOCUMENT_ROOT']);
 define('DEBUG_MODE', $_GET['debug'] ?? null);
 
 // Define basic constants for the software
-const SOFTWARE_NAME       = 'Cross-Reference';
+const SOFTWARE_NAME       = 'Cross Reference';
 const SOFTWARE_VERSION    = '1.0.0a1';
 const SOFTWARE_REPO       = '#';
 const DATASTORE_RELPATH   = '/datastore/';
@@ -35,7 +35,7 @@ const COMPONENTS = array(
 );
 
 // Define modules
-const MODULES = null
+const MODULES = null;
 
 // Define JS Modules
 const JSMODULES = null;
