@@ -288,7 +288,7 @@ my ($refkind, $reffnum, $refline, $classes) = ($1, $2, $3, $4);
 
             foreach $t (@tyy) {
                 next unless ($f{$t});
-                print("Defined as a $ty{$t} in:<ul>\n");
+                print("<p style=\"margin-bottom: 0px;\">Defined as a $ty{$t} in:</p><ul>\n");
 
                 my %kind_map = %{$big_map{$t}};
                 foreach $fnum (sort { $a <=> $b } keys %kind_map) {
@@ -313,7 +313,7 @@ my ($refkind, $reffnum, $refline, $classes) = ($1, $2, $3, $4);
             }
             @normal_refs = ();
             my $ref_count = scalar(keys %normal_refh);
-            print('Referenced '.($ref_count > 1 ? "(in $ref_count files total) " : '')."in:\n",
+            print('<p style="margin-bottom: 0px;">Referenced '.($ref_count > 1 ? "(in $ref_count files total) " : '')."in:\n</p>",
                   "<ul>\n");
             foreach (sort { $a <=> $b } keys %normal_refh) {
                 list_links($t, $fileidx{$_}, $concise, $normal_refh{$_});
