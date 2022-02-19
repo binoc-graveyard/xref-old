@@ -36,8 +36,8 @@ function gfLocalAuth($aTobinOnly = null) {
     gfBasicAuthPrompt();
   }
  
-  if (!array_key_exists($username, $gaRuntime['xref']['access']) ||
-      !gfPasswordVerify($password, $gaRuntime['xref']['access'][$username])) {
+  if (!array_key_exists($username, $gaRuntime['xref']['users']) ||
+      !gfPasswordVerify($password, $gaRuntime['xref']['users'][$username])) {
     gfBasicAuthPrompt();
   }
 
@@ -184,10 +184,38 @@ if ($gaRuntime['currentPath'][0] == 'moonchild-central' || $gaRuntime['currentPa
   gfRedirect(gfBuildPath(...$gaRuntime['currentPath']));
 }
 
-$gvValidTree = in_array($gaRuntime['currentPath'][0], array_merge(array_keys($gaRuntime['xref']['active-sources']),
-                                                                  array_keys($gaRuntime['xref']['inactive-sources'])));
+// --------------------------------------------------------------------------------------------------------------------
 
-if ($gvValidTree) {
+$gvTrees = EMPTY_ARRAY;
+
+foreach ($gaRuntime['xref']['sources'] as $_key => $_value) {
+  $gvTrees[$_key] = $_value['description'];
+}
+
+foreach ($gaRuntime['xref']['archived'] as $_value) {
+  $_tree = gfExplodeString(DASH, $_value);
+  $_desc = $gaRuntime['xref']['generic-desc'][$_tree[0]] ??
+           'The {%TREE_NAME} tree' . DOT;
+
+  switch ($_tree[0]) {
+    case 'palemoon':
+      if (str_starts_with($_tree[1], 'rel')) {
+        $_version = str_replace('rel', EMPTY_STRING,$_tree[1]);
+        $_desc = str_replace('{%VERSION}', $_version, $_desc);
+      }
+      break;
+    case 'mozilla':
+    case 'comm':
+      $_desc = str_replace('{%TREE_NAME}', $_value, $_desc);
+      break;
+  }
+
+  $gvTrees[$_value] = $_desc;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+if (array_key_exists($gaRuntime['currentPath'][0], $gvTrees)) {
   $gvXrefTree = $gaRuntime['currentPath'][0];
   $gvXrefComponent = $gaRuntime['currentPath'][1] ?? null;
 
@@ -213,11 +241,10 @@ if ($gvValidTree) {
     gfError('Could not load source index template');
   }
 
-  $treedesc = $gaRuntime['xref']['active-sources'][$gvXrefTree]['xrefDesc'] ??
-              $gaRuntime['xref']['inactive-sources'][$gvXrefTree]['xrefDesc'];
-
   $content = gfSubst('string',
-                     ['$treename' => strtolower($gvXrefTree), '$rootname' => 'source', '$treedesc' => $treedesc],
+                     ['$treename' => strtolower($gvXrefTree),
+                      '$rootname' => 'source',
+                      '$treedesc' => $gvTrees[$gvXrefTree]],
                      $content);
 
   gfHeader('html');
@@ -236,18 +263,18 @@ if ($gaRuntime['qPath'] == SLASH) {
 
   $trees = '<h2>Sources</h2>' . NEW_LINE;
 
-  foreach ($gaRuntime['xref']['active-sources'] as $_key => $_value) {
-    $trees .= '<dt><a href="/' . $_key . '/">' .
-              $gaRuntime['xref']['active-sources'][$_key]['xrefName'] . '</a></dt>' . NEW_LINE;
-    $trees .= '<dd class="note">' . $gaRuntime['xref']['active-sources'][$_key]['xrefDesc'] . '</dd>' . NEW_LINE;
+  foreach (array_keys($gaRuntime['xref']['sources']) as $_value) {
+    $trees .= '<dt><a href="/' . $_value . '/">' .
+              $_value . '</a></dt>' . NEW_LINE;
+    $trees .= '<dd class="note">' . $gvTrees[$_value] . '</dd>' . NEW_LINE;
   }
 
   $trees .= '<h2>Archived and Historical</h2>' . NEW_LINE;
 
-  foreach ($gaRuntime['xref']['inactive-sources'] as $_key => $_value) {
-    $trees .= '<dt><a href="/' . $_key . '/">' .
-              $gaRuntime['xref']['inactive-sources'][$_key]['xrefName'] . '</a></dt>' . NEW_LINE;
-    $trees .= '<dd class="note">' . $gaRuntime['xref']['inactive-sources'][$_key]['xrefDesc'] . '</dd>' . NEW_LINE;
+  foreach ($gaRuntime['xref']['archived'] as $_value) {
+    $trees .= '<dt><a href="/' . $_value . '/">' .
+              $_value . '</a></dt>' . NEW_LINE;
+    $trees .= '<dd class="note">' . $gvTrees[$_value] . '</dd>' . NEW_LINE;
   }
 
   $content = str_replace('$sources', $trees, $content);
