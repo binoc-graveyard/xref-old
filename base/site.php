@@ -8,8 +8,6 @@ const CGI_COMPONENTS = array(
   'source'    => 'source.cgi'
 );
 
-const PROTECTED_TREES = ['goanna-central', 'mozilla-central', 'palemoon-rel29'];
-
 // ====================================================================================================================
 
 // == | Global Functions | ============================================================================================
@@ -219,7 +217,7 @@ if (array_key_exists($gaRuntime['currentPath'][0], $gvTrees)) {
   $gvXrefTree = $gaRuntime['currentPath'][0];
   $gvXrefComponent = $gaRuntime['currentPath'][1] ?? null;
 
-  if (in_array($gvXrefTree, PROTECTED_TREES)) {
+  if (in_array($gvXrefTree, $gaRuntime['xref']['protectedTrees'])) {
     gfLocalAuth();
   }
 
