@@ -1,166 +1,169 @@
 #!/bin/bash
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# ===| BASH Stub |=============================================================
+# == | Setup | ========================================================================================================
 
-# The beginning of this script is both valid shell and valid python,
-# such that the script starts with the shell and is reexecuted with
-# the right python.
-
+# The beginning of this script is both valid shell and valid python, such that the script starts with the shell and
+# is re-executed with the right python.
 '''echo' $0: Starting up...
-if [ -f "/opt/rh/python27/root/usr/bin/python2.7" ];then
-  BINOC_PYTHON_ARGS=$@
-  exec scl enable python27 "python $0 $BINOC_PYTHON_ARGS"
-elif BINOC_PYTHON_PATH="$(which python2.7 2>/dev/null)"; then
-  exec $BINOC_PYTHON_PATH $0 "$@"
+if BINOC_PYTHON="$(which python2.7 2>/dev/null)"; then
+  exec $BINOC_PYTHON $0 "$@"
 else
   echo "$0 error: Python 2.7 was not found on this system"
   exit 1
 fi
 '''
-# =============================================================================
 
-# ===| Imports |===============================================================
+# ---------------------------------------------------------------------------------------------------------------------
 
+# Python Modules
 from __future__ import print_function
 from collections import OrderedDict
-import platform
 import os
 import sys
-import pprint
 import json
-import re
-import argparse
-import subprocess
+"""
+import hashlib
+"""
 
-# =============================================================================
+# ---------------------------------------------------------------------------------------------------------------------
 
-# ===| Function: Output Message |==============================================
+# Basic vars
+# Python does not have constants because Python is SUPPOSED to be a basic scripting language that shouldn't be much
+# more complex than a bash script but without the bullshit of the effectively regex-as-a-language Perl.
+# Just don't overwrite these...
+NEW_LINE = "\n"
+SLASH = "/"
+SPACE = ' '
+TAB = SPACE + SPACE
 
-def funcOutputMessage(_messageType, _messageBody):
-  _messagePrefix = 'xRef:'
-  _errorPrefix = '{0} error:'.format(_messagePrefix)
-  _warnPrefix = '{0} warning:'.format(_messagePrefix)
-  _messageTemplates = {
-    'statusGen' : '{0} {1}'.format(_messagePrefix, _messageBody),
-    'warnGen' : '{0} {1}'.format(_warnPrefix, _messageBody),
-    'errorGen' : '{0} {1}'.format(_errorPrefix, _messageBody)
-  }
-  
-  if _messageType in _messageTemplates:
-    print(_messageTemplates[_messageType])
-    if _messageType == 'errorGen':
-      sys.exit(1)
+EMPTY_STRING = ''
+EMPTY_LIST = []
+EMPTY_DICT = {}
+
+CURRENT_PATH = os.getcwd()
+
+# =====================================================================================================================
+
+# == | Global Functions | =============================================================================================
+
+def gfOutput(aType, aMsg):
+  if aType == 'status':
+    output = '{0}: {1}'.format(__file__, aMsg)
   else:
-    print('{0} Unknown error - Referenced as \'{1}\' internally.'.format(_messagePrefix, _messageType))
+    output = '{0}: {1}: {2}'.format(__file__, aType, aMsg)
+
+  print(output)
+
+  if aType == 'error':
     sys.exit(1)
 
-# =============================================================================
+# ---------------------------------------------------------------------------------------------------------------------
 
-# ===| Function: Read JSON |===================================================
+def gfError(aMsg):
+  gfOutput('error', aMsg);
 
-def funcReadJson(filename):
-  with open(filename) as json_data:
-    _jsonData = json.load(json_data, object_pairs_hook=OrderedDict)
-  return(_jsonData)
+# ---------------------------------------------------------------------------------------------------------------------
 
-# =============================================================================
+def gfJsonEncode(aJson):
+  try:
+    rv = json.dumps(aJson, sort_keys=False, ensure_ascii=False, indent=2)
+  except:
+    gfError('Unable to JSON Encode data')
 
-# ===| Function: Generate lxr.conf |===========================================
+  return rv
 
-def funcGenLXRConf(_input): 
-  _lxrSources = ''
-  for _source in _input['active-sources']:
-    _sourcePrefix = ''
-    if _source.endswith('-trunk'):
-      _sourcePrefix = re.sub('\-trunk$', '', _source)
-    elif "-rel" in _source:
-      _sourcePrefix = re.sub('\-rel([0-9]+)', '', _source)
-    else:
-      _sourcePrefix = _source
-    _lxrSources += 'sourceroot: {0} {1}/{0}/{2}'.format(_source, _input['setup']['dbDir'], 'source') + "\n"
-    _lxrSources += 'sourceprefix: {0} {1}'.format(_source, 'source') + "\n"
+# ---------------------------------------------------------------------------------------------------------------------
 
-  for _source in _input['inactive-sources']:
-    _sourcePrefix = ''
-    if _source.endswith('-trunk'):
-      _sourcePrefix = re.sub('\-trunk$', '', _source)
-    elif "-rel" in _source:
-      _sourcePrefix = re.sub('\-rel([0-9]+)', '', _source)
-    elif "-esr" in _source:
-      _sourcePrefix = re.sub('\-esr([0-9]+)', '', _source)
-    else:
-      _sourcePrefix = _source
-    _lxrSources += 'sourceroot: {0} {1}/{0}/{2}'.format(_source, _input['setup']['dbDir'], 'source') + "\n"
-    _lxrSources += 'sourceprefix: {0} {1}'.format(_source, 'source') + "\n"
-    
-  _lxrConf = '''
-baseurl: {0}
-bonsaihome: http://bonsai.mozilla.org
-htmlhead: ./media/templates/template-head
-htmltail: ./media/templates/template-tail
-htmldir:  ./media/templates/template-dir
-sourcehead: ./media/templates/template-source-head
-sourcetail: ./media/templates/template-source-tail
-sourcedirhead: ./media/templates/template-sourcedir-head
-sourcedirtail: ./media/templates/template-sourcedir-tail
-treechooser: ./media/templates/template-tree
-treeentry: ./media/templates/template-tree-entry
-revchooser: ./media/templates/template-rev
-reventry: ./media/templates/template-rev-entry
-identref: ./media/templates/template-ident-fileref
+def gfReadFile(aFile):
+  try:
+    with open(os.path.normpath(aFile), 'rb') as f:
+      if aFile.endswith('.json'):
+        rv = json.load(f, object_pairs_hook=OrderedDict)
+      else:
+        rv = f.read()
+  except:
+    return None
 
-{1}
+  return rv
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def gfWriteFile(aData, aFile):
+  try:
+    with open(os.path.normpath(aFile), 'w') as f:
+      if aFile.endswith('.json'):
+        f.write(gfJsonEncode(aData))
+      else:
+        f.write(aData)
+  except:
+    return None
+
+  return True
+
+"""
+# ---------------------------------------------------------------------------------------------------------------------
+
+def gfSha256(aFile, block_size=65536):
+  sha256 = hashlib.sha256()
+
+  with open(os.path.normpath(aFile), 'rb') as f:
+    for block in iter(lambda: f.read(block_size), b''):
+      sha256.update(block)
+
+  return sha256.hexdigest()
+"""
+
+# =====================================================================================================================
+
+# == | Main | =========================================================================================================
+
+XREF_CONFIG = gfReadFile(CURRENT_PATH + SLASH + '.config.json')
+
+if not XREF_CONFIG:
+  gfError('Unable to read configuration.')
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+TREES = XREF_CONFIG['sources'].keys() + XREF_CONFIG['archived']
+LXR_SOURCES = EMPTY_STRING
+
+for _value in TREES:
+  LXR_SOURCES += 'sourceroot: {1} {0}/{1}/source'.format(XREF_CONFIG['setup']['datastore'], _value) + NEW_LINE
+  LXR_SOURCES += 'sourceprefix: {0} source'.format(_value) + NEW_LINE
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+LXR_CONFIG = '''baseurl: {0}/
 incprefix: /include
-dbdir: {2}
-glimpsebin: /usr/bin/glimpse'''
+dbdir: {1}
+glimpsebin: /usr/bin/glimpse
 
-  return _lxrConf.format(_input['setup']['baseURL'], _lxrSources, _input['setup']['dbDir'])
+bonsaihome: http://bonsai.mozilla.org
+htmlhead: .{2}/template-head
+htmltail: .{2}/template-tail
+htmldir:  .{2}/template-dir
+sourcehead: .{2}/template-source-head
+sourcetail: .{2}/template-source-tail
+sourcedirhead: .{2}/template-sourcedir-head
+sourcedirtail: .{2}/template-sourcedir-tail
+treechooser: .{2}/template-tree
+treeentry: .{2}/template-tree-entry
+revchooser: .{2}/template-rev
+reventry: .{2}/template-rev-entry
+identref: .{2}/template-ident-fileref
 
-# =============================================================================
+{3}'''.format(XREF_CONFIG['setup']['domain'],
+              XREF_CONFIG['setup']['datastore'],
+              XREF_CONFIG['setup']['templates'],
+              LXR_SOURCES)
 
-# ===| Main |==================================================================
+# ---------------------------------------------------------------------------------------------------------------------
 
-# Define initial vars
-pathCurrent = os.getcwd()
-fileXREFJson = '.config.json'
+LXR_FILE = gfWriteFile(LXR_CONFIG, CURRENT_PATH + SLASH + 'lxr.conf')
 
-# Find config.json
-if os.path.exists(fileXREFJson):
-  pathXREFJson = fileXREFJson
-else:
-  funcOutputMessage('errorGen', 'Could not find ' + fileXREFJson)
+if not LXR_FILE:
+  gfError('Failed to write LXR Configuration')
 
-# Read json into a dict
-dictXREFJson = funcReadJson(pathXREFJson)
+gfOutput('status', 'Wrote LXR Configuration')
 
-# Read mxr-data directory list
-try:
-  listMXRData = os.listdir(dictXREFJson['setup']['dbDir'])
-except:
-  listMXRData = []
-  funcOutputMessage('warnGen', 'The directory ' + dictXREFJson['setup']['dbDir'] + ' is either empty or does not exist')
-
-if len(listMXRData) is not 0:
-  for _item in listMXRData:
-    if (_item not in dictXREFJson['active-sources']) and (_item not in dictXREFJson['inactive-sources']):
-      if _item in ('.config.json', 'update.sh'):
-        continue
-      funcOutputMessage('warnGen', 'MXR Data item: ' + _item + ' is not listed in config.json')
-
-# Create lxr.conf File
-funcOutputMessage('statusGen', '(Re)generating LXR Configuration')
-try:
-  fileLXRConf = open('lxr.conf', 'wb')
-  fileLXRConf.write(funcGenLXRConf(dictXREFJson))
-  fileLXRConf.close
-  funcOutputMessage('statusGen', 'Wrote LXR Configuration to ./lxr.conf')
-except:
-  funcOutputMessage('errorGen', 'Unable to write to ./lxr.conf') 
-  sys.exit(1)
-
-# =============================================================================
-
-
+# =====================================================================================================================
